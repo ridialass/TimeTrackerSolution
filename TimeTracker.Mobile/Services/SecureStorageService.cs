@@ -1,12 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Maui.Storage;
 
 namespace TimeTracker.Mobile.Services
 {
-    internal class SecureStorageService
+    public static class SecureStorageService
     {
+        private const string JwtKey = "JwtToken";
+        public static Task SetJwtAsync(string token) =>
+            SecureStorage.SetAsync(JwtKey, token);
+
+        public static Task<string?> GetJwtAsync() =>
+            SecureStorage.GetAsync(JwtKey);
+
+        public static void RemoveJwt() =>
+            SecureStorage.Remove(JwtKey);
     }
 }

@@ -73,17 +73,37 @@
 
 	<ItemGroup>
 	  <Folder Include="Models\" />
-	  <Folder Include="Helpers\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="Views\HistoryPage.xaml">
+	  <Compile Update="Views\AdminDashboardPage.xaml.cs">
+	    <DependentUpon>AdminDashboardPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\TimeEntryPage.xaml.cs">
+	    <DependentUpon>TimeEntryPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\HomePage.xaml.cs">
+	    <DependentUpon>HomePage.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiXaml Update="Views\AdminDashboardPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\EndSessionPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\StartSessionPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\TimeEntryPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\LoginPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\MainPage.xaml">
+	  <MauiXaml Update="Views\HomePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:TimeTracker.ViewModels"
+    x:Class="TimeTracker.Views.EndSessionPage"
+    Title="End Session">
+
+    <ContentPage.BindingContext>
+        <vm:EndSessionViewModel />
+    </ContentPage.BindingContext>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <!-- BOUTON “Retour à l’Accueil” -->
+            <Button Text="⌂ Back to Home"  Clicked="OnBackToHomeClicked" HorizontalOptions="Start" />
+
+            <!-- Afficher le type de session en cours, pour info -->
+            <Label 
+        Text="Session in progress:" 
+        FontAttributes="Bold" />
+            <Label 
+        Text="{Binding InProgressSessionInfo}" 
+        FontSize="16" 
+        TextColor="DimGray" />
+
+            <!-- Si IncludesTravelTime == true, on affiche deux champs Heures/Minutes -->
+            <HorizontalStackLayout Spacing="15" IsVisible="{Binding InProgressSessionIncludesTravel}">
+                <VerticalStackLayout>
+                    <Label Text="Travel Hours" />
+                    <Entry
+            Placeholder="0"
+            Keyboard="Numeric"
+            Text="{Binding TravelHours}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout>
+                    <Label Text="Travel Minutes" />
+                    <Entry
+            Placeholder="00"
+            Keyboard="Numeric"
+            Text="{Binding TravelMinutes}" />
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+
+            <!-- Choix de qui paye le dîner -->
+            <Label Text="Who paid for dinner?" FontAttributes="Bold" />
+            <Picker
+        ItemsSource="{Binding DinnerPaidByOptions}"
+        SelectedItem="{Binding SelectedDinnerPaidBy}" />
+
+            <Button 
+        Text="End Session" 
+        Command="{Binding EndCommand}" 
+        HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

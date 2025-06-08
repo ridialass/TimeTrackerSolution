@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TimeTracker.Mobile.Views.HistoryPage"
+             Title="HistoryPage">
+    <VerticalStackLayout Padding="20" Spacing="15">
+        <!-- BOUTON “Retour à l’Accueil” -->
+        <Button Text="⌂ Back to Home"  Clicked="OnBackToHomeClicked" HorizontalOptions="Start" />
+        <Label Text="Session History" FontAttributes="Bold" FontSize="24" />
+
+        <CollectionView ItemsSource="{Binding WorkSessions}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Padding="10" Margin="5" HasShadow="True" CornerRadius="12" BackgroundColor="#f8f8f8">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding SessionType}" FontAttributes="Bold" FontSize="18" TextColor="DarkBlue" />
+                            <Label Text="{Binding StartTime, StringFormat='🕒 Start: {0:G}'}" />
+                            <Label Text="{Binding EndTime, StringFormat='🏁 End: {0:G}'}" />
+                            <Label Text="{Binding WorkDuration, StringFormat='⏱ Total Duration: {0:%h}h {0:%m}m'}"
+                              IsVisible="{Binding WorkDuration, Converter={StaticResource NullToBoolConverter}}" />
+                            <Label Text="{Binding IncludesTravelTime, StringFormat='🚗 Travel Included: {0}'}" />
+                            <Label Text="{Binding TravelTimeEstimate, StringFormat='🚕 Temps de trajet : {0:hh\\:mm}'}"
+                            IsVisible="{Binding IncludesTravelTime}" />
+                            <Label Text="{Binding StartAddress, StringFormat='📍 Start: {0}'}" />
+                            <Label Text="{Binding EndAddress, StringFormat='📍 End: {0}'}" />
+                            <Label Text="{Binding DinnerPaid, StringFormat='🍽 Dinner: {0}'}" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout> >
+</ContentPage>

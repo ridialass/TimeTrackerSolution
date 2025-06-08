@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:TimeTracker.ViewModels"
+    x:Class="TimeTracker.Views.StartSessionPage"
+    Title="Start Session">
+
+    <ContentPage.BindingContext>
+        <vm:StartSessionViewModel />
+    </ContentPage.BindingContext>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <!-- BOUTON “Retour à l’Accueil” -->
+            <Button Text="⌂ Back to Home"  Clicked="OnBackToHomeClicked" HorizontalOptions="Start" />
+
+            <Label Text="Select Session Type" FontAttributes="Bold" />
+            <Picker 
+        ItemsSource="{Binding SessionTypes}" 
+        SelectedItem="{Binding SelectedSessionType}" />
+
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                <CheckBox IsChecked="{Binding IncludesTravelTime}" />
+                <Label Text="Includes Travel?" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <Button Text="Start Session" Command="{Binding StartCommand}" 
+              HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

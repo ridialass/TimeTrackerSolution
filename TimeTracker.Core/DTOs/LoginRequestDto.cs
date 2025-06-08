@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace TimeTracker.Core.DTOs
 {
-    internal class LoginRequestDto
+    public class LoginRequestDto
     {
+        public string Username { get; set; }
+        public string Password { get; set; }
     }
 }
+

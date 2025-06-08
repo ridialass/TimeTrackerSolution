@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+  xmlns:vm="clr-namespace:TimeTracker.ViewModels"
+  xmlns:conv="clr-namespace:TimeTracker.Converters"
+  x:Class="TimeTracker.Views.AdminDashboardPage"
+  Title="Admin Dashboard">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:NullToBoolConverter x:Key="NullToBoolConverter" />
+            <conv:NullOrEmptyToBoolConverter x:Key="NullOrEmptyToBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.BindingContext>
+        <vm:AdminDashboardViewModel />
+    </ContentPage.BindingContext>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="25">
+
+            <!-- 1. SECTION “Create User” -->
+            <Frame Padding="10" CornerRadius="12" BackgroundColor="#f0f0f0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Create New User" FontAttributes="Bold" FontSize="20" />
+
+                    <Entry 
+            Placeholder="Username" 
+            Text="{Binding NewUsername}" />
+
+                    <Entry 
+            Placeholder="Password" 
+            IsPassword="True" 
+            Text="{Binding NewPassword}" />
+
+                    <Label Text="Role" />
+                    <Picker 
+            ItemsSource="{Binding Roles}" 
+            SelectedItem="{Binding NewSelectedRole}" />
+
+                    <Button 
+            Text="Create User" 
+            Command="{Binding CreateUserCommand}" 
+            BackgroundColor="#4CAF50" 
+            TextColor="White" />
+
+                    <Label 
+            Text="{Binding CreateUserErrorMessage}" 
+            TextColor="Red" 
+            IsVisible="{Binding HasCreateUserError}" />
+                    <Label 
+            Text="{Binding CreateUserSuccessMessage}" 
+            TextColor="Green" 
+            IsVisible="{Binding HasCreateUserSuccess}" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- 2. SECTION “User List + Filter” -->
+            <Frame Padding="10" CornerRadius="12" BackgroundColor="#f8f8f8">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Filter Sessions by User" FontAttributes="Bold" FontSize="20" />
+
+                    <Picker 
+            ItemsSource="{Binding AllUsers}" 
+            ItemDisplayBinding="{Binding Username}" 
+            SelectedItem="{Binding SelectedFilterUser}" />
+
+                    <Button 
+            Text="Load Sessions" 
+            Command="{Binding LoadSessionsByUserCommand}" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- 3. SECTION “Sessions filtrées” -->
+            <Label Text="Sessions for Selected User" FontAttributes="Bold" FontSize="20" />
+
+            <CollectionView ItemsSource="{Binding FilteredSessions}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="8" Margin="4" HasShadow="True" CornerRadius="8" BackgroundColor="#eef0f3">
+                            <VerticalStackLayout Spacing="4">
+                                <Label 
+                  Text="{Binding SessionType, StringFormat='Type: {0}'}" 
+                  FontAttributes="Bold" />
+                                <Label 
+                  Text="{Binding StartTime, StringFormat='Start: {0:G}'}" />
+                                <Label 
+                  Text="{Binding EndTime, StringFormat='End: {0:G}'}" 
+                  IsVisible="{Binding EndTime, Converter={StaticResource NullToBoolConverter}}" />
+                                <Label 
+                  Text="{Binding WorkDuration, StringFormat='⏱ Duration: {0:%h}h {0:%m}m'}"
+                  IsVisible="{Binding WorkDuration, Converter={StaticResource NullToBoolConverter}}" />
+                                <Label 
+                  Text="{Binding IncludesTravelTime, StringFormat='🚗 Travel? {0}'}" />
+                                <Label 
+                  Text="{Binding TravelTimeEstimate, StringFormat='🚕 Travel Time: {0:hh\\:mm}'}"
+                  IsVisible="{Binding IncludesTravelTime}" />
+                                <Label 
+                  Text="{Binding DinnerPaid, StringFormat='🍽 Dinner Paid: {0}'}" />
+                                <Label 
+                  Text="{Binding StartAddress, StringFormat='📍 Start: {0}'}" />
+                                <Label 
+                  Text="{Binding EndAddress, StringFormat='📍 End: {0}'}" 
+                  IsVisible="{Binding EndAddress, Converter={StaticResource NullOrEmptyToBoolConverter}}" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- 4. BOUTON “Export CSV” -->
+            <Button 
+        Text="Export to CSV" 
+        Command="{Binding ExportToCsvCommand}" 
+        BackgroundColor="#2196F3" 
+        TextColor="White" 
+        HorizontalOptions="Center" />
+
+            <Label 
+        Text="{Binding ExportStatusMessage}" 
+        TextColor="Green" 
+        IsVisible="{Binding HasExportStatusMessage}" 
+        HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

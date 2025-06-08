@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:TimeTracker.ViewModels"
+    x:Class="TimeTracker.Views.HomePage"
+    Title="Home">
+
+    <ContentPage.BindingContext>
+        <vm:HomeViewModel x:Name="VM" />
+    </ContentPage.BindingContext>
+
+    <VerticalStackLayout 
+      Padding="40" 
+      Spacing="20"
+      VerticalOptions="Center">
+
+        <Button 
+      Text="Start Session" 
+      Clicked="OnStartSessionClicked" />
+
+        <Button 
+      Text="End Session" 
+      Clicked="OnEndSessionClicked" />
+
+        <Button 
+      Text="History" 
+      Clicked="OnHistoryClicked" />
+
+        <!-- Dans HomePage.xaml, ajoutez un Binding à IsVisible -->
+        <Button 
+      Text="Admin Dashboard" 
+      Clicked="OnAdminDashboardClicked" 
+      BackgroundColor="#333"
+      TextColor="White"
+      IsVisible="{Binding IsCurrentUserAdmin}" />
+
+    </VerticalStackLayout>
+</ContentPage>

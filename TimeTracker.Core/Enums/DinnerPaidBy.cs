@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TimeTracker.Mobile.Services
+namespace TimeTracker.Core.Enums
 {
-    internal class ApiClientWrapper
+    public enum DinnerPaidBy
     {
+        None = 0,
+        Employee = 1,
+        Client = 2
     }
 }
