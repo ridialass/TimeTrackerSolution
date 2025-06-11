@@ -68,11 +68,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\TimeTracker.Core\TimeTracker.Core.csproj" />
+	  <Folder Include="Models\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Models\" />
+	  <ProjectReference Include="..\TimeTracker.Core\TimeTracker.Core.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

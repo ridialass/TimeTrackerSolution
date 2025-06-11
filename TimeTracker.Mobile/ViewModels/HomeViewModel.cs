@@ -1,180 +1,189 @@
-﻿using System;
+﻿using Microsoft.Maui.Controls;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;                     // pour Command et Shell
-using TimeTracker.Models;
-using TimeTracker.Services;
-using TimeTracker.Helpers;
-using static TimeTracker.Models.Enum;
-using TimeTracker.Views;
-using TimeTracker;
+using TimeTracker.Core.DTOs;
+using TimeTracker.Core.Enums;
+using TimeTracker.Mobile.Helpers;
+using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Views;
 
-namespace TimeTracker.ViewModels
+namespace TimeTracker.Mobile.ViewModels
 {
     public class HomeViewModel : INotifyPropertyChanged
     {
-        // ════ SOURCES DÉNUMÉRÉES ════
         public ObservableCollection<WorkSessionType> SessionTypes { get; }
             = new ObservableCollection<WorkSessionType>(
-                (WorkSessionType[])System.Enum.GetValues(typeof(WorkSessionType)));
+                (WorkSessionType[])Enum.GetValues(typeof(WorkSessionType)));
 
         public ObservableCollection<DinnerPaidBy> DinnerPaidByOptions { get; }
             = new ObservableCollection<DinnerPaidBy>(
-                (DinnerPaidBy[])System.Enum.GetValues(typeof(DinnerPaidBy)));
+                (DinnerPaidBy[])Enum.GetValues(typeof(DinnerPaidBy)));
 
-        // ════ PROPRIÉTÉS BINDÉES ════
-
-        private WorkSessionType _selectedSessionType;
+        WorkSessionType _selectedSessionType;
         public WorkSessionType SelectedSessionType
         {
             get => _selectedSessionType;
             set => SetProperty(ref _selectedSessionType, value);
         }
 
-        private bool _includesTravelTime;
+        bool _includesTravelTime;
         public bool IncludesTravelTime
         {
             get => _includesTravelTime;
             set => SetProperty(ref _includesTravelTime, value);
         }
 
-        // ⚠️ Nouveaux champs pour « Heures » et « Minutes » de trajet
-        private string _travelHours;
+        string _travelHours = "";
         public string TravelHours
         {
             get => _travelHours;
             set => SetProperty(ref _travelHours, value);
         }
 
-        private string _travelMinutes;
+        string _travelMinutes = "";
         public string TravelMinutes
         {
             get => _travelMinutes;
             set => SetProperty(ref _travelMinutes, value);
         }
 
-        private DinnerPaidBy _selectedDinnerPaidBy = DinnerPaidBy.None;
+        DinnerPaidBy _selectedDinnerPaidBy = DinnerPaidBy.None;
         public DinnerPaidBy SelectedDinnerPaidBy
         {
             get => _selectedDinnerPaidBy;
             set => SetProperty(ref _selectedDinnerPaidBy, value);
         }
 
-        // ════ COMMANDES ════
         public ICommand ClockInCommand { get; }
         public ICommand ClockOutCommand { get; }
         public ICommand GoToHistoryCommand { get; }
 
-        // ════ ÉTAT INTERNE ════
-        private WorkSession currentSession;
-        private readonly LocationService _locationService = new LocationService();
-        private readonly SessionService _sessionService = App.SessionService;
+        TimeEntryDto? _currentEntry;
+        readonly LocationService _locationService;
+        readonly IMobileAuthService _authService;
+        readonly IMobileTimeEntryService _timeEntryService;
 
-        public HomeViewModel()
+        public HomeViewModel(
+            IMobileAuthService authService,
+            IMobileTimeEntryService timeEntryService)
         {
-            ClockInCommand = new Command(OnClockIn);
-            ClockOutCommand = new Command(OnClockOut);
-            GoToHistoryCommand = new Command(async () => await Shell.Current.GoToAsync(nameof(SessionHistoryPage)));
+            _authService = authService;
+            _timeEntryService = timeEntryService;
+            _locationService = new LocationService();
+
+            ClockInCommand = new Command(async () => await OnClockInAsync());
+            ClockOutCommand = new Command(async () => await OnClockOutAsync());
+            GoToHistoryCommand = new Command(async () =>
+                await Shell.Current.GoToAsync(nameof(TimeEntriesPage)));
         }
 
-        /// <summary>
-        /// Indique si l'utilisateur actuellement connecté a le rôle Admin.
-        /// </summary>
         public bool IsCurrentUserAdmin =>
-            App.AuthService.CurrentUser?.Role == UserRole.Admin;
+            _authService.CurrentUser?.Role == UserRole.Admin;
 
-        private async void OnClockIn()
+        async Task OnClockInAsync()
         {
-            // 1) Récupérer la position GPS
-            var location = await _locationService.GetCurrentLocationAsync();
-
-            string startAddress = "Location unavailable";
+            var loc = await _locationService.GetCurrentLocationAsync();
+            var addr = "Location unavailable";
             double lat = 0, lon = 0;
 
-            if (location != null)
+            if (loc != null)
             {
-                lat = location.Latitude;
-                lon = location.Longitude;
-                startAddress = await LocationHelper.GetAddressFromCoordinatesAsync(lat, lon);
+                lat = loc.Latitude;
+                lon = loc.Longitude;
+                addr = await LocationHelper.GetAddressFromCoordinatesAsync(lat, lon);
             }
 
-            // 2) Créer la nouvelle WorkSession (données de démarrage uniquement)
-            currentSession = new WorkSession
+            // Crée un DTO immuable
+            _currentEntry = new TimeEntryDto
             {
-                StartTime = DateTime.Now,
+                UserId = _authService.CurrentUser!.Id,
+                Username = _authService.CurrentUser.UserName!,
+                SessionType = SelectedSessionType,
+                StartTime = DateTime.UtcNow,
+                EndTime = null,
                 StartLatitude = lat,
                 StartLongitude = lon,
-                StartAddress = startAddress,
-                SessionType = SelectedSessionType,
+                StartAddress = addr,
+                EndLatitude = null,
+                EndLongitude = null,
+                EndAddress = null,
                 IncludesTravelTime = IncludesTravelTime,
-                TravelDurationHours = null,               // défini au ClockOut
+                // ce champ n’existe plus, on ne l’utilise pas
+                // TravelDurationHours = null,
                 DinnerPaid = DinnerPaidBy.None,
-                Location = startAddress
+                Location = addr
             };
 
-            // Réinitialiser les champs de saisie de trajet
-            TravelHours = string.Empty;
-            TravelMinutes = string.Empty;
+            TravelHours = "";
+            TravelMinutes = "";
         }
 
-        private async void OnClockOut()
+        async Task OnClockOutAsync()
         {
-            if (currentSession == null)
-                return;
+            if (_currentEntry is null) return;
 
-            // 1) Récupérer la position GPS de fin
-            var location = await _locationService.GetCurrentLocationAsync();
-
-            string endAddress = "Location unavailable";
+            var loc = await _locationService.GetCurrentLocationAsync();
+            var endAddr = "Location unavailable";
             double lat = 0, lon = 0;
 
-            if (location != null)
+            if (loc != null)
             {
-                lat = location.Latitude;
-                lon = location.Longitude;
-                endAddress = await LocationHelper.GetAddressFromCoordinatesAsync(lat, lon);
+                lat = loc.Latitude;
+                lon = loc.Longitude;
+                endAddr = await LocationHelper.GetAddressFromCoordinatesAsync(lat, lon);
             }
 
-            // 2) Calculer TravelDurationHours à partir de TravelHours / TravelMinutes
+            // Calcule le TimeSpan de trajet
+            TimeSpan? travelSpan = null;
             if (IncludesTravelTime
                 && int.TryParse(TravelHours, out var h)
                 && int.TryParse(TravelMinutes, out var m))
             {
-                currentSession.TravelDurationHours = h + (m / 60.0);
+                travelSpan = TimeSpan.FromHours(h + m / 60.0);
             }
-            else
+
+            // Clone le DTO avec les nouveaux champs
+            var completed = _currentEntry with
             {
-                currentSession.TravelDurationHours = null;
+                EndTime = DateTime.UtcNow,
+                EndLatitude = lat,
+                EndLongitude = lon,
+                EndAddress = endAddr,
+                TravelTimeEstimate = travelSpan,
+                DinnerPaid = SelectedDinnerPaidBy
+            };
+
+            try
+            {
+                await _timeEntryService.CreateTimeEntryAsync(completed);
             }
-
-            // 3) Compléter le reste et sauvegarder
-            currentSession.EndTime = DateTime.Now;
-            currentSession.EndLatitude = lat;
-            currentSession.EndLongitude = lon;
-            currentSession.EndAddress = endAddress;
-            currentSession.DinnerPaid = SelectedDinnerPaidBy;
-
-            await _sessionService.EndAndSaveCurrentSessionAsync();
-            currentSession = null;
+            catch
+            {
+                // TODO : afficher un message
+            }
+            finally
+            {
+                _currentEntry = null;
+            }
         }
 
-        // ════ INotifyPropertyChanged ════
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void OnPropertyChanged([CallerMemberName] string propName = "")
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+        #region INotifyPropertyChanged
+        public event PropertyChangedEventHandler? PropertyChanged;
+        void OnPropertyChanged([CallerMemberName] string name = "") =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        private void SetProperty<T>(
-            ref T backingStore,
-            T value,
-            [CallerMemberName] string propName = "")
+        void SetProperty<T>(ref T field, T value, [CallerMemberName] string name = "")
         {
-            if (!EqualityComparer<T>.Default.Equals(backingStore, value))
+            if (!EqualityComparer<T>.Default.Equals(field, value))
             {
-                backingStore = value;
-                OnPropertyChanged(propName);
+                field = value;
+                OnPropertyChanged(name);
             }
         }
+        #endregion
     }
 }

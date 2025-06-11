@@ -9,7 +9,6 @@ using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
 using TimeTracker.Core.Interfaces;
 using TimeTracker.Core.Interfaces;
-using TimeTracker.Infrastructure.Data;
 using TimeTracker.Infrastructure.Mapping;
 using TimeTracker.Infrastructure.Services; // <-- vérifiez le bon namespace
 
@@ -88,9 +87,11 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services
-    .AddAutoMapper(typeof(EmployeeProfile).Assembly)
+    .AddAutoMapper(typeof(ApplicationMappingProfile).Assembly)
     .AddScoped<IEmployeeService, EmployeeService>()
     .AddScoped<IAuthService, AuthService>();
+builder.Services
+    .AddScoped<ITimeEntryService, TimeEntryService>();
 
 // 5) Ajouter les contrôleurs (API)
 builder.Services.AddControllers();

@@ -1,54 +1,71 @@
-﻿using Microsoft.Extensions.Logging;
-using TimeTracker.Mobile.Services;
+﻿using TimeTracker.Mobile.Services;
 using TimeTracker.Mobile.ViewModels;
-using TimeTracker.Mobile.Views;
+using TimeTracker.ViewModels;
+using TimeTracker.Views;
 
-namespace TimeTracker.Mobile
+namespace TimeTracker
 {
     public static class MauiProgram
     {
+
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
+
             builder
-                .UseMauiApp<App>()
-                .ConfigureFonts(fonts =>
-                {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-                });
+              .UseMauiApp<App>()
+              .ConfigureFonts(fonts =>
+              {
+                  fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                  fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+              });
 
-            //builder.Services.AddRefitClient<IApiClient>()
-            //    .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://<your-api-url>/api/"));
+            // 1) Handler pour ajouter le JWT
+            builder.Services.AddTransient<AuthHeaderHandler>();
 
-            //builder.Services.AddSingleton<IApiClientWrapper, ApiClientWrapper>();
+            // 2) Typed HttpClient pour votre API
+            builder.Services
+              .AddHttpClient<IApiClientService, ApiClientService>(client =>
+              {
+                  client.BaseAddress = new Uri("https://localhost:7205/");
+                  client.DefaultRequestHeaders.Accept.Add(
+                      new MediaTypeWithQualityHeaderValue("application/json"));
+              })
+              .AddHttpMessageHandler<AuthHeaderHandler>();
 
-            //builder.Services.AddSingleton<LoginViewModel>();
-            //builder.Services.AddSingleton<MainViewModel>();
-            //builder.Services.AddTransient<HistoryViewModel>();
+            // 3) SecureStorage singleton
+            builder.Services.AddSingleton<ISecureStorage>(SecureStorage.Default);
 
-            //builder.Services.AddSingleton<LoginPage>();
-            builder.Services.AddSingleton<MainPage>();
-            //builder.Services.AddTransient<HistoryPage>();
+            // 4) AuthService mobile
+            builder.Services.AddSingleton<IMobileAuthService, MobileAuthService>();
 
-#if DEBUG
-            builder.Logging.AddDebug();
-#endif
-            // 1. Register Services
-            builder.Services.AddSingleton<IApiClientService, ApiClientService>();
-            builder.Services.AddSingleton<MobileAuthService>();
-            builder.Services.AddSingleton<MobileTimeEntryService>();
-            builder.Services.AddSingleton<LocationService>();
+            // 5) TimeEntryService mobile
+            builder.Services.AddTransient<IMobileTimeEntryService, MobileTimeEntryService>();
 
-            // 2. Register ViewModels
+            // 6) ViewModels
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<HomeViewModel>();
-            // … register other viewmodels (TimeEntryViewModel, HistoryViewModel, etc.)
+            builder.Services.AddTransient<AdminDashboardViewModel>();
+            builder.Services.AddTransient<TimeEntriesViewModel>(sp =>
+            {
+                var auth = sp.GetRequiredService<IMobileAuthService>();
+                if (auth.CurrentUser is null)
+                    throw new InvalidOperationException("Utilisateur non connecté");
+                return new TimeEntriesViewModel(
+                    sp.GetRequiredService<IMobileTimeEntryService>(),
+                    auth.CurrentUser.Id
+                );
+            });
 
-            // 3. Register Pages and their bindings
-            builder.Services.AddTransient<LoginPage>();
-            builder.Services.AddTransient<HomePage>();
-            // … register other pages
+            // 7) Pages avec leur BindingContext
+            builder.Services.AddTransient<LoginPage>(sp =>
+                new LoginPage { BindingContext = sp.GetRequiredService<LoginViewModel>() });
+            builder.Services.AddTransient<HomePage>(sp =>
+                new HomePage { BindingContext = sp.GetRequiredService<HomeViewModel>() });
+            builder.Services.AddTransient<AdminDashboardPage>(sp =>
+                new AdminDashboardPage { BindingContext = sp.GetRequiredService<AdminDashboardViewModel>() });
+            builder.Services.AddTransient<TimeEntriesPage>(sp =>
+                new TimeEntriesPage { BindingContext = sp.GetRequiredService<TimeEntriesViewModel>() });
 
             return builder.Build();
         }

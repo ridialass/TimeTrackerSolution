@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Interfaces;
-using TimeTracker.Infrastructure.Data;
 
 namespace TimeTracker.Infrastructure.Services
 {

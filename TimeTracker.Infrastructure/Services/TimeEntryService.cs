@@ -1,68 +1,108 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿// Services/TimeEntryService.cs
+using TimeTracker.Core.Interfaces;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
-using TimeTracker.Core.Interfaces;
-using TimeTracker.Infrastructure.Data;
+using TimeTracker.Infrastructure.Repositories;
 
 namespace TimeTracker.Infrastructure.Services
 {
     public class TimeEntryService : ITimeEntryService
     {
-        private readonly ApplicationDbContext _db;
-        private readonly IMapper _mapper;
+        private readonly ITimeEntryRepository _timeEntryRepo;
+        private readonly IEmployeeRepository _employeeRepo;
 
-        public TimeEntryService(ApplicationDbContext db, IMapper mapper)
+        //public TimeEntryService(
+        //    ITimeEntryRepository timeEntryRepo,
+        //    IEmployeeRepository employeeRepo)
+        //{
+        //    _timeEntryRepo = timeEntryRepo;
+        //    _employeeRepo = employeeRepo;
+        //}
+
+        //public async Task<TimeEntryDto> ClockInAsync(Guid employeeId, CancellationToken cancellationToken)
+        //{
+        //    // 1) Ensure employee exists:
+        //    var employee = await _employeeRepo.GetByIdAsync(employeeId, cancellationToken);
+        //    if (employee == null)
+        //        throw new KeyNotFoundException("Employee not found");
+
+        //    // 2) Ensure there’s no open entry for today
+        //    var open = await _timeEntryRepo.GetOpenEntryForEmployeeAsync(employeeId, cancellationToken);
+        //    if (open != null)
+        //        throw new InvalidOperationException("You’re already clocked in.");
+
+        //    var newEntry = new TimeEntry
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        EmployeeId = employeeId,
+        //        ClockIn = DateTime.UtcNow,
+        //        ClockOut = null
+        //    };
+        //    var saved = await _timeEntryRepo.AddAsync(newEntry, cancellationToken);
+        //    return new TimeEntryDto
+        //    {
+        //        Id = saved.Id,
+        //        EmployeeId = saved.EmployeeId,
+        //        ClockIn = saved.ClockIn,
+        //        ClockOut = saved.ClockOut
+        //    };
+        //}
+
+        //public async Task<TimeEntryDto> ClockOutAsync(Guid employeeId, CancellationToken cancellationToken)
+        //{
+        //    // 1) Find the open entry
+        //    var open = await _timeEntryRepo.GetOpenEntryForEmployeeAsync(employeeId, cancellationToken);
+        //    if (open == null)
+        //        throw new InvalidOperationException("No open time entry to clock out.");
+
+        //    open.ClockOut = DateTime.UtcNow;
+        //    var updated = await _timeEntryRepo.UpdateAsync(open, cancellationToken);
+
+        //    return new TimeEntryDto
+        //    {
+        //        Id = updated.Id,
+        //        EmployeeId = updated.EmployeeId,
+        //        ClockIn = updated.ClockIn,
+        //        ClockOut = updated.ClockOut
+        //    };
+        //}
+
+        //public async Task<IEnumerable<TimeEntryDto>> GetTimeEntriesForEmployeeAsync(
+        //    Guid employeeId, DateTime? from, DateTime? to, CancellationToken cancellationToken)
+        //{
+        //    var entries = await _timeEntryRepo.GetEntriesForEmployeeAsync(employeeId, from, to, cancellationToken);
+        //    return entries.Select(e => new TimeEntryDto
+        //    {
+        //        Id = e.Id,
+        //        EmployeeId = e.EmployeeId,
+        //        ClockIn = e.ClockIn,
+        //        ClockOut = e.ClockOut
+        //    });
+        //}
+
+        Task ITimeEntryService.AddTimeEntryAsync(TimeEntry entity)
         {
-            _db = db;
-            _mapper = mapper;
+            throw new NotImplementedException();
         }
 
-        public async Task<TimeEntryDto> CreateTimeEntryAsync(TimeEntryDto newEntry)
+        Task<bool> ITimeEntryService.DeleteTimeEntryAsync(int id)
         {
-            var entity = _mapper.Map<TimeEntry>(newEntry);
-            var inserted = await _db.TimeEntries.AddAsync(entity);
-            await _db.SaveChangesAsync();
-            return _mapper.Map<TimeEntryDto>(inserted.Entity);
+            throw new NotImplementedException();
         }
 
-        public async Task<bool> DeleteTimeEntryAsync(int id)
+        Task<IEnumerable<TimeEntryDto>> ITimeEntryService.GetAllTimeEntriesAsync()
         {
-            var te = await _db.TimeEntries.FindAsync(id);
-            if (te == null) return false;
-            _db.TimeEntries.Remove(te);
-            await _db.SaveChangesAsync();
-            return true;
+            throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<TimeEntryDto>> GetAllTimeEntriesAsync()
+        Task<IEnumerable<TimeEntryDto>> ITimeEntryService.GetTimeEntriesByUserAsync(int userId)
         {
-            var list = await _db.TimeEntries
-                                .Include(te => te.User)
-                                .OrderByDescending(te => te.StartTime)
-                                .AsNoTracking()
-                                .ToListAsync();
-            return list.Select(te => _mapper.Map<TimeEntryDto>(te));
+            throw new NotImplementedException();
         }
 
-        public async Task<TimeEntryDto?> GetTimeEntryByIdAsync(int id)
+        Task<TimeEntryDto> ITimeEntryService.GetTimeEntryByIdAsync(int id)
         {
-            var te = await _db.TimeEntries
-                              .Include(te => te.User)
-                              .AsNoTracking()
-                              .FirstOrDefaultAsync(x => x.Id == id);
-            return te == null ? null : _mapper.Map<TimeEntryDto>(te);
-        }
-
-        public async Task<IEnumerable<TimeEntryDto>> GetTimeEntriesByEmployeeAsync(int employeeId)
-        {
-            var list = await _db.TimeEntries
-                                .Where(te => te.UserId == employeeId)
-                                .Include(te => te.User)
-                                .OrderByDescending(te => te.StartTime)
-                                .AsNoTracking()
-                                .ToListAsync();
-            return list.Select(te => _mapper.Map<TimeEntryDto>(te));
+            throw new NotImplementedException();
         }
     }
 }

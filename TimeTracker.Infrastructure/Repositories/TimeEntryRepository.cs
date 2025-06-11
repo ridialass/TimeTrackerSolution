@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TimeTracker.Core.Interfaces;
 using TimeTracker.Core.Entities;
-using TimeTracker.Infrastructure.Data;
 
 namespace TimeTracker.Infrastructure.Repositories
 {

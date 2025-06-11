@@ -1,18 +1,31 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TimeTracker.Core.DTOs;
+using TimeTracker.Core.Entities;
 using TimeTracker.Core.Interfaces;
 
 namespace TimeTracker.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // all authenticated users can use these endpoints
+    [Authorize]
     public class TimeEntryController : ControllerBase
     {
-        private readonly ITimeEntryService _timeEntryService;
-        public TimeEntryController(ITimeEntryService timeEntryService)
-            => _timeEntryService = timeEntryService;
+        private readonly ApplicationDbContext _db;
+        private readonly IMapper _mapper;
+        private readonly ITimeEntryService _timeEntryService;    // ← on déclare le service
+
+        public TimeEntryController(
+            ApplicationDbContext db,
+            IMapper mapper,
+            ITimeEntryService timeEntryService   // ← on l’injecte
+        )
+        {
+            _db = db;
+            _mapper = mapper;
+            _timeEntryService = timeEntryService;
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -21,26 +34,35 @@ namespace TimeTracker.API.Controllers
             return Ok(list);
         }
 
-        [HttpGet("ApplicationUser/{ApplicationUserId:int}")]
+        [HttpGet("ApplicationUser/{employeeId:int}")]
         public async Task<IActionResult> GetByEmployee(int employeeId)
         {
-            var list = await _timeEntryService.GetTimeEntriesByEmployeeAsync(employeeId);
+            var list = await _timeEntryService.GetTimeEntriesByUserAsync(employeeId);
             return Ok(list);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(TimeEntryDto newEntry)
-        {
-            var created = await _timeEntryService.CreateTimeEntryAsync(newEntry);
-            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
-        }
-
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             var te = await _timeEntryService.GetTimeEntryByIdAsync(id);
             if (te == null) return NotFound();
             return Ok(te);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] TimeEntryDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // AutoMapper transforme le DTO en entité
+            var entity = _mapper.Map<TimeEntry>(dto);
+            _db.TimeEntries.Add(entity);
+            await _db.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetById),
+                                   new { id = entity.Id },
+                                   entity);
         }
 
         [HttpDelete("{id:int}")]

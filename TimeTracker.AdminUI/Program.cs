@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
 using System.Text;
 using TimeTracker.Core.Entities;
-using TimeTracker.Infrastructure.Data;
 
 namespace TimeTracker.AdminUI
 {
