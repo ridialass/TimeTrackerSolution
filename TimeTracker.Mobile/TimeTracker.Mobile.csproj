@@ -78,15 +78,24 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="Views\AdminDashboardPage.xaml.cs">
-	    <DependentUpon>AdminDashboardPage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Views\TimeEntryPage.xaml.cs">
-	    <DependentUpon>TimeEntryPage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Views\HomePage.xaml.cs">
-	    <DependentUpon>HomePage.xaml</DependentUpon>
-	  </Compile>
+		<Compile Update="Views\AdminDashboardPage.xaml.cs">
+		<DependentUpon>AdminDashboardPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\TimeEntryPage.xaml.cs">
+		<DependentUpon>TimeEntryPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\HomePage.xaml.cs">
+		<DependentUpon>HomePage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\EndSessionPage.xaml.cs">
+			<DependentUpon>EndSessionPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\StartSessionPage.xaml.cs">
+			<DependentUpon>StartSessionPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\LoginPage.xaml.cs">
+			<DependentUpon>LoginPage.xaml</DependentUpon>
+		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -111,7 +120,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="Views\HistoryPage.xaml">
+	  <None Update="Views\TimeEntryPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </None>
 	  <None Update="Views\LoginPage.xaml">

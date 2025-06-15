@@ -6,9 +6,9 @@
     x:Class="TimeTracker.Mobile.Views.EndSessionPage"
     Title="End Session">
 
-    <ContentPage.BindingContext>
+    <!--<ContentPage.BindingContext>
         <vm:EndSessionViewModel />
-    </ContentPage.BindingContext>
+    </ContentPage.BindingContext>-->
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">

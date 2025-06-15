@@ -2,6 +2,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.ViewModels;
 
 namespace TimeTracker.Mobile.Views
 {
@@ -16,9 +17,22 @@ namespace TimeTracker.Mobile.Views
             ?? throw new InvalidOperationException("Le service IMobileAuthService n'est pas disponible.");
 
 
-        public HomePage()
+        public HomePage(HomeViewModel vm)
         {
             InitializeComponent();
+            BindingContext = vm;
+        }
+        // Nouveau constructeur paramètre-less, utilisé par le XAML et si on fait `new LoginPage()` :
+        public HomePage()
+            : this(
+                // On récupère le LoginViewModel dans le container MAUI
+                Application.Current!
+                           .Handler!
+                           .MauiContext!
+                           .Services
+                           .GetRequiredService<HomeViewModel>()
+              )
+        {
         }
 
         private async void OnStartSessionClicked(object sender, EventArgs e)

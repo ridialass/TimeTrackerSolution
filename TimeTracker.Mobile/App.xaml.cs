@@ -6,11 +6,13 @@ namespace TimeTracker.Mobile
     public partial class App : Application
     {
         private readonly MobileAuthService _authService;
+        private readonly IServiceProvider _services;
 
-        public App(MobileAuthService authService)
+        public App(MobileAuthService authService, IServiceProvider services)
         {
             InitializeComponent();
             _authService = authService;
+            _services = services;
 
             MainPage = new NavigationPage(new LoginPage());
             Task.Run(async () => await TryRestoreSessionOnLaunch());
@@ -18,15 +20,21 @@ namespace TimeTracker.Mobile
 
         private async Task TryRestoreSessionOnLaunch()
         {
-            bool hasSession = await _authService.TryRestoreSessionAsync();
-            if (hasSession)
-            {
-                var role = _authService.CurrentUser!.Role;
+            if (!await _authService.TryRestoreSessionAsync())
+                return;
+            var role = _authService.CurrentUser!.Role;
                 if (role == Core.Enums.UserRole.Admin)
-                    MainPage = new NavigationPage(new AdminDashboardPage());
-                else
-                    MainPage = new NavigationPage(new HomePage());
+            {
+                // On récupère la page complète (VM + Page) depuis le container
+                var adminPage = _services.GetRequiredService<AdminDashboardPage>();
+                MainPage = new NavigationPage(adminPage);
             }
+            else
+            {
+                var homePage = _services.GetRequiredService<HomePage>();
+                MainPage = new NavigationPage(homePage);
+            }
+
         }
     }
 }

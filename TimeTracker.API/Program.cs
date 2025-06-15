@@ -8,8 +8,8 @@ using System.Text;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
 using TimeTracker.Core.Interfaces;
-using TimeTracker.Core.Interfaces;
 using TimeTracker.Infrastructure.Mapping;
+using TimeTracker.Infrastructure.Repositories;
 using TimeTracker.Infrastructure.Services; // <-- vérifiez le bon namespace
 
 var builder = WebApplication.CreateBuilder(args);
@@ -85,6 +85,10 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("RequireAdminRole", policy =>
         policy.RequireRole("Admin"));
 });
+
+// Enregistrement des repositories
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
 
 builder.Services
     .AddAutoMapper(typeof(ApplicationMappingProfile).Assembly)

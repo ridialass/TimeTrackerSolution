@@ -6,9 +6,9 @@
     x:Class="TimeTracker.Mobile.Views.StartSessionPage"
     Title="Start Session">
 
-    <ContentPage.BindingContext>
+    <!--<ContentPage.BindingContext>
         <vm:StartSessionViewModel />
-    </ContentPage.BindingContext>
+    </ContentPage.BindingContext>-->
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">

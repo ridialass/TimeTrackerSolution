@@ -10,7 +10,7 @@ namespace TimeTracker.Mobile.Services
     {
         private readonly HttpClient _httpClient;
         private TimeEntryDto? _inProgress;
-        private TimeEntryRepository _timeEntryRepo;
+        // private readonly ITimeEntryRepository _timeEntryRepo;
 
         public MobileTimeEntryService(HttpClient httpClient)
         {
@@ -45,12 +45,12 @@ namespace TimeTracker.Mobile.Services
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task<TimeEntryDto> AddTimeEntryAsync(TimeEntryDto dto)
-        {
-            var entity = _mapper.Map<TimeEntry>(dto);
-            var saved = await _timeEntryRepo.AddAsync(entity);
-            return _mapper.Map<TimeEntryDto>(saved);
-        }
+        //public async Task<TimeEntryDto> AddTimeEntryAsync(TimeEntryDto dto)
+        //{
+        //    var entity = _mapper.Map<TimeEntry>(dto);
+        //    var saved = await _timeEntryRepo.AddAsync(entity);
+        //    return _mapper.Map<TimeEntryDto>(saved);
+        //}
     }
 
 }

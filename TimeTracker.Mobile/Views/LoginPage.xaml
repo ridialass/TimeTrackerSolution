@@ -6,9 +6,9 @@
     x:Class="TimeTracker.Mobile.Views.LoginPage"
     Title="Login">
 
-    <ContentPage.BindingContext>
+    <!--<ContentPage.BindingContext>
         <vm:LoginViewModel />
-    </ContentPage.BindingContext>
+    </ContentPage.BindingContext>-->
 
     <VerticalStackLayout Padding="30" Spacing="20" VerticalOptions="Center">
 

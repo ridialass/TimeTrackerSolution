@@ -50,10 +50,12 @@ namespace TimeTracker.Infrastructure.Services
             return list.Select(e => _mapper.Map<TimeEntryDto>(e));
         }
 
-        public async Task<TimeEntryDto> GetTimeEntryByIdAsync(int id)
+        public async Task<TimeEntryDto?> GetTimeEntryByIdAsync(int id)
         {
-            var e = await _timeEntryRepo.GetByIdAsync(id)
-                     ?? throw new KeyNotFoundException($"TimeEntry {id} not found");
+            var e = await _timeEntryRepo.GetByIdAsync(id);
+            if (e == null)
+                return null;
+
             return _mapper.Map<TimeEntryDto>(e);
         }
 

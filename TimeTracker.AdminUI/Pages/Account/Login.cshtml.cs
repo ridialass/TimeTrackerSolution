@@ -64,18 +64,21 @@ namespace TimeTracker.AdminUI.Pages.Account
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
             );
 
-            if (loginResponse == null || string.IsNullOrWhiteSpace(loginResponse.Token))
+            if (loginResponse == null
+                || string.IsNullOrWhiteSpace(loginResponse.Token)
+                || string.IsNullOrWhiteSpace(loginResponse.Username) // on s'assure qu'il n'est pas null/empty
+                )
             {
                 ErrorMessage = "Réponse invalide du serveur.";
                 return Page();
             }
 
+            // Maintenant on peut utiliser l'opérateur ! en toute sécurité
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, loginResponse.Username),
-                //new Claim("UserId", loginResponse.UserId.ToString()),
-                new Claim(ClaimTypes.Role, loginResponse.Role.ToString()),
-            };
+    {
+        new Claim(ClaimTypes.Name, loginResponse.Username!),
+        new Claim(ClaimTypes.Role, loginResponse.Role.ToString()!)  // idem pour Role
+    };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
@@ -103,5 +106,6 @@ namespace TimeTracker.AdminUI.Pages.Account
 
             return LocalRedirect(returnUrl);
         }
+
     }
 }
