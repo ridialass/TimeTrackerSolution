@@ -1,4 +1,4 @@
-namespace TimeTracker.Views;
+namespace TimeTracker.Mobile.Views;
 
 public partial class EndSessionPage : ContentPage
 {

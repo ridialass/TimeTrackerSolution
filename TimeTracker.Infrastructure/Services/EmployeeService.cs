@@ -1,43 +1,53 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoMapper;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Interfaces;
+using TimeTracker.Infrastructure.Repositories;
 
 namespace TimeTracker.Infrastructure.Services
 {
     public class EmployeeService : IEmployeeService
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IEmployeeRepository _repo;
         private readonly IMapper _mapper;
 
-        public EmployeeService(ApplicationDbContext db, IMapper mapper)
+        public EmployeeService(IEmployeeRepository repo, IMapper mapper)
         {
-            _db = db;
+            _repo = repo;
             _mapper = mapper;
         }
 
+        public async Task<EmployeeDto> CreateEmployeeAsync(RegisterRequestDto dto)
+        {
+            var entity = _mapper.Map<ApplicationUser>(dto);
+            var added = await _repo.AddAsync(entity);
+            return _mapper.Map<EmployeeDto>(added);
+        }
+
+        public async Task<bool> DeleteEmployeeAsync(int id) =>
+            await _repo.DeleteAsync(id);
+
         public async Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync()
         {
-            var list = await _db.Users.AsNoTracking().ToListAsync();
-            return list.Select(e => _mapper.Map<EmployeeDto>(e));
+            var list = await _repo.GetAllAsync();
+            return list.Select(u => _mapper.Map<EmployeeDto>(u));
         }
 
         public async Task<EmployeeDto?> GetEmployeeByIdAsync(int id)
         {
-            var e = await _db.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-            return e == null ? null : _mapper.Map<EmployeeDto>(e);
+            var user = await _repo.GetByIdAsync(id);
+            return user is null
+                ? null
+                : _mapper.Map<EmployeeDto>(user);
         }
 
-        public async Task<bool> DeleteEmployeeAsync(int id)
+        public async Task<bool> UpdateEmployeeAsync(EmployeeDto dto)
         {
-            var e = await _db.Users.FindAsync(id);
-            if (e == null) return false;
-            _db.Users.Remove(e);
-            await _db.SaveChangesAsync();
-            return true;
+            var entity = _mapper.Map<ApplicationUser>(dto);
+            return await _repo.UpdateAsync(entity);
         }
-
-        // … you could add UpdateEmployeeAsync() if needed
     }
 }

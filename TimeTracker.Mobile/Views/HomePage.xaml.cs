@@ -1,11 +1,21 @@
 using Microsoft.Maui.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using TimeTracker.Core.Enums;
-using static TimeTracker.Models.Enum;
+using TimeTracker.Mobile.Services;
 
-namespace TimeTracker.Views
+namespace TimeTracker.Mobile.Views
 {
     public partial class HomePage : ContentPage
     {
+        IMobileTimeEntryService _sessionService =>
+            Handler?.MauiContext?.Services.GetRequiredService<IMobileTimeEntryService>()
+            ?? throw new InvalidOperationException("Le service IMobileTimeEntryService n'est pas disponible.");
+
+        IMobileAuthService _authService =>
+            Handler?.MauiContext?.Services.GetRequiredService<IMobileAuthService>()
+            ?? throw new InvalidOperationException("Le service IMobileAuthService n'est pas disponible.");
+
+
         public HomePage()
         {
             InitializeComponent();
@@ -13,8 +23,7 @@ namespace TimeTracker.Views
 
         private async void OnStartSessionClicked(object sender, EventArgs e)
         {
-            // Si on a déjà une session en cours, on force l'utilisateur à terminer
-            if (App.SessionService.InProgressSession != null)
+            if (_sessionService.InProgressSession != null)
             {
                 await DisplayAlert(
                     "Session en cours",
@@ -28,7 +37,7 @@ namespace TimeTracker.Views
 
         private async void OnEndSessionClicked(object sender, EventArgs e)
         {
-            if (App.SessionService.InProgressSession == null)
+            if (_sessionService.InProgressSession == null)
             {
                 await DisplayAlert(
                     "Pas de session en cours",
@@ -40,16 +49,14 @@ namespace TimeTracker.Views
             await Shell.Current.GoToAsync(nameof(EndSessionPage));
         }
 
-
-        private async void OnHistoryClicked(object sender, System.EventArgs e)
+        private async void OnHistoryClicked(object sender, EventArgs e)
         {
-            // Navigue vers la page SessionHistoryPage
-            await Shell.Current.GoToAsync(nameof(SessionHistoryPage));
+            await Shell.Current.GoToAsync(nameof(TimeEntryPage));
         }
 
         private async void OnAdminDashboardClicked(object sender, EventArgs e)
         {
-            var currentUser = App.AuthService.CurrentUser;
+            var currentUser = _authService.CurrentUser;
             if (currentUser == null || currentUser.Role != UserRole.Admin)
             {
                 await DisplayAlert(
@@ -61,6 +68,6 @@ namespace TimeTracker.Views
 
             await Shell.Current.GoToAsync(nameof(AdminDashboardPage));
         }
-
     }
+
 }

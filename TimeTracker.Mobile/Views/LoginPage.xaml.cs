@@ -1,7 +1,6 @@
 using TimeTracker.Core.Enums;
-using static TimeTracker.Models.Enum;
 
-namespace TimeTracker.Views;
+namespace TimeTracker.Mobile.Views;
 
 public partial class LoginPage : ContentPage
 {

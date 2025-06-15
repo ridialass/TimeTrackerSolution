@@ -22,4 +22,5 @@ namespace TimeTracker.Mobile.Services
         Task CreateTimeEntryAsync(TimeEntryDto entry);
     }
 
+
 }

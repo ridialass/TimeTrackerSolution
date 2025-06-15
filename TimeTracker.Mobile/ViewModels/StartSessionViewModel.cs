@@ -2,25 +2,31 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
-using TimeTracker.Models;
-using TimeTracker.Services;
-using TimeTracker.Helpers;
-using Microsoft.Maui.Devices.Sensors;
-using static TimeTracker.Models.Enum;
-using TimeTracker.Views;
+using TimeTracker.Core.DTOs;
+using TimeTracker.Core.Enums;
+using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Helpers;
 
-namespace TimeTracker.ViewModels
+namespace TimeTracker.Mobile.ViewModels
 {
     public class StartSessionViewModel : INotifyPropertyChanged
     {
-        // ════ SOURCES DÉNUMÉRÉES ════
-        public ObservableCollection<WorkSessionType> SessionTypes { get; }
-            = new ObservableCollection<WorkSessionType>(
-                (WorkSessionType[])System.Enum.GetValues(typeof(WorkSessionType)));
+        // ── SERVICES INJECTÉS ────────────────────────────────────────
+        private readonly IMobileAuthService _authService;
+        private readonly IMobileTimeEntryService _timeEntryService;
+        private readonly LocationService _locationService;
 
-        // ════ PROPRIÉTÉS BINDÉES ════
+        // ── COMMANDES PUBLIQUES ─────────────────────────────────────
+        public ICommand StartCommand { get; }
+
+        // ════ PROPRIÉTÉS POUR LE XAML ════
+
+        public ObservableCollection<WorkSessionType> SessionTypes { get; }
+            = new ObservableCollection<WorkSessionType>(Enum.GetValues<WorkSessionType>());
+
         private WorkSessionType _selectedSessionType;
         public WorkSessionType SelectedSessionType
         {
@@ -35,82 +41,97 @@ namespace TimeTracker.ViewModels
             set => SetProperty(ref _includesTravelTime, value);
         }
 
-        // ════ COMMANDE ════
-        public ICommand StartCommand { get; }
-
-        // ════ ÉTAT ET SERVICES ════
-        private readonly LocationService _locationService = new LocationService();
-        private readonly SessionService _sessionService = App.SessionService;
-        private readonly AuthService _authService = App.AuthService;
-
-        public StartSessionViewModel()
+        // ════ CONSTRUCTEUR ════
+        public StartSessionViewModel(
+            IMobileAuthService authService,
+            IMobileTimeEntryService timeEntryService,
+            LocationService locationService)
         {
-            StartCommand = new Command(OnStartSession);
+            _authService = authService;
+            _timeEntryService = timeEntryService;
+            _locationService = locationService;
+
+            StartCommand = new Command(async () => await OnStartSessionAsync());
         }
 
-        private async void OnStartSession()
+        // ════ MÉTHODE DE DÉBUT DE SESSION ════
+        private async Task OnStartSessionAsync()
         {
-            // 1) Récupérer la position GPS de début
-            var location = await _locationService.GetCurrentLocationAsync();
-
-            string address = "Location unavailable";
+            // 1) Récupérer position GPS
+            var loc = await _locationService.GetCurrentLocationAsync();
+            string address = "Localisation indisponible";
             double lat = 0, lon = 0;
-
-            if (location != null)
+            if (loc != null)
             {
-                lat = location.Latitude;
-                lon = location.Longitude;
+                lat = loc.Latitude;
+                lon = loc.Longitude;
                 address = await LocationHelper.GetAddressFromCoordinatesAsync(lat, lon);
             }
 
-            // NOUVEAU : récupérer l’utilisateur actuellement connecté
-            var currentUser = _authService.CurrentUser;
-            if (currentUser == null)
+            // 2) Vérifier utilisateur connecté
+            var user = _authService.CurrentUser;
+            if (user == null)
             {
-                // si, par erreur, aucun utilisateur n’est connecté, on peut afficher une alerte ou faire un bail out
                 await Shell.Current.DisplayAlert(
-                    "Error",
-                    "No user is currently logged in.",
+                    "Erreur",
+                    "Aucun utilisateur connecté.",
                     "OK");
                 return;
             }
 
-            // 2) Créer la WorkSession en cours
-            var newSession = new WorkSession
+            // 3) Construire le DTO et l’envoyer à l’API
+            var dto = new TimeEntryDto
             {
+                UserId = user.Id,
+                Username = user.UserName!,
+                SessionType = SelectedSessionType,
                 StartTime = DateTime.Now,
+                IncludesTravelTime = IncludesTravelTime,
+                // TravelDurationHours sera calculé au moment de la fin de session
                 StartLatitude = lat,
                 StartLongitude = lon,
                 StartAddress = address,
-                SessionType = SelectedSessionType,
-                IncludesTravelTime = IncludesTravelTime,
-                TravelDurationHours = null,              // sera défini plus tard
                 DinnerPaid = DinnerPaidBy.None,
-                Location = address,
-                // ▲ AFFECTER l’ID et le nom utilisateur
-                UserId = currentUser.Id,
-                Username = currentUser.Username
+                Location = address
             };
 
-            // 3) Démarrer la session (méthode sérialise dans Preferences)
-            _sessionService.StartNewSession(newSession);
+            
+            try
+            {
+                await _timeEntryService.CreateTimeEntryAsync(dto);
+            }
+            catch
+            {
+                await Shell.Current.DisplayAlert(
+                    "Erreur",
+                    "Impossible de démarrer la session.",
+                    "OK");
+                return;
+            }
 
-            // 4) Naviguer vers EndSessionPage
-            await Shell.Current.GoToAsync(nameof(EndSessionPage));
+            await Shell.Current.GoToAsync(nameof(TimeTracker.Mobile.Views.EndSessionPage));
+            
+
+            // 4) Naviguer vers la page de fin de session
+            await Shell.Current.GoToAsync(nameof(TimeTracker.Mobile.Views.EndSessionPage));
         }
 
-        // ════ INotifyPropertyChanged ════
-        public event PropertyChangedEventHandler PropertyChanged;
+        #region INotifyPropertyChanged
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string? name = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
         private void SetProperty<T>(
-            ref T backingStore,
+            ref T field,
             T value,
-            [CallerMemberName] string propName = "")
+            [CallerMemberName] string? name = null)
         {
-            if (!EqualityComparer<T>.Default.Equals(backingStore, value))
+            if (!EqualityComparer<T>.Default.Equals(field, value))
             {
-                backingStore = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+                field = value;
+                OnPropertyChanged(name);
             }
         }
+        #endregion
     }
 }

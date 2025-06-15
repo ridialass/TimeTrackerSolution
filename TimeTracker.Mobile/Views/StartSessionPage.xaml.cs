@@ -1,4 +1,6 @@
-namespace TimeTracker.Views;
+using TimeTracker.Mobile.Views;
+
+namespace TimeTracker.Mobile.Views;
 
 public partial class StartSessionPage : ContentPage
 {

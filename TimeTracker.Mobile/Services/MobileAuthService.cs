@@ -1,9 +1,11 @@
 ﻿// MobileAuthService.cs
+using Microsoft.Maui.Storage;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Maui.Storage;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
@@ -99,5 +101,46 @@ namespace TimeTracker.Mobile.Services
             var response = await _apiClient.PostAsync("api/auth/register", content);
             return response.IsSuccessStatusCode;
         }
+        public async Task<bool> TryRestoreSessionAsync()
+        {
+            var token = await GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+                return false;
+
+            // 3) Décode le JWT en local pour en extraire les claims
+            var handler = new JwtSecurityTokenHandler();
+            JwtSecurityToken jwt;
+            try
+            {
+                jwt = handler.ReadJwtToken(token);
+            }
+            catch
+            {
+                return false;
+            }
+
+            // 4) Lit les claims "UserId", "name" et "role"
+            var idClaim = jwt.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            var nameClaim = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+            var roleClaim = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            if (!int.TryParse(idClaim, out var userId)
+             || string.IsNullOrEmpty(nameClaim)
+             || string.IsNullOrEmpty(roleClaim))
+            {
+                return false;
+            }
+
+            // 5) On remplit CurrentUser
+            CurrentUser = new ApplicationUser
+            {
+                Id = userId,
+                UserName = nameClaim,
+                Role = Enum.Parse<UserRole>(roleClaim, ignoreCase: true)
+            };
+
+            return true;
+        }
+
     }
 }

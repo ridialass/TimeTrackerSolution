@@ -1,8 +1,8 @@
 namespace TimeTracker.Mobile.Views;
 
-public partial class HistoryPage : ContentPage
+public partial class TimeEntryPage : ContentPage
 {
-	public HistoryPage()
+	public TimeEntryPage()
 	{
 		InitializeComponent();
 	}

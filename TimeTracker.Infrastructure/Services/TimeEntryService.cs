@@ -1,7 +1,11 @@
-﻿// Services/TimeEntryService.cs
-using TimeTracker.Core.Interfaces;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoMapper;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
+using TimeTracker.Core.Interfaces;
 using TimeTracker.Infrastructure.Repositories;
 
 namespace TimeTracker.Infrastructure.Services
@@ -10,99 +14,53 @@ namespace TimeTracker.Infrastructure.Services
     {
         private readonly ITimeEntryRepository _timeEntryRepo;
         private readonly IEmployeeRepository _employeeRepo;
+        private readonly IMapper _mapper;
 
-        //public TimeEntryService(
-        //    ITimeEntryRepository timeEntryRepo,
-        //    IEmployeeRepository employeeRepo)
-        //{
-        //    _timeEntryRepo = timeEntryRepo;
-        //    _employeeRepo = employeeRepo;
-        //}
-
-        //public async Task<TimeEntryDto> ClockInAsync(Guid employeeId, CancellationToken cancellationToken)
-        //{
-        //    // 1) Ensure employee exists:
-        //    var employee = await _employeeRepo.GetByIdAsync(employeeId, cancellationToken);
-        //    if (employee == null)
-        //        throw new KeyNotFoundException("Employee not found");
-
-        //    // 2) Ensure there’s no open entry for today
-        //    var open = await _timeEntryRepo.GetOpenEntryForEmployeeAsync(employeeId, cancellationToken);
-        //    if (open != null)
-        //        throw new InvalidOperationException("You’re already clocked in.");
-
-        //    var newEntry = new TimeEntry
-        //    {
-        //        Id = Guid.NewGuid(),
-        //        EmployeeId = employeeId,
-        //        ClockIn = DateTime.UtcNow,
-        //        ClockOut = null
-        //    };
-        //    var saved = await _timeEntryRepo.AddAsync(newEntry, cancellationToken);
-        //    return new TimeEntryDto
-        //    {
-        //        Id = saved.Id,
-        //        EmployeeId = saved.EmployeeId,
-        //        ClockIn = saved.ClockIn,
-        //        ClockOut = saved.ClockOut
-        //    };
-        //}
-
-        //public async Task<TimeEntryDto> ClockOutAsync(Guid employeeId, CancellationToken cancellationToken)
-        //{
-        //    // 1) Find the open entry
-        //    var open = await _timeEntryRepo.GetOpenEntryForEmployeeAsync(employeeId, cancellationToken);
-        //    if (open == null)
-        //        throw new InvalidOperationException("No open time entry to clock out.");
-
-        //    open.ClockOut = DateTime.UtcNow;
-        //    var updated = await _timeEntryRepo.UpdateAsync(open, cancellationToken);
-
-        //    return new TimeEntryDto
-        //    {
-        //        Id = updated.Id,
-        //        EmployeeId = updated.EmployeeId,
-        //        ClockIn = updated.ClockIn,
-        //        ClockOut = updated.ClockOut
-        //    };
-        //}
-
-        //public async Task<IEnumerable<TimeEntryDto>> GetTimeEntriesForEmployeeAsync(
-        //    Guid employeeId, DateTime? from, DateTime? to, CancellationToken cancellationToken)
-        //{
-        //    var entries = await _timeEntryRepo.GetEntriesForEmployeeAsync(employeeId, from, to, cancellationToken);
-        //    return entries.Select(e => new TimeEntryDto
-        //    {
-        //        Id = e.Id,
-        //        EmployeeId = e.EmployeeId,
-        //        ClockIn = e.ClockIn,
-        //        ClockOut = e.ClockOut
-        //    });
-        //}
-
-        Task ITimeEntryService.AddTimeEntryAsync(TimeEntry entity)
+        public TimeEntryService(
+            ITimeEntryRepository timeEntryRepo,
+            IEmployeeRepository employeeRepo,
+            IMapper mapper)
         {
-            throw new NotImplementedException();
+            _timeEntryRepo = timeEntryRepo;
+            _employeeRepo = employeeRepo;
+            _mapper = mapper;
         }
 
-        Task<bool> ITimeEntryService.DeleteTimeEntryAsync(int id)
+        public async Task<TimeEntryDto> AddTimeEntryAsync(TimeEntryDto dto)
         {
-            throw new NotImplementedException();
+            var entity = _mapper.Map<TimeEntry>(dto);
+            var added = await _timeEntryRepo.AddAsync(entity);
+            return _mapper.Map<TimeEntryDto>(added);
         }
 
-        Task<IEnumerable<TimeEntryDto>> ITimeEntryService.GetAllTimeEntriesAsync()
+        public async Task<bool> DeleteTimeEntryAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _timeEntryRepo.DeleteAsync(id);
         }
 
-        Task<IEnumerable<TimeEntryDto>> ITimeEntryService.GetTimeEntriesByUserAsync(int userId)
+        public async Task<IEnumerable<TimeEntryDto>> GetAllTimeEntriesAsync()
         {
-            throw new NotImplementedException();
+            var all = await _timeEntryRepo.GetAllAsync();
+            return all.Select(e => _mapper.Map<TimeEntryDto>(e));
         }
 
-        Task<TimeEntryDto> ITimeEntryService.GetTimeEntryByIdAsync(int id)
+        public async Task<IEnumerable<TimeEntryDto>> GetTimeEntriesByUserAsync(int userId)
         {
-            throw new NotImplementedException();
+            var list = await _timeEntryRepo.GetByEmployeeAsync(userId);
+            return list.Select(e => _mapper.Map<TimeEntryDto>(e));
+        }
+
+        public async Task<TimeEntryDto> GetTimeEntryByIdAsync(int id)
+        {
+            var e = await _timeEntryRepo.GetByIdAsync(id)
+                     ?? throw new KeyNotFoundException($"TimeEntry {id} not found");
+            return _mapper.Map<TimeEntryDto>(e);
+        }
+
+        public async Task<bool> UpdateTimeEntryAsync(TimeEntryDto dto)
+        {
+            var entity = _mapper.Map<TimeEntry>(dto);
+            return await _timeEntryRepo.UpdateAsync(entity);
         }
     }
 }

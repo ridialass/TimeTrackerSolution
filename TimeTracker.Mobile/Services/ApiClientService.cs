@@ -1,4 +1,8 @@
-﻿using System.Net.Http.Json;
+﻿// ApiClientService.cs
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 
 namespace TimeTracker.Mobile.Services
@@ -6,10 +10,7 @@ namespace TimeTracker.Mobile.Services
     public class ApiClientService : IApiClientService
     {
         private readonly HttpClient _http;
-
-        // Le typed client vous injecte déjà le HttpClient configuré
-        public ApiClientService(HttpClient httpClient)
-            => _http = httpClient;
+        public ApiClientService(HttpClient httpClient) => _http = httpClient;
 
         public async Task<LoginResponseDto> LoginAsync(string u, string p)
         {
@@ -42,5 +43,11 @@ namespace TimeTracker.Mobile.Services
             var res = await _http.PostAsJsonAsync("api/timeentries", entry);
             res.EnsureSuccessStatusCode();
         }
+
+        public Task<HttpResponseMessage> GetAsync(string requestUri)
+            => _http.GetAsync(requestUri);
+
+        public Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
+            => _http.PostAsync(requestUri, content);
     }
 }

@@ -1,25 +1,30 @@
 using TimeTracker.Core.Enums;
-using static TimeTracker.Models.Enum;
+using TimeTracker.Mobile.ViewModels;
+using Microsoft.Maui.Controls;
 
-namespace TimeTracker.Views;
+namespace TimeTracker.Mobile.Views;
 
 public partial class AdminDashboardPage : ContentPage
 {
-    public AdminDashboardPage()
+    // Stockez la VM injectée
+    private readonly AdminDashboardViewModel _vm;
+
+    public AdminDashboardPage(AdminDashboardViewModel vm)
     {
         InitializeComponent();
+        _vm = vm;
+        BindingContext = _vm;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
 
-        // 1) Vérifier s’il y a vraiment un utilisateur connecté
-        var currentUser = App.AuthService.CurrentUser;
+        // 1) Vérifier qu'on a bien un utilisateur dans la VM
+        var currentUser = _vm.CurrentUser;
         if (currentUser == null)
         {
-            // Si personne n’est connecté, rediriger vers Login
-            await Shell.Current.DisplayAlert(
+            await DisplayAlert(
                 "Accès refusé",
                 "Vous devez vous connecter.",
                 "OK");
@@ -27,19 +32,17 @@ public partial class AdminDashboardPage : ContentPage
             return;
         }
 
-        // 2) Vérifier que le rôle est bien Admin
+        // 2) Vérifier que c'est un Admin
         if (currentUser.Role != UserRole.Admin)
         {
-            // Si ce n’est pas un Admin, on affiche un message puis on redirige
-            await Shell.Current.DisplayAlert(
+            await DisplayAlert(
                 "Accès réservé aux administrateurs",
                 "Vous n'avez pas les droits pour accéder à cette page.",
                 "OK");
-            // Rediriger vers HomePage
             await Shell.Current.GoToAsync(nameof(HomePage));
             return;
         }
 
-        // Si on est ici, c’est que l’utilisateur est bien Admin → on laisse la page s’afficher
+        // Tout est bon, la page s'affiche
     }
 }

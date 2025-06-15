@@ -2,13 +2,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
@@ -37,8 +33,12 @@ namespace TimeTracker.Infrastructure.Services
 
         public async Task<LoginResponseDto> AuthenticateAsync(LoginRequestDto request)
         {
+            // 0) Valider le paramètre
+            if (string.IsNullOrWhiteSpace(request.Username))
+                throw new ArgumentException("Le nom d’utilisateur est requis.", nameof(request.Username));
+
             // 1) retrouver l’utilisateur
-            var user = await _userManager.FindByNameAsync(request.Username);
+            var user = await _userManager.FindByNameAsync(userName: request.Username);
             if (user == null)
                 throw new UnauthorizedAccessException("Identifiants invalides.");
 
@@ -66,6 +66,10 @@ namespace TimeTracker.Infrastructure.Services
 
         public async Task<bool> RegisterAsync(RegisterRequestDto model)
         {
+            // 0) Validation simple
+            if (string.IsNullOrWhiteSpace(model.Password))
+                throw new ArgumentException("Le mot de passe est requis.", nameof(model.Password));
+
             // 1) on peut valider model ici si besoin…
 
             // 2) créer l’ApplicationUser
@@ -81,7 +85,8 @@ namespace TimeTracker.Infrastructure.Services
             };
 
             // 3) créer avec mot de passe
-            var createResult = await _userManager.CreateAsync(user, model.Password);
+            string userPassword = model.Password;
+            var createResult = await _userManager.CreateAsync(user, userPassword);
             if (!createResult.Succeeded)
                 return false;
 

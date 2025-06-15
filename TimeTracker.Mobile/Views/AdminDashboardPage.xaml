@@ -2,9 +2,9 @@
 <ContentPage
   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-  xmlns:vm="clr-namespace:TimeTracker.ViewModels"
-  xmlns:conv="clr-namespace:TimeTracker.Converters"
-  x:Class="TimeTracker.Views.AdminDashboardPage"
+  xmlns:vm="clr-namespace:TimeTracker.Mobile.ViewModels"
+  xmlns:conv="clr-namespace:TimeTracker.Mobile.Converters"
+  x:Class="TimeTracker.Mobile.Views.AdminDashboardPage"
   Title="Admin Dashboard">
 
     <ContentPage.Resources>
@@ -13,10 +13,6 @@
             <conv:NullOrEmptyToBoolConverter x:Key="NullOrEmptyToBoolConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
-
-    <ContentPage.BindingContext>
-        <vm:AdminDashboardViewModel />
-    </ContentPage.BindingContext>
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="25">

@@ -1,40 +1,56 @@
-﻿// MobileTimeEntryService.cs
-using System.Text;
-using System.Text.Json;
+﻿using System.Collections.Generic;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
+using TimeTracker.Core.Entities;
 
 namespace TimeTracker.Mobile.Services
 {
     public class MobileTimeEntryService : IMobileTimeEntryService
     {
-        private readonly IApiClientService _apiClient;
+        private readonly HttpClient _httpClient;
+        private TimeEntryDto? _inProgress;
+        private TimeEntryRepository _timeEntryRepo;
 
-        public MobileTimeEntryService(IApiClientService apiClient)
+        public MobileTimeEntryService(HttpClient httpClient)
         {
-            _apiClient = apiClient;
+            _httpClient = httpClient;
+        }
+
+        public TimeEntryDto? InProgressSession => _inProgress;
+
+        public Task StartSessionAsync(TimeEntryDto dto)
+        {
+            _inProgress = dto;
+            return Task.CompletedTask;
+        }
+
+        public async Task EndAndSaveCurrentSessionAsync()
+        {
+            if (_inProgress == null) return;
+            await CreateTimeEntryAsync(_inProgress);
+            _inProgress = null;
         }
 
         public async Task<IEnumerable<TimeEntryDto>> GetTimeEntriesAsync(int userId)
         {
-            var response = await _apiClient.GetAsync($"api/timeentries?userId={userId}");
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer
-                .Deserialize<IEnumerable<TimeEntryDto>>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                })
-                ?? Array.Empty<TimeEntryDto>();
+            var list = await _httpClient.GetFromJsonAsync<IEnumerable<TimeEntryDto>>(
+                $"api/timeentries?userId={userId}");
+            return list ?? Array.Empty<TimeEntryDto>();
         }
 
-        public async Task<bool> CreateTimeEntryAsync(TimeEntryDto entry)
+        public async Task CreateTimeEntryAsync(TimeEntryDto entry)
         {
-            var json = JsonSerializer.Serialize(entry);
-            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsJsonAsync("api/timeentries", entry);
+            response.EnsureSuccessStatusCode();
+        }
 
-            var response = await _apiClient.PostAsync("api/timeentries", content);
-            return response.IsSuccessStatusCode;
+        public async Task<TimeEntryDto> AddTimeEntryAsync(TimeEntryDto dto)
+        {
+            var entity = _mapper.Map<TimeEntry>(dto);
+            var saved = await _timeEntryRepo.AddAsync(entity);
+            return _mapper.Map<TimeEntryDto>(saved);
         }
     }
+
 }

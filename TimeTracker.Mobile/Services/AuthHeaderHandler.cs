@@ -11,25 +11,21 @@ namespace TimeTracker.Mobile.Services
     /// </summary>
     public class AuthHeaderHandler : DelegatingHandler
     {
+
         private readonly IMobileAuthService _authService;
 
         public AuthHeaderHandler(IMobileAuthService authService)
-        {
-            _authService = authService;
-        }
+            => _authService = authService;
 
         protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            HttpRequestMessage request, CancellationToken ct)
         {
-            // Tente de récupérer le token stocké
             var token = await _authService.GetTokenAsync();
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            }
+            if (!string.IsNullOrEmpty(token))
+                request.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", token);
 
-            return await base.SendAsync(request, cancellationToken);
+            return await base.SendAsync(request, ct);
         }
     }
 }

@@ -78,7 +78,7 @@ namespace TimeTracker.Mobile.ViewModels
             ClockInCommand = new Command(async () => await OnClockInAsync());
             ClockOutCommand = new Command(async () => await OnClockOutAsync());
             GoToHistoryCommand = new Command(async () =>
-                await Shell.Current.GoToAsync(nameof(TimeEntriesPage)));
+                await Shell.Current.GoToAsync(nameof(TimeEntryPage)));
         }
 
         public bool IsCurrentUserAdmin =>
@@ -146,16 +146,33 @@ namespace TimeTracker.Mobile.ViewModels
                 travelSpan = TimeSpan.FromHours(h + m / 60.0);
             }
 
-            // Clone le DTO avec les nouveaux champs
-            var completed = _currentEntry with
+            // Crée un nouvel objet TimeEntryDto sans essayer de modifier une propriété en lecture seule
+            var completed = new TimeEntryDto
             {
+                Id = _currentEntry.Id,
+                StartTime = _currentEntry.StartTime,
                 EndTime = DateTime.UtcNow,
+                StartLatitude = _currentEntry.StartLatitude,
+                StartLongitude = _currentEntry.StartLongitude,
+                StartAddress = _currentEntry.StartAddress,
                 EndLatitude = lat,
                 EndLongitude = lon,
                 EndAddress = endAddr,
-                TravelTimeEstimate = travelSpan,
-                DinnerPaid = SelectedDinnerPaidBy
+                SessionType = _currentEntry.SessionType,
+                IncludesTravelTime = _currentEntry.IncludesTravelTime,
+                TravelDurationHours = _currentEntry.TravelDurationHours,
+                DinnerPaid = SelectedDinnerPaidBy,
+                Location = _currentEntry.Location,
+                UserId = _currentEntry.UserId,
+                Username = _currentEntry.Username
             };
+
+            // Utilise travelSpan pour des calculs ou des journaux si nécessaire, mais ne l'assigne pas directement
+            if (travelSpan.HasValue)
+            {
+                // Exemple : journalisation ou traitement supplémentaire
+                Console.WriteLine($"Durée estimée du trajet : {travelSpan.Value}");
+            }
 
             try
             {

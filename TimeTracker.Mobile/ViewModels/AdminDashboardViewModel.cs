@@ -1,258 +1,269 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.Maui.Storage;
 using Microsoft.Maui.Controls;
-using TimeTracker.Models;
-using TimeTracker.Services;
-using static TimeTracker.Models.Enum;
+using Microsoft.Maui.Storage;
+using TimeTracker.Core.DTOs;
+using TimeTracker.Core.Entities;
+using TimeTracker.Core.Enums;
+using TimeTracker.Mobile.Services;
 
-namespace TimeTracker.ViewModels
+namespace TimeTracker.Mobile.ViewModels
 {
     public class AdminDashboardViewModel : INotifyPropertyChanged
     {
-        private readonly SessionService _sessionService = App.SessionService;
-        private readonly AuthService _authService = App.AuthService;
+        // ─── Services injectés ───────────────────────────────────────
+        private readonly IApiClientService _apiClient;
+        private readonly IMobileAuthService _authService;
+        private readonly IMobileTimeEntryService _sessionService;
 
-        // ════ SECTION 1 : Creation d’utilisateur ════
+        // ─── Collections exposées à la vue ───────────────────────────
+        public ObservableCollection<UserRole> Roles { get; }
+            = new ObservableCollection<UserRole>(Enum.GetValues<UserRole>());
 
-        private string _newUsername;
+        public ObservableCollection<EmployeeDto> AllUsers { get; }
+            = new ObservableCollection<EmployeeDto>();
+
+        public ObservableCollection<TimeEntryDto> FilteredEntries { get; }
+            = new ObservableCollection<TimeEntryDto>();
+
+        // ─── Propriétés pour la création d’utilisateur ───────────────
+        private string _newUsername = "";
         public string NewUsername
         {
             get => _newUsername;
             set => SetProperty(ref _newUsername, value);
         }
 
-        private string _newPassword;
+        private string _newPassword = "";
         public string NewPassword
         {
             get => _newPassword;
             set => SetProperty(ref _newPassword, value);
         }
 
-        public ObservableCollection<UserRole> Roles { get; }
-            = new ObservableCollection<UserRole>(
-                (UserRole[])System.Enum.GetValues(typeof(UserRole)));
-
-        private UserRole _newSelectedRole = UserRole.Technician;
-        public UserRole NewSelectedRole
+        private UserRole _newRole = UserRole.Technician;
+        public UserRole NewRole
         {
-            get => _newSelectedRole;
-            set => SetProperty(ref _newSelectedRole, value);
+            get => _newRole;
+            set => SetProperty(ref _newRole, value);
         }
 
-        private string _createUserErrorMessage;
-        public string CreateUserErrorMessage
+        private string _createError = "";
+        public string CreateError
         {
-            get => _createUserErrorMessage;
-            set { SetProperty(ref _createUserErrorMessage, value); OnPropertyChanged(nameof(HasCreateUserError)); }
+            get => _createError;
+            set { SetProperty(ref _createError, value); OnPropertyChanged(nameof(HasCreateError)); }
         }
-        public bool HasCreateUserError => !string.IsNullOrEmpty(CreateUserErrorMessage);
+        public bool HasCreateError => !string.IsNullOrEmpty(CreateError);
 
-        private string _createUserSuccessMessage;
-        public string CreateUserSuccessMessage
+        private string _createSuccess = "";
+        public string CreateSuccess
         {
-            get => _createUserSuccessMessage;
-            set { SetProperty(ref _createUserSuccessMessage, value); OnPropertyChanged(nameof(HasCreateUserSuccess)); }
+            get => _createSuccess;
+            set { SetProperty(ref _createSuccess, value); OnPropertyChanged(nameof(HasCreateSuccess)); }
         }
-        public bool HasCreateUserSuccess => !string.IsNullOrEmpty(CreateUserSuccessMessage);
+        public bool HasCreateSuccess => !string.IsNullOrEmpty(CreateSuccess);
 
+        // ─── Filtre des sessions ─────────────────────────────────────
+        private EmployeeDto? _selectedUser;
+        public EmployeeDto? SelectedUser
+        {
+            get => _selectedUser;
+            set => SetProperty(ref _selectedUser, value);
+        }
+
+        private string _exportStatus = "";
+        public string ExportStatus
+        {
+            get => _exportStatus;
+            set { SetProperty(ref _exportStatus, value); OnPropertyChanged(nameof(HasExportStatus)); }
+        }
+        public bool HasExportStatus => !string.IsNullOrEmpty(ExportStatus);
+
+        // ─── Commandes liées aux boutons ─────────────────────────────
         public ICommand CreateUserCommand { get; }
-
-        // ════ SECTION 2 : Filtrage des sessions par utilisateur ════
-
-        public ObservableCollection<User> AllUsers { get; }
-            = new ObservableCollection<User>();
-
-        private User _selectedFilterUser;
-        public User SelectedFilterUser
-        {
-            get => _selectedFilterUser;
-            set => SetProperty(ref _selectedFilterUser, value);
-        }
-
         public ICommand LoadSessionsByUserCommand { get; }
-
-        public ObservableCollection<WorkSession> FilteredSessions { get; }
-            = new ObservableCollection<WorkSession>();
-
-        // ════ SECTION 3 : Exportation en CSV ════
-
-        private string _exportStatusMessage;
-        public string ExportStatusMessage
-        {
-            get => _exportStatusMessage;
-            set { SetProperty(ref _exportStatusMessage, value); OnPropertyChanged(nameof(HasExportStatusMessage)); }
-        }
-        public bool HasExportStatusMessage => !string.IsNullOrEmpty(ExportStatusMessage);
-
         public ICommand ExportToCsvCommand { get; }
 
-        public AdminDashboardViewModel()
+        /// <summary>
+        /// Note : on peut tester directement CurrentUser == null côté View si besoin,
+        ///     mais on expose ici le user restauré pour la vue.
+        /// </summary>
+        public ApplicationUser? CurrentUser => _authService.CurrentUser;
+
+        public AdminDashboardViewModel(
+            IApiClientService apiClient,
+            IMobileAuthService authService,
+            IMobileTimeEntryService sessionService)
         {
+            _apiClient = apiClient;
+            _authService = authService;
+            _sessionService = sessionService;
+
             CreateUserCommand = new Command(async () => await OnCreateUser());
             LoadSessionsByUserCommand = new Command(async () => await OnLoadSessionsByUser());
             ExportToCsvCommand = new Command(async () => await OnExportToCsv());
 
-            // Charger la liste des utilisateurs dès le départ
-            Task.Run(async () => await LoadAllUsersAsync());
+            // Chargement initial de tous les utilisateurs
+            _ = LoadAllUsersAsync();
         }
 
-        // ───────────────────────────────────────────────────
-        // 1) Méthode pour créer un utilisateur
-        // ───────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
+        // 1) Charger tous les utilisateurs
+        // ──────────────────────────────────────────────────────────────
+        private async Task LoadAllUsersAsync()
+        {
+            try
+            {
+                AllUsers.Clear();
+                var users = await _apiClient.GetEmployeesAsync();
+                foreach (var u in users.OrderBy(u => u.Username))
+                    AllUsers.Add(u);
+            }
+            catch (Exception ex)
+            {
+                ExportStatus = $"Erreur lors de la vérification de User : {ex.Message}";
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        // 2) Créer un nouvel utilisateur via l’API Auth
+        // ──────────────────────────────────────────────────────────────
         private async Task OnCreateUser()
         {
-            CreateUserErrorMessage = string.Empty;
-            CreateUserSuccessMessage = string.Empty;
+            CreateError = "";
+            CreateSuccess = "";
 
-            if (string.IsNullOrWhiteSpace(NewUsername) || string.IsNullOrWhiteSpace(NewPassword))
+            if (string.IsNullOrWhiteSpace(NewUsername) ||
+                string.IsNullOrWhiteSpace(NewPassword))
             {
-                CreateUserErrorMessage = "Username and Password cannot be empty.";
+                CreateError = "Nom et mot de passe requis.";
                 return;
             }
 
-            // Appeler RegisterAsync du service AuthService
-            var success = await _authService.RegisterAsync(NewUsername.Trim(), NewPassword, NewSelectedRole);
-            if (!success)
+            var ok = await _authService.RegisterAsync(
+                NewUsername.Trim(),
+                NewPassword,
+                NewRole
+            );
+
+            if (!ok)
             {
-                CreateUserErrorMessage = $"Username \"{NewUsername}\" already exists.";
+                CreateError = $"L’utilisateur « {NewUsername} » existe déjà.";
                 return;
             }
 
-            CreateUserSuccessMessage = $"User \"{NewUsername}\" created successfully.";
-            NewUsername = string.Empty;
-            NewPassword = string.Empty;
-            NewSelectedRole = UserRole.Technician;
+            CreateSuccess = $"Utilisateur « {NewUsername} » créé avec succès !";
+            NewUsername = NewPassword = "";
+            NewRole = UserRole.Technician;
 
-            // Rafraîchir la liste des utilisateurs
             await LoadAllUsersAsync();
         }
 
-        private async Task LoadAllUsersAsync()
-        {
-            AllUsers.Clear();
-            var users = await App.DbContext.Connection.Table<User>().ToListAsync();
-            foreach (var u in users.OrderBy(u => u.Username))
-                AllUsers.Add(u);
-        }
-
-        // ───────────────────────────────────────────────────
-        // 2) Méthode pour charger les sessions filtrées par utilisateur
-        // ───────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
+        // 3) Charger les sessions de l’utilisateur sélectionné
+        // ──────────────────────────────────────────────────────────────
         private async Task OnLoadSessionsByUser()
         {
-            if (SelectedFilterUser == null)
+            FilteredEntries.Clear();
+            if (SelectedUser is null)
                 return;
 
-            FilteredSessions.Clear();
-            var sessions = await _sessionService.GetSessionsByUserAsync(SelectedFilterUser.Id);
-            foreach (var s in sessions)
-                FilteredSessions.Add(s);
+            try
+            {
+                var sessions = await _sessionService.GetTimeEntriesAsync(SelectedUser.Id);
+                foreach (var s in sessions.OrderBy(s => s.StartTime))
+                    FilteredEntries.Add(s);
+            }
+            catch (Exception ex)
+            {
+                ExportStatus = $"Erreur lors de la vérification de session : {ex.Message}";
+            }
         }
 
-        // ───────────────────────────────────────────────────
-        // 3) Méthode pour exporter les sessions filtrées en CSV
-        // ───────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────
+        // 4) Export CSV des sessions filtrées
+        // ──────────────────────────────────────────────────────────────
         private async Task OnExportToCsv()
         {
-            ExportStatusMessage = string.Empty;
+            ExportStatus = "";
 
-            if (SelectedFilterUser == null)
+            if (SelectedUser is null)
             {
-                ExportStatusMessage = "No user selected for export.";
+                ExportStatus = "Choisissez un utilisateur.";
                 return;
             }
 
-            if (FilteredSessions.Count == 0)
+            if (!FilteredEntries.Any())
             {
-                ExportStatusMessage = "No sessions to export.";
+                ExportStatus = "Aucune session à exporter.";
                 return;
             }
 
             try
             {
-                // 1) Générer le contenu CSV
                 var sb = new StringBuilder();
-                // En‐tête
-                sb.AppendLine("SessionId,Username,SessionType,StartTime,EndTime,WorkDuration,IncludesTravel,TravelTime,StartAddress,EndAddress,DinnerPaid");
-
-                foreach (var s in FilteredSessions)
+                sb.AppendLine("Id,Type,Start,End,Duration,TravelTime,StartAddr,EndAddr,DinnerPaid");
+                foreach (var s in FilteredEntries)
                 {
-                    var duration = s.WorkDuration.HasValue
+                    var dur = s.WorkDuration.HasValue
                         ? $"{(int)s.WorkDuration.Value.TotalHours}h{s.WorkDuration.Value.Minutes}m"
                         : "";
                     var travel = s.TravelTimeEstimate.HasValue
-                        ? $"{s.TravelTimeEstimate.Value:hh\\:mm}"
+                        ? $"{s.TravelTimeEstimate:hh\\:mm}"
                         : "";
-                    var endTime = s.EndTime.HasValue ? s.EndTime.Value.ToString("O") : "";
-                    var endAddr = string.IsNullOrWhiteSpace(s.EndAddress) ? "" : s.EndAddress;
-
-                    // Échapper les virgules dans les adresses en entourant par des guillemets
-                    string Escape(string field)
-                    {
-                        if (string.IsNullOrEmpty(field)) return "";
-                        if (field.Contains(",") || field.Contains("\""))
-                            return "\"" + field.Replace("\"", "\"\"") + "\"";
-                        return field;
-                    }
 
                     sb.AppendLine(string.Join(",",
                         s.Id,
-                        Escape(s.Username),
-                        s.SessionType.ToString(),
-                        s.StartTime.ToString("O"),
-                        endTime,
-                        Escape(duration),
-                        s.IncludesTravelTime ? "Yes" : "No",
-                        Escape(travel),
+                        s.SessionType,
+                        s.StartTime.ToString("o"),
+                        s.EndTime?.ToString("o") ?? "",
+                        dur,
+                        travel,
                         Escape(s.StartAddress),
-                        Escape(endAddr),
-                        s.DinnerPaid.ToString()
+                        Escape(s.EndAddress),
+                        s.DinnerPaid
                     ));
                 }
 
-                // 2) Sauvegarder le fichier CSV dans AppDataDirectory
-                var filename = $"sessions_{SelectedFilterUser.Username}_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-                var filePath = Path.Combine(FileSystem.AppDataDirectory, filename);
-                File.WriteAllText(filePath, sb.ToString(), Encoding.UTF8);
+                var fn = $"sessions_{SelectedUser.Username}_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                var path = Path.Combine(FileSystem.AppDataDirectory, fn);
+                File.WriteAllText(path, sb.ToString(), Encoding.UTF8);
 
-                ExportStatusMessage = $"Export successful: {filename}";
-
-                // 3) (Optionnel) proposer de partager ou ouvrir le fichier
-                await Share.RequestAsync(new ShareFileRequest
-                {
-                    Title = "Exported Sessions",
-                    File = new ShareFile(filePath)
-                });
+                ExportStatus = $"Exporté : {fn}";
+                await Share.RequestAsync(new ShareFileRequest(fn, new ShareFile(path)));
             }
             catch (Exception ex)
             {
-                ExportStatusMessage = $"Export failed: {ex.Message}";
+                ExportStatus = $"Erreur lors de l’export : {ex.Message}";
             }
         }
 
-        // INotifyPropertyChanged …
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void SetProperty<T>(
-            ref T backingStore,
-            T value,
-            [CallerMemberName] string propName = "")
+        static string Escape(string? f) =>
+            string.IsNullOrEmpty(f)
+                ? ""
+                : (f.Contains(',')
+                    ? $"\"{f.Replace("\"", "\"\"")}\""
+                    : f);
+
+        // ──────────────────────────────────────────────────────────────
+        // INotifyPropertyChanged
+        public event PropertyChangedEventHandler? PropertyChanged;
+        void OnPropertyChanged([CallerMemberName] string? name = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+        bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string? name = null)
         {
-            if (!EqualityComparer<T>.Default.Equals(backingStore, value))
-            {
-                backingStore = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-            }
+            if (Equals(storage, value)) return false;
+            storage = value;
+            OnPropertyChanged(name);
+            return true;
         }
-
-        private void OnPropertyChanged([CallerMemberName] string propName = "") =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
     }
 }

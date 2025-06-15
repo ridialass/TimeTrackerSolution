@@ -1,13 +1,18 @@
-﻿using TimeTracker.Mobile.Services;
+﻿using System;
+using System.Net.Http.Headers;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Storage;
+using Microsoft.Extensions.DependencyInjection;           // ← ici
+using TimeTracker.Mobile.Services;
 using TimeTracker.Mobile.ViewModels;
-using TimeTracker.ViewModels;
-using TimeTracker.Views;
+using TimeTracker.Mobile.Views;
 
-namespace TimeTracker
+namespace TimeTracker.Mobile
 {
     public static class MauiProgram
     {
-
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
@@ -43,29 +48,35 @@ namespace TimeTracker
             builder.Services.AddTransient<IMobileTimeEntryService, MobileTimeEntryService>();
 
             // 6) ViewModels
+            builder.Services.AddTransient<MobileTimeEntryViewModel>();
+            builder.Services.AddSingleton<IMobileTimeEntryService, MobileTimeEntryService>();
+            builder.Services.AddSingleton<LocationService>();
+            builder.Services.AddTransient<EndSessionViewModel>();
+            builder.Services.AddSingleton<LocationService>();
+            builder.Services.AddSingleton<IMobileTimeEntryService, MobileTimeEntryService>();
+            builder.Services.AddTransient<StartSessionViewModel>();
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<HomeViewModel>();
             builder.Services.AddTransient<AdminDashboardViewModel>();
-            builder.Services.AddTransient<TimeEntriesViewModel>(sp =>
-            {
-                var auth = sp.GetRequiredService<IMobileAuthService>();
-                if (auth.CurrentUser is null)
-                    throw new InvalidOperationException("Utilisateur non connecté");
-                return new TimeEntriesViewModel(
-                    sp.GetRequiredService<IMobileTimeEntryService>(),
-                    auth.CurrentUser.Id
-                );
-            });
+            //… etc.
 
             // 7) Pages avec leur BindingContext
+            builder.Services.AddTransient<TimeEntryPage>(sp =>
+                new TimeEntryPage
+                {
+                    BindingContext = sp.GetRequiredService<MobileTimeEntryViewModel>()
+                });
+            builder.Services.AddTransient<EndSessionPage>(sp =>
+                new EndSessionPage { BindingContext = sp.GetRequiredService<EndSessionViewModel>() });
+            builder.Services.AddTransient<StartSessionPage>(sp =>
+                new StartSessionPage { BindingContext = sp.GetRequiredService<StartSessionViewModel>() });
             builder.Services.AddTransient<LoginPage>(sp =>
                 new LoginPage { BindingContext = sp.GetRequiredService<LoginViewModel>() });
             builder.Services.AddTransient<HomePage>(sp =>
                 new HomePage { BindingContext = sp.GetRequiredService<HomeViewModel>() });
             builder.Services.AddTransient<AdminDashboardPage>(sp =>
-                new AdminDashboardPage { BindingContext = sp.GetRequiredService<AdminDashboardViewModel>() });
-            builder.Services.AddTransient<TimeEntriesPage>(sp =>
-                new TimeEntriesPage { BindingContext = sp.GetRequiredService<TimeEntriesViewModel>() });
+                new AdminDashboardPage(sp.GetRequiredService<AdminDashboardViewModel>()));
+            //… etc.
 
             return builder.Build();
         }

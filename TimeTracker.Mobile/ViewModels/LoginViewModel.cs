@@ -2,50 +2,54 @@
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
-using TimeTracker.Models;
-using TimeTracker.Services;
-using TimeTracker.Views;
-using static TimeTracker.Models.Enum;
+using TimeTracker.Core.Enums;
+using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Views;
 
-namespace TimeTracker.ViewModels
+namespace TimeTracker.Mobile.ViewModels
 {
     public class LoginViewModel : INotifyPropertyChanged
     {
-        private readonly AuthService _authService = App.AuthService;
+        private readonly IMobileAuthService _authService;
 
-        // Champs liés au XAML
-        private string _username;
+        public LoginViewModel(IMobileAuthService authService)
+        {
+            _authService = authService;
+            LoginCommand = new Command(async () => await OnLoginAsync());
+        }
+
+        // —————— Champs liés au XAML ——————
+        private string _username = "";
         public string Username
         {
             get => _username;
             set => SetProperty(ref _username, value);
         }
 
-        private string _password;
+        private string _password = "";
         public string Password
         {
             get => _password;
             set => SetProperty(ref _password, value);
         }
 
-        private string _errorMessage;
+        private string _errorMessage = "";
         public string ErrorMessage
         {
             get => _errorMessage;
-            set { SetProperty(ref _errorMessage, value); OnPropertyChanged(nameof(HasErrorMessage)); }
+            set
+            {
+                SetProperty(ref _errorMessage, value);
+                OnPropertyChanged(nameof(HasErrorMessage));
+            }
         }
 
         public bool HasErrorMessage => !string.IsNullOrEmpty(ErrorMessage);
 
-        // Commande Login
+        // —————— Commande Login ——————
         public ICommand LoginCommand { get; }
 
-        public LoginViewModel()
-        {
-            LoginCommand = new Command(OnLogin);
-        }
-
-        private async void OnLogin()
+        private async Task OnLoginAsync()
         {
             ErrorMessage = string.Empty;
 
@@ -62,34 +66,25 @@ namespace TimeTracker.ViewModels
                 return;
             }
 
-            // Authentification réussie, on navigue vers AppShell racine
-            // Si c’est un admin, on peut afficher l’Admin Dashboard, sinon la Home normale
-            if (_authService.CurrentUser.Role == UserRole.Admin)
-            {
-                // Navigation relative, sans "//"
+            // Selon le rôle, navigue vers la page adéquate
+            if (_authService.CurrentUser?.Role == UserRole.Admin)
                 await Shell.Current.GoToAsync(nameof(AdminDashboardPage));
-            }
             else
-            {
                 await Shell.Current.GoToAsync(nameof(HomePage));
-            }
         }
 
-        // INotifyPropertyChanged standard
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void SetProperty<T>(
-            ref T backingStore,
-            T value,
-            [CallerMemberName] string propName = "")
+        // —————— INotifyPropertyChanged ——————
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string? name = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+        private void SetProperty<T>(ref T backingStore, T value, [CallerMemberName] string? name = null)
         {
             if (!EqualityComparer<T>.Default.Equals(backingStore, value))
             {
                 backingStore = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+                OnPropertyChanged(name);
             }
         }
-
-        private void OnPropertyChanged([CallerMemberName] string propName = "") =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
     }
 }
