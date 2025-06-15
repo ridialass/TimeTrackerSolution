@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;           // ← ici
 using TimeTracker.Mobile.Services;
 using TimeTracker.Mobile.ViewModels;
 using TimeTracker.Mobile.Views;
+using Microsoft.Extensions.Logging;
 
 namespace TimeTracker.Mobile
 {
@@ -24,6 +25,9 @@ namespace TimeTracker.Mobile
                   fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                   fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
               });
+
+            // Ajout de la configuration du logging
+            builder.Logging.AddDebug(); // Remplacement de ConfigureLogging par Logging.AddDebug()
 
             // 1) Handler pour ajouter le JWT
             builder.Services.AddTransient<AuthHeaderHandler>();
