@@ -1,7 +1,8 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.Maui.Controls;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
+using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Services;
 using TimeTracker.Mobile.Views;
@@ -32,6 +33,9 @@ namespace TimeTracker.Mobile.ViewModels
             get => _password;
             set => SetProperty(ref _password, value);
         }
+
+        // **NOUVEAU** :
+        public ApplicationUser? CurrentUser => _authService.CurrentUser;
 
         private string _errorMessage = "";
         public string ErrorMessage

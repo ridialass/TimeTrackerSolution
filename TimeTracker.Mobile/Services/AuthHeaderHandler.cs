@@ -1,8 +1,8 @@
-﻿using System.Net.Http;
+﻿using Microsoft.Maui.Storage;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using TimeTracker.Mobile.Services;
 
 namespace TimeTracker.Mobile.Services
 {
@@ -12,15 +12,15 @@ namespace TimeTracker.Mobile.Services
     public class AuthHeaderHandler : DelegatingHandler
     {
 
-        private readonly IMobileAuthService _authService;
+        private readonly ISecureStorage _secureStorage;
 
-        public AuthHeaderHandler(IMobileAuthService authService)
-            => _authService = authService;
+        public AuthHeaderHandler(ISecureStorage secureStorage)
+            => _secureStorage = secureStorage;
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken ct)
         {
-            var token = await _authService.GetTokenAsync();
+            var token = await _secureStorage.GetAsync("jwt_token");
             if (!string.IsNullOrEmpty(token))
                 request.Headers.Authorization =
                     new AuthenticationHeaderValue("Bearer", token);
@@ -29,3 +29,6 @@ namespace TimeTracker.Mobile.Services
         }
     }
 }
+
+//// Register the AuthHeaderHandler service
+//builder.Services.AddTransient<AuthHeaderHandler>();

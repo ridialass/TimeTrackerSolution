@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -13,7 +15,6 @@ namespace TimeTracker.AdminUI.Pages.Admin
     [Authorize(Roles = "Admin")]
     public class IndexModel : PageModel
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         public List<EmployeeDto> AllEmployees { get; set; } = new();
         [BindProperty] public int SelectedEmployeeId { get; set; }
         public List<TimeEntryDto> FilteredEntries { get; set; } = new();
@@ -21,6 +22,9 @@ namespace TimeTracker.AdminUI.Pages.Admin
         [BindProperty] public string NewUserPassword { get; set; } = "";
         public string? CreateError { get; set; }
         public string? CreateSuccess { get; set; }
+
+        private readonly IHttpClientFactory _httpClientFactory;
+        public List<TimeEntryDto> Sessions { get; set; } = new();
 
         public IndexModel(IHttpClientFactory httpClientFactory)
         {
@@ -84,24 +88,26 @@ namespace TimeTracker.AdminUI.Pages.Admin
             return Page();
         }
 
-        public async Task<IActionResult> OnPostLoadSessionsAsync()
+        public async Task OnPostLoadSessionsAsync(int userId)
         {
-            FilteredEntries.Clear();
-            if (SelectedEmployeeId == 0)
-            {
-                await LoadEmployeesAsync();
-                return Page();
-            }
-            var client = CreateAuthenticatedClient();
-            var response = await client.GetAsync($"api/timeentry/employee/{SelectedEmployeeId}");
-            response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync();
-            FilteredEntries = JsonSerializer.Deserialize<List<TimeEntryDto>>(json,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-                ?? new List<TimeEntryDto>();
+            var client = _httpClientFactory.CreateClient("TimeTrackerAPI");
+            var response = await client.GetAsync($"api/timeentries?userId={userId}");
 
-            await LoadEmployeesAsync();
-            return Page();
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                // pas de sessions pour cet utilisateur : on renvoie une liste vide
+                Sessions = new List<TimeEntryDto>();
+                return;
+            }
+
+            // pour toute autre erreur HTTP, on laisse passer l'exception
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            Sessions = JsonSerializer.Deserialize<List<TimeEntryDto>>(
+                json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            ) ?? new List<TimeEntryDto>();
         }
 
         public IActionResult OnPostExportCsv()

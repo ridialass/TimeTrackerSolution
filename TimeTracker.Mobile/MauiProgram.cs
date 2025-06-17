@@ -46,18 +46,15 @@ namespace TimeTracker.Mobile
             builder.Services.AddSingleton<ISecureStorage>(SecureStorage.Default);
 
             // 4) AuthService mobile
-            builder.Services.AddSingleton<IMobileAuthService, MobileAuthService>();
+            builder.Services.AddTransient<IMobileAuthService, MobileAuthService>();
 
             // 5) TimeEntryService mobile
-            builder.Services.AddTransient<IMobileTimeEntryService, MobileTimeEntryService>();
+            builder.Services.AddSingleton<IMobileTimeEntryService, MobileTimeEntryService>();
 
             // 6) ViewModels
             builder.Services.AddTransient<MobileTimeEntryViewModel>();
-            builder.Services.AddSingleton<IMobileTimeEntryService, MobileTimeEntryService>();
-            builder.Services.AddSingleton<LocationService>();
             builder.Services.AddTransient<EndSessionViewModel>();
             builder.Services.AddSingleton<LocationService>();
-            builder.Services.AddSingleton<IMobileTimeEntryService, MobileTimeEntryService>();
             builder.Services.AddTransient<StartSessionViewModel>();
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<HomeViewModel>();
@@ -75,7 +72,7 @@ namespace TimeTracker.Mobile
             builder.Services.AddTransient<StartSessionPage>(sp =>
                 new StartSessionPage { BindingContext = sp.GetRequiredService<StartSessionViewModel>() });
             builder.Services.AddTransient<LoginPage>(sp =>
-                new LoginPage { BindingContext = sp.GetRequiredService<LoginViewModel>() });
+                new LoginPage(sp.GetRequiredService<LoginViewModel>()));
             builder.Services.AddTransient<HomePage>(sp =>
                 new HomePage { BindingContext = sp.GetRequiredService<HomeViewModel>() });
             builder.Services.AddTransient<AdminDashboardPage>(sp =>

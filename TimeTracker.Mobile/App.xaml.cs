@@ -6,12 +6,12 @@ namespace TimeTracker.Mobile
 {
     public partial class App : Application
     {
-        private readonly MobileAuthService _authService;
+        private readonly IMobileAuthService _authService;
         private readonly IServiceProvider _services;
         private readonly ILogger<App> _logger;
 
         public App(
-            MobileAuthService authService,
+            IMobileAuthService authService,
             IServiceProvider services,
             ILogger<App> logger)
         {
@@ -26,7 +26,7 @@ namespace TimeTracker.Mobile
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
             // 2) Page d’entrée
-            MainPage = new NavigationPage(new LoginPage());
+            MainPage = new NavigationPage(services.GetRequiredService<LoginPage>());
 
             // 3) Restauration de session en tâche de fond
             Task.Run(async () => await TryRestoreSessionOnLaunch());
