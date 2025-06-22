@@ -7,38 +7,25 @@ namespace TimeTracker.Mobile.Views;
 public partial class LoginPage : ContentPage
 {
         // MAUI expose le provider via App.Current.Handler.MauiContext.Services
-    private IMobileAuthService? AuthServiceOrNull =>
-        Application.Current?.Handler?.MauiContext?.Services.GetService<IMobileAuthService>();
+    private IAuthService? AuthServiceOrNull =>
+        Application.Current?.Handler?.MauiContext?.Services.GetService<IAuthService>();
 
     public LoginPage(LoginViewModel vm)
     {
         InitializeComponent();
         BindingContext = vm;
     }
-    // Nouveau constructeur paramètre-less, utilisé par le XAML et si on fait `new LoginPage()` :
-    //public LoginPage()
-    //    : this(
-    //        // On récupère le LoginViewModel dans le container MAUI
-    //        Application.Current!
-    //                       .Handler!
-    //                       .MauiContext!
-    //                       .Services
-    //                       .GetRequiredService<LoginViewModel>()
-    //      )
-    //{
-    //}
+    
     protected override void OnAppearing()
     {
         base.OnAppearing();
 
-        //var auth = AuthServiceOrNull;
-        // Si un utilisateur est déjà authentifié (dans AuthService), on le redirige selon son rôle
-        //if (auth?.CurrentUser is { } user)
-        var vm = (LoginViewModel)BindingContext;
-        if (vm.CurrentUser is { } user)
+
+        var user = AuthServiceOrNull?.CurrentUser;
+        if (user is not null)
         {
             // Si c’est un admin, on va à AdminDashboardPage
-            if (user.Role == UserRole.Admin)
+            if (Enum.TryParse<UserRole>(user.Role, out var role) && role == UserRole.Admin)
                 Shell.Current.GoToAsync($"//{nameof(AdminDashboardPage)}");
             else
                 Shell.Current.GoToAsync($"//{nameof(HomePage)}");

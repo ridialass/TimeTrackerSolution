@@ -1,15 +1,24 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <Shell
-    x:Class="TimeTracker.Mobile.AppShell"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:TimeTracker.Mobile"
-    Shell.FlyoutBehavior="Disabled"
-    Title="TimeTracker.Mobile">
+  x:Class="TimeTracker.Mobile.AppShell"
+  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:TimeTracker.Mobile.Views">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <!-- on pourra naviguer vers ces routes par code, pas d'initial ContentTemplate -->
+    <FlyoutItem Title="Connexion">
+        <ShellContent
+        Title="Connexion"
+        ContentTemplate="{DataTemplate views:LoginPage}" />
+    </FlyoutItem>
+    <FlyoutItem Title="Accueil">
+        <ShellContent
+            Title="Accueil"
+            ContentTemplate="{DataTemplate views:HomePage}" />
+    </FlyoutItem>
+    <FlyoutItem Title="DashBoard">
+        <ShellContent
+        Title="Dashboard"
+        ContentTemplate="{DataTemplate views:AdminDashboardPage}" />
+    </FlyoutItem>
 
 </Shell>

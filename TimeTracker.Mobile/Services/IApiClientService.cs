@@ -1,21 +1,15 @@
-﻿// IApiClientService.cs
-using System.Collections.Generic;
-using System.Net.Http;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
+using TimeTracker.Mobile.Utils;
 
-namespace TimeTracker.Mobile.Services
+namespace TimeTracker.Mobile.Services;
+
+public interface IApiClientService
 {
-    public interface IApiClientService
-    {
-        Task<LoginResponseDto> LoginAsync(string username, string password);
-        Task RegisterAsync(RegisterRequestDto dto);
-        Task<IEnumerable<EmployeeDto>> GetEmployeesAsync();
-        Task<IEnumerable<TimeEntryDto>> GetTimeEntriesAsync(int userId);
-        Task CreateTimeEntryAsync(TimeEntryDto entry);
-
-        // si vous avez encore besoin des accès bas-niveau :
-        Task<HttpResponseMessage> GetAsync(string requestUri);
-        Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content);
-    }
+    Task<Result<LoginResponseDto>> LoginAsync(string username, string password);
+    Task<Result<bool>> RegisterAsync(RegisterRequestDto dto);
+    Task<Result<IEnumerable<EmployeeDto>>> GetEmployeesAsync();
+    Task<Result<IEnumerable<TimeEntryDto>>> GetTimeEntriesAsync(int userId);
+    Task<Result<bool>> CreateTimeEntryAsync(TimeEntryDto entry);
 }

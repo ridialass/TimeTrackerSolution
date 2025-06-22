@@ -1,53 +1,92 @@
-﻿// ApiClientService.cs
-using System.Collections.Generic;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using TimeTracker.Core.DTOs;
+using TimeTracker.Mobile.Utils;
 
-namespace TimeTracker.Mobile.Services
+namespace TimeTracker.Mobile.Services;
+
+public class ApiClientService : IApiClientService
 {
-    public class ApiClientService : IApiClientService
+    private readonly HttpClient _http;
+
+    public ApiClientService(HttpClient http) => _http = http;
+
+    public async Task<Result<LoginResponseDto>> LoginAsync(string username, string password)
     {
-        private readonly HttpClient _http;
-        public ApiClientService(HttpClient httpClient) => _http = httpClient;
-
-        public async Task<LoginResponseDto> LoginAsync(string u, string p)
+        try
         {
-            var dto = new LoginRequestDto { Username = u, Password = p };
+            var dto = new LoginRequestDto { Username = username, Password = password };
             var res = await _http.PostAsJsonAsync("api/auth/login", dto);
-            res.EnsureSuccessStatusCode();
-            return (await res.Content.ReadFromJsonAsync<LoginResponseDto>())!;
-        }
+            if (!res.IsSuccessStatusCode)
+                return Result<LoginResponseDto>.Fail(await res.Content.ReadAsStringAsync());
 
-        public async Task RegisterAsync(RegisterRequestDto dto)
+            var login = await res.Content.ReadFromJsonAsync<LoginResponseDto>();
+            if (login == null)
+                return Result<LoginResponseDto>.Fail("La réponse du serveur est vide ou invalide.");
+
+            return Result<LoginResponseDto>.Success(login);
+        }
+        catch (System.Exception ex)
+        {
+            return Result<LoginResponseDto>.Fail(ex.Message);
+        }
+    }
+
+    public async Task<Result<bool>> RegisterAsync(RegisterRequestDto dto)
+    {
+        try
         {
             var res = await _http.PostAsJsonAsync("api/auth/register", dto);
-            res.EnsureSuccessStatusCode();
+            if (!res.IsSuccessStatusCode)
+                return Result<bool>.Fail(await res.Content.ReadAsStringAsync());
+            return Result<bool>.Success(true);
         }
-
-        public async Task<IEnumerable<EmployeeDto>> GetEmployeesAsync()
+        catch (System.Exception ex)
         {
-            return await _http.GetFromJsonAsync<IEnumerable<EmployeeDto>>("api/employees")
-                   ?? Array.Empty<EmployeeDto>();
+            return Result<bool>.Fail(ex.Message);
         }
+    }
 
-        public async Task<IEnumerable<TimeEntryDto>> GetTimeEntriesAsync(int userId)
+    public async Task<Result<IEnumerable<EmployeeDto>>> GetEmployeesAsync()
+    {
+        try
         {
-            return await _http.GetFromJsonAsync<IEnumerable<TimeEntryDto>>($"api/timeentries?userId={userId}")
-                   ?? Array.Empty<TimeEntryDto>();
+            var appUsers = await _http.GetFromJsonAsync<IEnumerable<EmployeeDto>>("api/appUsers");
+            return Result<IEnumerable<EmployeeDto>>.Success(appUsers ?? new List<EmployeeDto>());
         }
+        catch (System.Exception ex)
+        {
+            return Result<IEnumerable<EmployeeDto>>.Fail(ex.Message);
+        }
+    }
 
-        public async Task CreateTimeEntryAsync(TimeEntryDto entry)
+    public async Task<Result<IEnumerable<TimeEntryDto>>> GetTimeEntriesAsync(int userId)
+    {
+        try
+        {
+            var entries = await _http.GetFromJsonAsync<IEnumerable<TimeEntryDto>>($"api/timeentries?userId={userId}");
+            return Result<IEnumerable<TimeEntryDto>>.Success(entries ?? new List<TimeEntryDto>());
+        }
+        catch (System.Exception ex)
+        {
+            return Result<IEnumerable<TimeEntryDto>>.Fail(ex.Message);
+        }
+    }
+
+    public async Task<Result<bool>> CreateTimeEntryAsync(TimeEntryDto entry)
+    {
+        try
         {
             var res = await _http.PostAsJsonAsync("api/timeentries", entry);
-            res.EnsureSuccessStatusCode();
+            if (!res.IsSuccessStatusCode)
+                return Result<bool>.Fail(await res.Content.ReadAsStringAsync());
+            return Result<bool>.Success(true);
         }
-
-        public Task<HttpResponseMessage> GetAsync(string requestUri)
-            => _http.GetAsync(requestUri);
-
-        public Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
-            => _http.PostAsync(requestUri, content);
+        catch (System.Exception ex)
+        {
+            return Result<bool>.Fail(ex.Message);
+        }
     }
 }

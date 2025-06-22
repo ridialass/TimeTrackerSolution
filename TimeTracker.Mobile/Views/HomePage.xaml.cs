@@ -12,8 +12,8 @@ namespace TimeTracker.Mobile.Views
             Handler?.MauiContext?.Services.GetRequiredService<IMobileTimeEntryService>()
             ?? throw new InvalidOperationException("Le service IMobileTimeEntryService n'est pas disponible.");
 
-        IMobileAuthService _authService =>
-            Handler?.MauiContext?.Services.GetRequiredService<IMobileAuthService>()
+        IAuthService _authService =>
+            Handler?.MauiContext?.Services.GetRequiredService<IAuthService>()
             ?? throw new InvalidOperationException("Le service IMobileAuthService n'est pas disponible.");
 
 
@@ -21,18 +21,6 @@ namespace TimeTracker.Mobile.Views
         {
             InitializeComponent();
             BindingContext = vm;
-        }
-        // Nouveau constructeur paramètre-less, utilisé par le XAML et si on fait `new LoginPage()` :
-        public HomePage()
-            : this(
-                // On récupère le LoginViewModel dans le container MAUI
-                Application.Current!
-                           .Handler!
-                           .MauiContext!
-                           .Services
-                           .GetRequiredService<HomeViewModel>()
-              )
-        {
         }
 
         private async void OnStartSessionClicked(object sender, EventArgs e)
@@ -65,13 +53,15 @@ namespace TimeTracker.Mobile.Views
 
         private async void OnHistoryClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync(nameof(TimeEntryPage));
+            await Shell.Current.GoToAsync(nameof(TimeEntriesPage));
         }
 
         private async void OnAdminDashboardClicked(object sender, EventArgs e)
         {
             var currentUser = _authService.CurrentUser;
-            if (currentUser == null || currentUser.Role != UserRole.Admin)
+            if (currentUser == null
+                || !Enum.TryParse<UserRole>(currentUser.Role, out var roleEnum)
+                || roleEnum != UserRole.Admin)
             {
                 await DisplayAlert(
                     "Accès refusé",

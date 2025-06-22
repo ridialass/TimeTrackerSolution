@@ -2,9 +2,9 @@ using TimeTracker.Mobile.ViewModels;
 
 namespace TimeTracker.Mobile.Views;
 
-public partial class AdminDashboardPage : ContentPage
+public partial class TimeEntriesPage : ContentPage
 {
-    public AdminDashboardPage(AdminDashboardViewModel vm)
+    public TimeEntriesPage(TimeEntriesViewModel vm)
     {
         InitializeComponent();
         BindingContext = vm;

@@ -1,17 +1,13 @@
-﻿using Microsoft.Maui.Storage;
+﻿using System.Threading.Tasks;
+using Microsoft.Maui.Storage;
 
-namespace TimeTracker.Mobile.Services
+namespace TimeTracker.Mobile.Services;
+
+public class SecureStorageService : ISecureStorageService
 {
-    public static class SecureStorageService
-    {
-        private const string JwtKey = "JwtToken";
-        public static Task SetJwtAsync(string token) =>
-            SecureStorage.SetAsync(JwtKey, token);
+    public Task SetAsync(string key, string value) => SecureStorage.SetAsync(key, value);
 
-        public static Task<string?> GetJwtAsync() =>
-            SecureStorage.GetAsync(JwtKey);
+    public Task<string?> GetAsync(string key) => SecureStorage.GetAsync(key);
 
-        public static void RemoveJwt() =>
-            SecureStorage.Remove(JwtKey);
-    }
+    public void Remove(string key) => SecureStorage.Remove(key);
 }

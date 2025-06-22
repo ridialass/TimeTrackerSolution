@@ -6,14 +6,15 @@ namespace TimeTracker.Mobile
 {
     public partial class App : Application
     {
-        private readonly IMobileAuthService _authService;
+        private readonly IAuthService _authService;
         private readonly IServiceProvider _services;
         private readonly ILogger<App> _logger;
 
         public App(
-            IMobileAuthService authService,
+            IAuthService authService,
             IServiceProvider services,
-            ILogger<App> logger)
+            ILogger<App> logger,
+            AppShell shell)
         {
             InitializeComponent();
 
@@ -26,9 +27,8 @@ namespace TimeTracker.Mobile
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
             // 2) Page d’entrée
-            MainPage = new NavigationPage(services.GetRequiredService<LoginPage>());
+            MainPage = shell;
 
-            // 3) Restauration de session en tâche de fond
             Task.Run(async () => await TryRestoreSessionOnLaunch());
         }
 
@@ -58,18 +58,35 @@ namespace TimeTracker.Mobile
         private async Task TryRestoreSessionOnLaunch()
         {
             if (!await _authService.TryRestoreSessionAsync())
-                return;
-
-            var role = _authService.CurrentUser!.Role;
-            if (role == Core.Enums.UserRole.Admin)
             {
-                var adminPage = _services.GetRequiredService<AdminDashboardPage>();
-                MainPage = new NavigationPage(adminPage);
+                await MainPage.Dispatcher.DispatchAsync(() =>
+                    Shell.Current.GoToAsync(nameof(LoginPage))); // ✅ relative route
+                return;
+            }
+
+            var roleString = _authService.CurrentUser!.Role;
+
+            if (Enum.TryParse<Core.Enums.UserRole>(roleString, out var userRole) && userRole == Core.Enums.UserRole.Admin)
+            {
+                await MainPage.Dispatcher.DispatchAsync(() =>
+                    Shell.Current.GoToAsync(nameof(AdminDashboardPage))); // ✅ relative
             }
             else
             {
-                var homePage = _services.GetRequiredService<HomePage>();
-                MainPage = new NavigationPage(homePage);
+                await MainPage.Dispatcher.DispatchAsync(() =>
+                    Shell.Current.GoToAsync(nameof(HomePage))); // ✅ relative
+            }
+        }
+
+
+        public static async Task InitializeAsync(IServiceProvider services)
+        {
+            var auth = services.GetRequiredService<IAuthService>();
+            if (await auth.TryRestoreSessionAsync())
+            {
+                var shell = services.GetRequiredService<AppShell>();
+                Application.Current.MainPage = shell;
+                // optionally navigate inside
             }
         }
     }

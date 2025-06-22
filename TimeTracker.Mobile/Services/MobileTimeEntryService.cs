@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
+using TimeTracker.Mobile.Models;
 
 namespace TimeTracker.Mobile.Services
 {
@@ -44,13 +45,6 @@ namespace TimeTracker.Mobile.Services
             var response = await _httpClient.PostAsJsonAsync("api/timeentries", entry);
             response.EnsureSuccessStatusCode();
         }
-
-        //public async Task<TimeEntryDto> AddTimeEntryAsync(TimeEntryDto dto)
-        //{
-        //    var entity = _mapper.Map<TimeEntry>(dto);
-        //    var saved = await _timeEntryRepo.AddAsync(entity);
-        //    return _mapper.Map<TimeEntryDto>(saved);
-        //}
     }
 
 }

@@ -1,85 +1,78 @@
-﻿using System;
-using System.Net.Http.Headers;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Storage;
-using Microsoft.Extensions.DependencyInjection;           // ← ici
+﻿using Microsoft.Extensions.Logging;
 using TimeTracker.Mobile.Services;
 using TimeTracker.Mobile.ViewModels;
 using TimeTracker.Mobile.Views;
-using Microsoft.Extensions.Logging;
 
-namespace TimeTracker.Mobile
+namespace TimeTracker.Mobile;
+
+public static class MauiProgram
 {
-    public static class MauiProgram
+    public static MauiApp CreateMauiApp()
     {
-        public static MauiApp CreateMauiApp()
+        var builder = MauiApp.CreateBuilder();
+
+        builder
+            .UseMauiApp<App>()
+            .ConfigureFonts(fonts =>
+            {
+                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+            });
+
+        // ───────────────────────────────
+        // 👉 Logging
+        builder.Logging.AddDebug();
+
+        // ───────────────────────────────
+        // 👉 DI Registrations
+        var services = builder.Services;
+
+        // Core Services
+        builder.Services.AddSingleton<ISecureStorage>(SecureStorage.Default);
+        services.AddSingleton<ISecureStorageService, SecureStorageService>();
+        services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<IGeolocationService, GeolocationService>();
+
+        // Auth / API / Mobile services
+        builder.Services.AddHttpClient<IApiClientService, ApiClientService>(client =>
         {
-            var builder = MauiApp.CreateBuilder();
+        #if ANDROID
+                    client.BaseAddress = new Uri("https://10.0.2.2:7205/"); // ✅ Use host machine from Android emulator
+        #else
+            client.BaseAddress = new Uri("https://localhost:7205/");
+        #endif
+        })
+        .AddHttpMessageHandler<AuthHeaderHandler>(); // JWT injector
 
-            builder
-              .UseMauiApp<App>()
-              .ConfigureFonts(fonts =>
-              {
-                  fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                  fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-              });
+        services.AddSingleton<AuthHeaderHandler>(); // injectable handler
+        services.AddSingleton<IAuthService, AuthService>();
+        services.AddSingleton<IMobileTimeEntryService, MobileTimeEntryService>();
 
-            // Ajout de la configuration du logging
-            builder.Logging.AddDebug(); // Remplacement de ConfigureLogging par Logging.AddDebug()
+        // ───────────────────────────────
+        // 👉 ViewModels (Transient – new each time)
+        services.AddTransient<LoginViewModel>();
+        services.AddTransient<RegistrationViewModel>();
+        services.AddTransient<HomeViewModel>();
+        services.AddTransient<StartSessionViewModel>();
+        services.AddTransient<EndSessionViewModel>();
+        services.AddTransient<AdminDashboardViewModel>();
+        services.AddTransient<TimeEntriesViewModel>();
 
-            // 1) Handler pour ajouter le JWT
-            builder.Services.AddTransient<AuthHeaderHandler>();
+        // ───────────────────────────────
+        // 👉 Views (Navigation targets)
+        services.AddTransient<LoginPage>();
+        services.AddTransient<RegistrationPage>();
+        services.AddTransient<HomePage>();
+        services.AddTransient<StartSessionPage>();
+        services.AddTransient<EndSessionPage>();
+        services.AddTransient<AdminDashboardPage>();
+        services.AddTransient<TimeEntriesPage>();
 
-            // 2) Typed HttpClient pour votre API
-            builder.Services
-              .AddHttpClient<IApiClientService, ApiClientService>(client =>
-              {
-                  client.BaseAddress = new Uri("https://localhost:7205/");
-                  client.DefaultRequestHeaders.Accept.Add(
-                      new MediaTypeWithQualityHeaderValue("application/json"));
-              })
-              .AddHttpMessageHandler<AuthHeaderHandler>();
+        // ───────────────────────────────
+        // 👉 Shell & App
+        services.AddSingleton<AppShell>();
+        services.AddSingleton<App>();
 
-            // 3) SecureStorage singleton
-            builder.Services.AddSingleton<ISecureStorage>(SecureStorage.Default);
-
-            // 4) AuthService mobile
-            builder.Services.AddTransient<IMobileAuthService, MobileAuthService>();
-
-            // 5) TimeEntryService mobile
-            builder.Services.AddSingleton<IMobileTimeEntryService, MobileTimeEntryService>();
-
-            // 6) ViewModels
-            builder.Services.AddTransient<MobileTimeEntryViewModel>();
-            builder.Services.AddTransient<EndSessionViewModel>();
-            builder.Services.AddSingleton<LocationService>();
-            builder.Services.AddTransient<StartSessionViewModel>();
-            builder.Services.AddTransient<LoginViewModel>();
-            builder.Services.AddTransient<HomeViewModel>();
-            builder.Services.AddTransient<AdminDashboardViewModel>();
-            //… etc.
-
-            // 7) Pages avec leur BindingContext
-            builder.Services.AddTransient<TimeEntryPage>(sp =>
-                new TimeEntryPage
-                {
-                    BindingContext = sp.GetRequiredService<MobileTimeEntryViewModel>()
-                });
-            builder.Services.AddTransient<EndSessionPage>(sp =>
-                new EndSessionPage { BindingContext = sp.GetRequiredService<EndSessionViewModel>() });
-            builder.Services.AddTransient<StartSessionPage>(sp =>
-                new StartSessionPage { BindingContext = sp.GetRequiredService<StartSessionViewModel>() });
-            builder.Services.AddTransient<LoginPage>(sp =>
-                new LoginPage(sp.GetRequiredService<LoginViewModel>()));
-            builder.Services.AddTransient<HomePage>(sp =>
-                new HomePage { BindingContext = sp.GetRequiredService<HomeViewModel>() });
-            builder.Services.AddTransient<AdminDashboardPage>(sp =>
-                new AdminDashboardPage(sp.GetRequiredService<AdminDashboardViewModel>()));
-            //… etc.
-
-            return builder.Build();
-        }
+        return builder.Build();
     }
 }

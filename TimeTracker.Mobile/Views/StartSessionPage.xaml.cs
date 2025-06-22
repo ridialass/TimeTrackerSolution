@@ -10,22 +10,11 @@ public partial class StartSessionPage : ContentPage
 		InitializeComponent();
         BindingContext = vm;
     }
-    // Nouveau constructeur paramètre-less, utilisé par le XAML et si on fait `new LoginPage()` :
-    public StartSessionPage()
-        : this(
-            // On récupère le LoginViewModel dans le container MAUI
-            Application.Current!
-                           .Handler!
-                           .MauiContext!
-                           .Services
-                           .GetRequiredService<StartSessionViewModel>()
-          )
-    {
-    }
+    
     private async void OnBackToHomeClicked(object sender, System.EventArgs e)
     {
         // Navigue vers HomePage (route enregistrée dans AppShell)
-        await Shell.Current.GoToAsync(nameof(HomePage));
+        await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
     }
 
     protected override bool OnBackButtonPressed()

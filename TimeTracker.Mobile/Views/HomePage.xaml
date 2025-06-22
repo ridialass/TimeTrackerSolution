@@ -6,9 +6,6 @@
     x:Class="TimeTracker.Mobile.Views.HomePage"
     Title="Home">
 
-    <!--<ContentPage.BindingContext>
-        <vm:HomeViewModel x:Name="VM" />
-    </ContentPage.BindingContext>-->
 
     <VerticalStackLayout 
       Padding="40" 
