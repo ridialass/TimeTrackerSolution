@@ -1,93 +1,66 @@
 ﻿using Microsoft.Extensions.Logging;
+using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Services;
 using TimeTracker.Mobile.Views;
 
-namespace TimeTracker.Mobile
+namespace TimeTracker.Mobile;
+
+public partial class App : Application
 {
-    public partial class App : Application
+    private readonly IAuthService _authService;
+    private readonly IServiceProvider _services;
+    private readonly ILogger<App> _logger;
+
+    public App(IAuthService authService, IServiceProvider services, ILogger<App> logger, AppShell shell)
     {
-        private readonly IAuthService _authService;
-        private readonly IServiceProvider _services;
-        private readonly ILogger<App> _logger;
+        InitializeComponent();
 
-        public App(
-            IAuthService authService,
-            IServiceProvider services,
-            ILogger<App> logger,
-            AppShell shell)
+        _authService = authService;
+        _services = services;
+        _logger = logger;
+
+        MainPage = shell;
+
+        // ⚠️ Lance l’authentification après affichage du Shell
+        MainPage.Dispatcher.Dispatch(async () => await TryRestoreSessionOnLaunch());
+    }
+
+    private async Task TryRestoreSessionOnLaunch()
+    {
+        try
         {
-            InitializeComponent();
+            var shell = Shell.Current;
 
-            _authService = authService;
-            _services = services;
-            _logger = logger;
-
-            // 1) Souscription aux exceptions .NET non gérées
-            AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
-            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
-
-            // 2) Page d’entrée
-            MainPage = shell;
-
-            Task.Run(async () => await TryRestoreSessionOnLaunch());
-        }
-
-        private void OnDomainUnhandledException(object? sender, UnhandledExceptionEventArgs e)
-        {
-            var ex = e.ExceptionObject as Exception;
-            _logger.LogError(ex, "Exception non gérée en domaine d'application");
-
-            // Vous pouvez afficher une alerte UI si vous le souhaitez :
-            MainPage?.Dispatcher.Dispatch(async () =>
-            {
-                await MainPage.DisplayAlert(
-                    "Erreur critique",
-                    ex?.Message ?? "Une erreur inattendue est survenue.",
-                    "OK");
-            });
-        }
-
-        private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
-        {
-            _logger.LogError(e.Exception, "Exception de tâche non observée");
-
-            // On lève un flag pour éviter que le process ne crashe
-            e.SetObserved();
-        }
-
-        private async Task TryRestoreSessionOnLaunch()
-        {
+            // 1️⃣ Si aucune session : LoginPage est déjà affichée
             if (!await _authService.TryRestoreSessionAsync())
             {
-                await MainPage.Dispatcher.DispatchAsync(() =>
-                    Shell.Current.GoToAsync(nameof(LoginPage))); // ✅ relative route
+                shell.FlyoutBehavior = FlyoutBehavior.Disabled;
                 return;
             }
 
-            var roleString = _authService.CurrentUser!.Role;
+            // 2️⃣ Session restaurée → activer menu
+            shell.FlyoutBehavior = FlyoutBehavior.Flyout;
 
-            if (Enum.TryParse<Core.Enums.UserRole>(roleString, out var userRole) && userRole == Core.Enums.UserRole.Admin)
+            // 3️⃣ Configurer menu selon rôle
+            if (shell is AppShell appShell)
+                appShell.ConfigureFlyoutForRole(_authService.CurrentUser!.Role);
+
+            // 4️⃣ Navigation directe vers HomePage ou Dashboard
+            var role = _authService.CurrentUser?.Role ?? string.Empty;
+
+            if (Enum.TryParse<UserRole>(role, out var userRole))
             {
-                await MainPage.Dispatcher.DispatchAsync(() =>
-                    Shell.Current.GoToAsync(nameof(AdminDashboardPage))); // ✅ relative
-            }
-            else
-            {
-                await MainPage.Dispatcher.DispatchAsync(() =>
-                    Shell.Current.GoToAsync(nameof(HomePage))); // ✅ relative
+                var target = userRole == UserRole.Admin ? "AdminDashboardPage" : "HomePage";
+
+                // 🧼 Nettoyage de pile + navigation absolue
+                shell.Items.Clear();
+                await shell.GoToAsync($"//{target}");
             }
         }
-
-
-        public static async Task InitializeAsync(IServiceProvider services)
+        catch (Exception ex)
         {
-            var auth = services.GetRequiredService<IAuthService>();
-            if (await auth.TryRestoreSessionAsync())
-            {
-                var shell = services.GetRequiredService<AppShell>();
-                Application.Current.MainPage = shell;
-                // optionally navigate inside
-            }
+            _logger.LogError(ex, "Erreur au démarrage de l'application");
+            await Shell.Current.DisplayAlert("Erreur", "Une erreur s’est produite au lancement.", "OK");
         }
     }
 }

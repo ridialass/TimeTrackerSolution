@@ -7,9 +7,14 @@ namespace TimeTracker.Mobile.Converters
     public class NullToBoolConverter : IValueConverter
     {
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-        => value is bool b ? !b : value;
+        {
+            return value != null;
+        }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-            => value is bool b ? !b : value;
+        {
+            throw new NotImplementedException();
+        }
     }
+
 }

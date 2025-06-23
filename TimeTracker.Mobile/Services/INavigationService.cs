@@ -1,14 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace TimeTracker.Mobile.Services;
-
-/// <summary>
-/// Abstract navigation for easier testing and decoupling.
-/// </summary>
-public interface INavigationService
+namespace TimeTracker.Mobile.Services
 {
-    Task GoToHomePageAsync(); // 🔁 rename to reflect real destination
-    Task GoToLoginPageAsync();
-    Task GoToAsync(string route, IDictionary<string, object>? parameters = null);
-
+    public interface INavigationService
+    {
+        Task GoToLoginPageAsync();
+        Task GoToHomePageAsync();
+        Task GoToAdminDashboardPageAsync();
+        Task GoToAsync(string route, IDictionary<string, object>? parameters = null);
+    }
 }

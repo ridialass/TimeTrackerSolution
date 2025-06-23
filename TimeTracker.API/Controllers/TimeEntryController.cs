@@ -10,13 +10,13 @@ namespace TimeTracker.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class TimeEntryController : ControllerBase
+    public class TimeEntriesController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
         private readonly IMapper _mapper;
         private readonly ITimeEntryService _timeEntryService;    // ← on déclare le service
 
-        public TimeEntryController(
+        public TimeEntriesController(
             ApplicationDbContext db,
             IMapper mapper,
             ITimeEntryService timeEntryService   // ← on l’injecte

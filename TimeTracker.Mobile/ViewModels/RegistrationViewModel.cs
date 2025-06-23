@@ -11,16 +11,61 @@ public partial class RegistrationViewModel : BaseViewModel
 {
     private readonly IAuthService _authService;
 
-    [ObservableProperty] private string username = string.Empty;
-    [ObservableProperty] private string password = string.Empty;
-    [ObservableProperty] private string email = string.Empty;
-    [ObservableProperty] private string firstName = string.Empty;
-    [ObservableProperty] private string lastName = string.Empty;
-    [ObservableProperty] private string town = string.Empty;
-    [ObservableProperty] private string country = string.Empty;
-    [ObservableProperty] private string role = string.Empty;
+    private string username = string.Empty;
+    public string Username
+    {
+        get => username;
+        set => SetProperty(ref username, value);
+    }
+     private string password = string.Empty;
+    public string Password
+    {
+        get => password;
+        set => SetProperty(ref password, value);
+    }
+    private string email = string.Empty;
+    public string Email
+    {
+        get => email;
+        set => SetProperty(ref email, value);
+    }
+    private string firstName = string.Empty;
+    public string FirstName
+    {
+        get => firstName;
+        set => SetProperty(ref firstName, value);
+    }
+    private string lastName = string.Empty;
+    public string LastName
+    {
+        get => lastName;
+        set => SetProperty(ref lastName, value);
+    }
+    private string town = string.Empty;
+    public string Town
+    {
+        get => town;
+        set => SetProperty(ref town, value);
+    }
+    private string country = string.Empty;
+    public string Country
+    {
+        get => country;
+        set => SetProperty(ref country, value);
+    }
+    private string role = string.Empty;
+    public string Role
+    {
+        get => role;
+        set => SetProperty(ref role, value);
+    }
 
-    [ObservableProperty] private string registrationSuccess = string.Empty;
+    private string registrationSuccess = string.Empty;
+    public string RegistrationSuccess
+    {
+        get => registrationSuccess;
+        set => SetProperty(ref registrationSuccess, value);
+    }
     // 🔥 REMOVED duplicate ObservableProperty for errorMessage
 
     public RegistrationViewModel(IAuthService authService)
@@ -33,28 +78,28 @@ public partial class RegistrationViewModel : BaseViewModel
     {
         IsBusy = true;
         ErrorMessage = string.Empty;
-        RegistrationSuccess = string.Empty;
+        registrationSuccess = string.Empty;
 
         try
         {
-            if (!Enum.TryParse<UserRole>(Role, out var parsedRole))
+            if (!Enum.TryParse<UserRole>(role, out var parsedRole))
                 parsedRole = UserRole.Employee;
 
             var dto = new RegisterRequestDto
             {
-                Username = Username,
-                Password = Password,
-                Email = Email,
-                FirstName = FirstName,
-                LastName = LastName,
-                Town = Town,
-                Country = Country,
+                Username = username,
+                Password = password,
+                Email = email,
+                FirstName = firstName,
+                LastName = lastName,
+                Town = town,
+                Country = country,
                 Role = parsedRole
             };
 
             var result = await _authService.RegisterAsync(dto);
             if (result.IsSuccess)
-                RegistrationSuccess = "Registration successful!";
+                registrationSuccess = "Registration successful!";
             else
                 ErrorMessage = result.Error ?? "Registration failed.";
         }

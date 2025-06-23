@@ -43,7 +43,7 @@ public partial class TimeEntriesViewModel : BaseViewModel
             }
 
             var result = await _apiClient.GetTimeEntriesAsync(user.Id);
-            if (result.IsSuccess)
+            if (result.IsSuccess && result.Value is not null)
             {
                 timeEntries.Clear();
                 foreach (var entry in result.Value)

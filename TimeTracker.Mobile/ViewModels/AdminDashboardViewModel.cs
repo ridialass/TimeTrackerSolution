@@ -41,7 +41,7 @@ public partial class AdminDashboardViewModel : BaseViewModel
         try
         {
             var result = await _apiClient.GetEmployeesAsync();
-            if (result.IsSuccess)
+            if (result.IsSuccess && result.Value is not null)
             {
                 users.Clear();
                 foreach (var u in result.Value)

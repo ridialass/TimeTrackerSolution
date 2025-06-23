@@ -19,20 +19,44 @@ public partial class HomeViewModel : BaseViewModel
     public ObservableCollection<DinnerPaidBy> DinnerPaidByOptions { get; }
         = new((DinnerPaidBy[])Enum.GetValues(typeof(DinnerPaidBy)));
 
-    [ObservableProperty]
     private WorkSessionType selectedSessionType;
+    public WorkSessionType SelectedSessionType
+    {
+        get => selectedSessionType;
+        set => SetProperty(ref selectedSessionType, value);
+    }
 
-    [ObservableProperty]
+    
     private bool includesTravelTime;
+    public bool IncludesTravelTime
+    {
+        get => includesTravelTime;
+        set => SetProperty(ref includesTravelTime, value);
+    }
 
-    [ObservableProperty]
+  
     private string travelHours = string.Empty;
+    public string TravelHours
+    {
+        get => travelHours;
+        set => SetProperty(ref travelHours, value);
+    }
 
-    [ObservableProperty]
+    
     private string travelMinutes = string.Empty;
+    public string TravelMinutes
+    {
+        get => travelMinutes;
+        set => SetProperty(ref travelMinutes, value);
+    }
 
-    [ObservableProperty]
+   
     private DinnerPaidBy selectedDinnerPaidBy = DinnerPaidBy.None;
+    public DinnerPaidBy SelectedDinnerPaidBy
+    {
+        get => selectedDinnerPaidBy;
+        set => SetProperty(ref selectedDinnerPaidBy, value);
+    }
 
     public ICommand ClockInCommand { get; }
     public ICommand ClockOutCommand { get; }
@@ -78,18 +102,18 @@ public partial class HomeViewModel : BaseViewModel
         {
             UserId = _authService.CurrentUser!.Id,
             Username = _authService.CurrentUser.UserName!,
-            SessionType = SelectedSessionType,
+            SessionType = selectedSessionType,
             StartTime = DateTime.UtcNow,
             StartLatitude = lat,
             StartLongitude = lon,
             StartAddress = addr,
-            IncludesTravelTime = IncludesTravelTime,
+            IncludesTravelTime = includesTravelTime,
             DinnerPaid = DinnerPaidBy.None,
             Location = addr
         };
 
-        TravelHours = "";
-        TravelMinutes = "";
+        travelHours = "";
+        travelMinutes = "";
     }
 
     private async Task OnClockOutAsync()
@@ -108,9 +132,9 @@ public partial class HomeViewModel : BaseViewModel
         }
 
         TimeSpan? travelSpan = null;
-        if (IncludesTravelTime
-            && int.TryParse(TravelHours, out var h)
-            && int.TryParse(TravelMinutes, out var m))
+        if (includesTravelTime
+            && int.TryParse(travelHours, out var h)
+            && int.TryParse(travelMinutes, out var m))
         {
             travelSpan = TimeSpan.FromHours(h + m / 60.0);
         }
@@ -129,7 +153,7 @@ public partial class HomeViewModel : BaseViewModel
             SessionType = _currentEntry.SessionType,
             IncludesTravelTime = _currentEntry.IncludesTravelTime,
             TravelDurationHours = _currentEntry.TravelDurationHours,
-            DinnerPaid = SelectedDinnerPaidBy,
+            DinnerPaid = selectedDinnerPaidBy,
             Location = _currentEntry.Location,
             UserId = _currentEntry.UserId,
             Username = _currentEntry.Username

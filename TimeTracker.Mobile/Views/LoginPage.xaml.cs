@@ -6,7 +6,7 @@ namespace TimeTracker.Mobile.Views;
 
 public partial class LoginPage : ContentPage
 {
-        // MAUI expose le provider via App.Current.Handler.MauiContext.Services
+    // MAUI expose le provider via App.Current.Handler.MauiContext.Services
     private IAuthService? AuthServiceOrNull =>
         Application.Current?.Handler?.MauiContext?.Services.GetService<IAuthService>();
 
@@ -14,21 +14,17 @@ public partial class LoginPage : ContentPage
     {
         InitializeComponent();
         BindingContext = vm;
-    }
-    
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
+        //Shell.SetFlyoutBehavior(this, FlyoutBehavior.Disabled);
 
-
-        var user = AuthServiceOrNull?.CurrentUser;
-        if (user is not null)
-        {
-            // Si c’est un admin, on va à AdminDashboardPage
-            if (Enum.TryParse<UserRole>(user.Role, out var role) && role == UserRole.Admin)
-                Shell.Current.GoToAsync($"//{nameof(AdminDashboardPage)}");
-            else
-                Shell.Current.GoToAsync($"//{nameof(HomePage)}");
-        }
     }
+
+    //protected override void OnAppearing()
+    //{
+    //    base.OnAppearing();
+    //    // âœ… Clear any previous error messages when the page appears
+    //    if (BindingContext is LoginViewModel vm)
+    //        vm.ErrorMessage = string.Empty;
+    //    // âœ… Re-enable the Flyout when navigating back to LoginPage
+    //    Shell.SetFlyoutBehavior(this, FlyoutBehavior.Disabled);
+    //}
 }
