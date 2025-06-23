@@ -21,7 +21,7 @@ public partial class App : Application
 
         MainPage = shell;
 
-        // ⚠️ Lance l’authentification après affichage du Shell
+        // Lance la tentative de restauration de session après affichage du Shell
         MainPage.Dispatcher.Dispatch(async () => await TryRestoreSessionOnLaunch());
     }
 
@@ -31,29 +31,27 @@ public partial class App : Application
         {
             var shell = Shell.Current;
 
-            // 1️⃣ Si aucune session : LoginPage est déjà affichée
+            // Si aucune session : LoginPage reste affichée (seul ShellContent dans le Shell)
             if (!await _authService.TryRestoreSessionAsync())
             {
                 shell.FlyoutBehavior = FlyoutBehavior.Disabled;
                 return;
             }
 
-            // 2️⃣ Session restaurée → activer menu
+            // Session restaurée → activer menu
             shell.FlyoutBehavior = FlyoutBehavior.Flyout;
 
-            // 3️⃣ Configurer menu selon rôle
+            // Ajouter dynamiquement le menu selon le rôle
             if (shell is AppShell appShell)
                 appShell.ConfigureFlyoutForRole(_authService.CurrentUser!.Role);
 
-            // 4️⃣ Navigation directe vers HomePage ou Dashboard
             var role = _authService.CurrentUser?.Role ?? string.Empty;
 
             if (Enum.TryParse<UserRole>(role, out var userRole))
             {
                 var target = userRole == UserRole.Admin ? "AdminDashboardPage" : "HomePage";
 
-                // 🧼 Nettoyage de pile + navigation absolue
-                shell.Items.Clear();
+                // Navigation absolue vers la page cible
                 await shell.GoToAsync($"//{target}");
             }
         }

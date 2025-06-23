@@ -40,39 +40,47 @@ public partial class LoginViewModel : BaseViewModel
 
         try
         {
-            // Forcer désactivation du menu au début
             Shell.Current.FlyoutBehavior = FlyoutBehavior.Disabled;
 
             var result = await _authService.LoginAsync(username, password);
             if (result.IsSuccess)
             {
                 var user = _authService.CurrentUser;
-                if (user is not null && Enum.TryParse<UserRole>(user.Role, out var role))
+                if (user is not null)
                 {
-                    // Réactiver le Flyout uniquement après succès
-                    Shell.Current.FlyoutBehavior = FlyoutBehavior.Flyout;
-
                     if (Shell.Current is AppShell shell)
+                    {
+                        // Ajoute dynamiquement le menu pour le rôle de l'utilisateur
                         shell.ConfigureFlyoutForRole(user.Role);
+                        Shell.Current.FlyoutBehavior = FlyoutBehavior.Flyout;
 
-                    if (role == UserRole.Admin)
-                        await _navigation.GoToAdminDashboardPageAsync();
-                    else
-                        await _navigation.GoToHomePageAsync();
+                        // Navigation absolue possible maintenant (car le menu a été ajouté)
+                        if (Enum.TryParse<UserRole>(user.Role, out var userRole))
+                        {
+                            if (userRole == UserRole.Admin)
+                                await _navigation.GoToAdminDashboardPageAsync();
+                            else
+                                await _navigation.GoToHomePageAsync();
+                        }
+                        else
+                        {
+                            ErrorMessage = "Rôle utilisateur inconnu après connexion.";
+                        }
+                    }
                 }
                 else
                 {
-                    ErrorMessage = "Could not determine user role after login.";
+                    ErrorMessage = "Impossible de déterminer l'utilisateur après connexion.";
                 }
             }
             else
             {
-                ErrorMessage = "Login failed: " + (result.Error ?? "Unknown error");
+                ErrorMessage = "Échec de la connexion : " + (result.Error ?? "Erreur inconnue");
             }
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Login error: {ex.Message}";
+            ErrorMessage = $"Erreur lors de la connexion : {ex.Message}";
         }
         finally
         {

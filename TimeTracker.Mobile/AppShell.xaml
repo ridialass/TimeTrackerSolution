@@ -2,20 +2,13 @@
     x:Class="TimeTracker.Mobile.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:views="clr-namespace:TimeTracker.Mobile.Views"
-    FlyoutBehavior="Disabled">
+    xmlns:views="clr-namespace:TimeTracker.Mobile.Views">
 
-    <!-- Page de démarrage -->
+    <!-- LoginPage n'est PAS dans un FlyoutItem donc PAS dans le menu -->
     <ShellContent
-        Title="Login"
         Route="LoginPage"
-        ContentTemplate="{DataTemplate views:LoginPage}" />
+        ContentTemplate="{DataTemplate views:LoginPage}"
+        Shell.FlyoutBehavior="Disabled" />
 
-    <FlyoutItem Title="Accueil" Route="HomePage" IsVisible="False">
-        <ShellContent ContentTemplate="{DataTemplate views:HomePage}" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="Dashboard" Route="AdminDashboardPage" IsVisible="False">
-        <ShellContent ContentTemplate="{DataTemplate views:AdminDashboardPage}" />
-    </FlyoutItem>
+    <!-- PAS de FlyoutItem au lancement -->
 </Shell>

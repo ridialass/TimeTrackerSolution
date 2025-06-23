@@ -31,10 +31,33 @@ namespace TimeTracker.Mobile.Services
         {
             try
             {
-                if (parameters != null)
-                    await Shell.Current.GoToAsync(route, parameters);
+                // Pages nécessitant navigation relative (jamais absolue !)
+                var relativeRoutes = new HashSet<string>
+                {
+                    nameof(LoginPage),
+                    nameof(StartSessionPage),
+                    nameof(EndSessionPage),
+                    nameof(TimeEntriesPage)
+                    // Ajoute ici d'autres pages modales/secondaires si besoin
+                };
+
+                if (relativeRoutes.Contains(route))
+                {
+                    // Navigation relative
+                    if (parameters != null)
+                        await Shell.Current.GoToAsync(route, parameters);
+                    else
+                        await Shell.Current.GoToAsync(route);
+                }
                 else
-                    await Shell.Current.GoToAsync(route);
+                {
+                    // Seulement pour HomePage/AdminDashboardPage (Flyout) → navigation absolue
+                    var absRoute = route.StartsWith("//") ? route : $"//{route}";
+                    if (parameters != null)
+                        await Shell.Current.GoToAsync(absRoute, parameters);
+                    else
+                        await Shell.Current.GoToAsync(absRoute);
+                }
             }
             catch (Exception ex)
             {

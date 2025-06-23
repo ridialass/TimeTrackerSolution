@@ -1,64 +1,73 @@
-﻿using TimeTracker.Mobile.Views;
+﻿using TimeTracker.Core.Enums;
 
-namespace TimeTracker.Mobile;
-
-public partial class AppShell : Shell
+namespace TimeTracker.Mobile
 {
-    public AppShell()
+    public partial class AppShell : Shell
     {
-        InitializeComponent();
-        RegisterRoutes();
-    }
-
-    private void RegisterRoutes()
-    {
-        // Les routes utilisées dans navigation doivent être enregistrées ici
-        Routing.RegisterRoute(nameof(LoginPage), typeof(LoginPage));
-        Routing.RegisterRoute(nameof(HomePage), typeof(HomePage));
-        Routing.RegisterRoute(nameof(AdminDashboardPage), typeof(AdminDashboardPage));
-        // Ajoute ici d'autres routes si tu as des pages secondaires (ex: TimeEntriesPage, etc.)
-    }
-
-    /// <summary>
-    /// Active dynamiquement les pages du menu latéral en fonction du rôle.
-    /// </summary>
-    public void ConfigureFlyoutForRole(string role)
-    {
-        Items.Clear();
-
-        if (role == "Admin")
+        public AppShell()
         {
-            Items.Add(new FlyoutItem
-            {
-                Title = "Dashboard",
-                Route = "AdminDashboardPage",
-                Items =
-                {
-                    new ShellContent
-                    {
-                        Title = "Admin Dashboard",
-                        ContentTemplate = new DataTemplate(typeof(AdminDashboardPage)),
-                        Route = "AdminDashboardPage"
-                    }
-                }
-            });
+            InitializeComponent();
+
+            // Déclare toutes les routes Shell nécessaires
+            Routing.RegisterRoute("LoginPage", typeof(Views.LoginPage));
+            Routing.RegisterRoute("HomePage", typeof(Views.HomePage));
+            Routing.RegisterRoute("AdminDashboardPage", typeof(Views.AdminDashboardPage));
+            Routing.RegisterRoute("StartSessionPage", typeof(Views.StartSessionPage));
+            Routing.RegisterRoute("EndSessionPage", typeof(Views.EndSessionPage));
+            Routing.RegisterRoute("TimeEntriesPage", typeof(Views.TimeEntriesPage));
+            // Ajoute ici toute autre page qui utilise GoToAsync
+            // Exemples :
+            // Routing.RegisterRoute("ProfilePage", typeof(Views.ProfilePage));
+            // Routing.RegisterRoute("SettingsPage", typeof(Views.SettingsPage));
+
         }
-        else
+
+        /// <summary>
+        /// Rajoute dynamiquement les items du menu selon le rôle
+        /// </summary>
+        public void ConfigureFlyoutForRole(string role)
         {
-            Items.Add(new FlyoutItem
+            Items.Clear();
+
+            if (Enum.TryParse<UserRole>(role, out var userRole))
             {
-                Title = "Accueil",
-                Route = "HomePage",
-                Items =
+                switch (userRole)
                 {
-                    new ShellContent
-                    {
-                        Title = "Accueil",
-                        ContentTemplate = new DataTemplate(typeof(HomePage)),
-                        Route = "HomePage"
-                    }
+                    case UserRole.Admin:
+                        Items.Add(new FlyoutItem
+                        {
+                            Title = "Dashboard Admin",
+                            Route = "AdminDashboardPage",
+                            Items =
+                            {
+                                new ShellContent
+                                {
+                                    Title = "Dashboard",
+                                    ContentTemplate = new DataTemplate(typeof(Views.AdminDashboardPage)),
+                                    Route = "AdminDashboardPage"
+                                }
+                            }
+                        });
+                        break;
+                    case UserRole.Employee:
+                    default:
+                        Items.Add(new FlyoutItem
+                        {
+                            Title = "Accueil",
+                            Route = "HomePage",
+                            Items =
+                            {
+                                new ShellContent
+                                {
+                                    Title = "Accueil",
+                                    ContentTemplate = new DataTemplate(typeof(Views.HomePage)),
+                                    Route = "HomePage"
+                                }
+                            }
+                        });
+                        break;
                 }
-            });
+            }
         }
     }
 }
