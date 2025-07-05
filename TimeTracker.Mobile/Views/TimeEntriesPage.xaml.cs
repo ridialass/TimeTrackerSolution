@@ -4,7 +4,7 @@ namespace TimeTracker.Mobile.Views;
 
 public partial class TimeEntriesPage : ContentPage
 {
-    private TimeEntriesViewModel ViewModel => BindingContext as TimeEntriesViewModel;
+    private TimeEntriesViewModel? ViewModel => BindingContext as TimeEntriesViewModel;
 
     public TimeEntriesPage(TimeEntriesViewModel viewModel)
     {

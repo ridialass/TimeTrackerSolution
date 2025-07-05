@@ -27,11 +27,20 @@ namespace TimeTracker.API.Controllers
             _timeEntryService = timeEntryService;
         }
 
+        // PATCH : Ajout de la gestion du filtre par userId
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int? userId = null)
         {
-            var list = await _timeEntryService.GetAllTimeEntriesAsync();
-            return Ok(list);
+            if (userId.HasValue)
+            {
+                var list = await _timeEntryService.GetTimeEntriesByUserAsync(userId.Value);
+                return Ok(list);
+            }
+            else
+            {
+                var list = await _timeEntryService.GetAllTimeEntriesAsync();
+                return Ok(list);
+            }
         }
 
         [HttpGet("ApplicationUser/{employeeId:int}")]
@@ -55,14 +64,12 @@ namespace TimeTracker.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // AutoMapper transforme le DTO en entité
-            var entity = _mapper.Map<TimeEntry>(dto);
-            _db.TimeEntries.Add(entity);
-            await _db.SaveChangesAsync();
+            // Utilisation du service pour l'ajout, qui mappe correctement tous les champs du DTO, y compris le GPS
+            var created = await _timeEntryService.AddTimeEntryAsync(dto);
 
             return CreatedAtAction(nameof(GetById),
-                                   new { id = entity.Id },
-                                   entity);
+                                   new { id = created.Id },
+                                   created);
         }
 
         [HttpDelete("{id:int}")]

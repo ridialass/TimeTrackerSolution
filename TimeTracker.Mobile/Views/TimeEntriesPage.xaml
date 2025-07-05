@@ -1,32 +1,34 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="TimeTracker.Mobile.Views.TimeEntriesPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:vm="clr-namespace:TimeTracker.Mobile.ViewModels"
-    Title="Time Entries">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:TimeTracker.Mobile.ViewModels"
+             x:Class="TimeTracker.Mobile.Views.TimeEntriesPage">
+    
 
-
-    <StackLayout Padding="16">
-
-        <Button Text="Refresh" Command="{Binding LoadTimeEntriesCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
-
-        <ListView ItemsSource="{Binding TimeEntries}" IsPullToRefreshEnabled="True"
-                  RefreshCommand="{Binding LoadTimeEntriesCommand}" IsRefreshing="{Binding IsBusy}">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <ViewCell>
-                        <StackLayout>
-                            <Label Text="{Binding StartTime, StringFormat='Start: {0:yyyy-MM-dd HH:mm}'}" />
-                            <Label Text="{Binding EndTime, StringFormat='End: {0:yyyy-MM-dd HH:mm}'}" />
-                            <Label Text="{Binding SessionType}" />
-                        </StackLayout>
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-
-        <Label Text="{Binding ErrorMessage}" TextColor="Red" IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
-
-    </StackLayout>
+    <ContentPage.Content>
+        <StackLayout Padding="10">
+            <Label Text="Historique des pointages" FontAttributes="Bold" FontSize="20"/>
+            <CollectionView ItemsSource="{Binding TimeEntries}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="10" Margin="5" HasShadow="True" CornerRadius="12" BackgroundColor="#f8f8f8">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding SessionType}" FontAttributes="Bold" FontSize="18" TextColor="DarkBlue" />
+                                <Label Text="{Binding StartTime, StringFormat='🕒 Start: {0:G}'}" TextColor="DarkBlue" />
+                                <Label Text="{Binding EndTime, StringFormat='🏁 End: {0:G}'}" TextColor="DarkBlue" />
+                                <Label Text="{Binding WorkDuration, StringFormat='⏱ Total Duration: {0:%h}h {0:%m}m'}"
+                                      IsVisible="{Binding WorkDuration, Converter={StaticResource NullToBoolConverter}}" TextColor="DarkBlue" />
+                                <Label Text="{Binding IncludesTravelTime, StringFormat='🚗 Travel Included: {0}'}" TextColor="DarkBlue" />
+                                <Label Text="{Binding TravelTimeEstimate, StringFormat='🚕 Temps de trajet : {0:hh\\:mm}'}"
+                                    IsVisible="{Binding IncludesTravelTime}" TextColor="DarkBlue" />
+                                <Label Text="{Binding StartAddress, StringFormat='📍 Start: {0}'}" TextColor="DarkBlue" />
+                                <Label Text="{Binding EndAddress, StringFormat='📍 End: {0}'}" TextColor="DarkBlue" />
+                                <Label Text="{Binding DinnerPaid, StringFormat='🍽 Dinner: {0}'}" TextColor="DarkBlue" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </StackLayout>
+    </ContentPage.Content>
 </ContentPage>
