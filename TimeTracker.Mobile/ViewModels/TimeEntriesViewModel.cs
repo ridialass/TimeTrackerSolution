@@ -59,4 +59,5 @@ public partial class TimeEntriesViewModel : BaseViewModel
             IsBusy = false;
         }
     }
+
 }

@@ -42,9 +42,20 @@ namespace TimeTracker.Mobile.Services
 
         public async Task CreateTimeEntryAsync(TimeEntryDto entry)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/timeentries", entry);
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/timeentries", entry);
+                var content = await response.Content.ReadAsStringAsync();
+                if (!response.IsSuccessStatusCode)
+                    throw new Exception($"Échec création entrée: {response.StatusCode} - {content}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erreur: " + ex.Message);
+                throw;
+            }
         }
+
     }
 
 }

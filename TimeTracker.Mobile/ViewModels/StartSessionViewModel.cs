@@ -18,7 +18,8 @@ public partial class StartSessionViewModel : BaseViewModel
 
     public ObservableCollection<WorkSessionType> SessionTypes { get; }
         = new(Enum.GetValues<WorkSessionType>());
-    private WorkSessionType selectedSessionType; 
+
+    private WorkSessionType selectedSessionType;
     public WorkSessionType SelectedSessionType
     {
         get => selectedSessionType;
@@ -85,7 +86,11 @@ public partial class StartSessionViewModel : BaseViewModel
 
         try
         {
+            // Appel API pour sauvegarder en base
             await _timeEntryService.CreateTimeEntryAsync(dto);
+
+            // ✅ IMPORTANT : enregistrer la session en mémoire (sinon EndSessionPage ne la voit pas)
+            await _timeEntryService.StartSessionAsync(dto);
         }
         catch
         {
@@ -96,6 +101,7 @@ public partial class StartSessionViewModel : BaseViewModel
             return;
         }
 
+        // Navigation
         await Shell.Current.GoToAsync(nameof(TimeTracker.Mobile.Views.EndSessionPage));
     }
 }
