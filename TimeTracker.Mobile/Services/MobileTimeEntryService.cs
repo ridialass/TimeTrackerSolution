@@ -1,29 +1,36 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
-using TimeTracker.Core.Entities;
-using TimeTracker.Mobile.Models;
 
 namespace TimeTracker.Mobile.Services
 {
     public class MobileTimeEntryService : IMobileTimeEntryService
     {
         private readonly HttpClient _httpClient;
+        private readonly ISessionStateService _sessionStateService;
         private TimeEntryDto? _inProgress;
-        // private readonly ITimeEntryRepository _timeEntryRepo;
 
-        public MobileTimeEntryService(HttpClient httpClient)
+        public MobileTimeEntryService(HttpClient httpClient, ISessionStateService sessionStateService)
         {
             _httpClient = httpClient;
+            _sessionStateService = sessionStateService;
         }
 
         public TimeEntryDto? InProgressSession => _inProgress;
 
-        public Task StartSessionAsync(TimeEntryDto dto)
+        // Call this when app starts or when a page appears to reload persisted state
+        public async Task LoadInProgressSessionAsync()
+        {
+            _inProgress = await _sessionStateService.GetCurrentSessionAsync();
+        }
+
+        public async Task StartSessionAsync(TimeEntryDto dto)
         {
             _inProgress = dto;
-            return Task.CompletedTask;
+            await _sessionStateService.SetCurrentSessionAsync(dto);
         }
 
         public async Task EndAndSaveCurrentSessionAsync()
@@ -31,6 +38,7 @@ namespace TimeTracker.Mobile.Services
             if (_inProgress == null) return;
             await CreateTimeEntryAsync(_inProgress);
             _inProgress = null;
+            await _sessionStateService.ClearSessionAsync();
         }
 
         public async Task<IEnumerable<TimeEntryDto>> GetTimeEntriesAsync(int userId)
@@ -55,7 +63,5 @@ namespace TimeTracker.Mobile.Services
                 throw;
             }
         }
-
     }
-
 }

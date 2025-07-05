@@ -8,19 +8,15 @@ namespace TimeTracker.Mobile.Views
 {
     public partial class HomePage : ContentPage
     {
-        IMobileTimeEntryService _sessionService =>
-            Handler?.MauiContext?.Services.GetRequiredService<IMobileTimeEntryService>()
-            ?? throw new InvalidOperationException("Le service IMobileTimeEntryService n'est pas disponible.");
+        private readonly IMobileTimeEntryService _sessionService;
+        private readonly IAuthService _authService;
 
-        IAuthService _authService =>
-            Handler?.MauiContext?.Services.GetRequiredService<IAuthService>()
-            ?? throw new InvalidOperationException("Le service IMobileAuthService n'est pas disponible.");
-
-
-        public HomePage(HomeViewModel vm)
+        public HomePage(HomeViewModel vm, IMobileTimeEntryService sessionService, IAuthService authService)
         {
             InitializeComponent();
             BindingContext = vm;
+            _sessionService = sessionService;
+            _authService = authService;
         }
 
         private async void OnStartSessionClicked(object sender, EventArgs e)
@@ -71,6 +67,11 @@ namespace TimeTracker.Mobile.Views
             }
 
             await Shell.Current.GoToAsync(nameof(AdminDashboardPage));
+        }
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            await _sessionService.LoadInProgressSessionAsync();
         }
     }
 

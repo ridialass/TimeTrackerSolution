@@ -31,6 +31,7 @@ public static class MauiProgram
         services.AddSingleton<ISecureStorageService, SecureStorageService>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IGeolocationService, GeolocationService>();
+        services.AddSingleton<ISessionStateService, SessionStateService>();
 
         // ──────────────
         // 👉 Handlers HTTP

@@ -17,6 +17,8 @@ namespace TimeTracker.Mobile.Services
 
         /// <summary>Termine et persiste la session en cours.</summary>
         Task EndAndSaveCurrentSessionAsync();
+        /// <summary>Nouvelle méthode pour charger la session en cours depuis le stockage local.</summary> 
+        Task LoadInProgressSessionAsync();
 
         Task<IEnumerable<TimeEntryDto>> GetTimeEntriesAsync(int userId);
         Task CreateTimeEntryAsync(TimeEntryDto entry);

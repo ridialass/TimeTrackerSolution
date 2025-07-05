@@ -9,17 +9,17 @@ namespace TimeTracker.Mobile.Services
     {
         public async Task GoToLoginPageAsync()
         {
-            await SafeNavigateAsync(nameof(LoginPage));
+            await SafeNavigateAsync("///LoginPage");
         }
 
         public async Task GoToHomePageAsync()
         {
-            await SafeNavigateAsync(nameof(HomePage));
+            await SafeNavigateAsync("///HomePage");
         }
 
         public async Task GoToAdminDashboardPageAsync()
         {
-            await SafeNavigateAsync(nameof(AdminDashboardPage));
+            await SafeNavigateAsync("///AdminDashboardPage");
         }
 
         public async Task GoToAsync(string route, IDictionary<string, object>? parameters = null)
@@ -31,32 +31,30 @@ namespace TimeTracker.Mobile.Services
         {
             try
             {
-                // Pages nécessitant navigation relative (jamais absolue !)
-                var relativeRoutes = new HashSet<string>
+                // Pages accessibles en navigation absolue (ShellContent racine)
+                var absoluteRoutes = new HashSet<string>
                 {
-                    nameof(LoginPage),
-                    nameof(StartSessionPage),
-                    nameof(EndSessionPage),
-                    nameof(TimeEntriesPage)
-                    // Ajoute ici d'autres pages modales/secondaires si besoin
+                    "LoginPage",
+                    "HomePage",
+                    "AdminDashboardPage"
+                    // Ajoute ici d'autres pages Shell racine si besoin
                 };
 
-                if (relativeRoutes.Contains(route))
+                if (absoluteRoutes.Contains(route.TrimStart('/')))
                 {
-                    // Navigation relative
-                    if (parameters != null)
-                        await Shell.Current.GoToAsync(route, parameters);
-                    else
-                        await Shell.Current.GoToAsync(route);
-                }
-                else
-                {
-                    // Seulement pour HomePage/AdminDashboardPage (Flyout) → navigation absolue
-                    var absRoute = route.StartsWith("//") ? route : $"//{route}";
+                    var absRoute = route.StartsWith("///") ? route : $"///{route.TrimStart('/')}";
                     if (parameters != null)
                         await Shell.Current.GoToAsync(absRoute, parameters);
                     else
                         await Shell.Current.GoToAsync(absRoute);
+                }
+                else
+                {
+                    // Navigation relative ou via route enregistrée
+                    if (parameters != null)
+                        await Shell.Current.GoToAsync(route, parameters);
+                    else
+                        await Shell.Current.GoToAsync(route);
                 }
             }
             catch (Exception ex)

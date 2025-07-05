@@ -85,6 +85,14 @@ public partial class HomeViewModel : BaseViewModel
     public bool IsCurrentUserAdmin =>
         _authService.CurrentUser?.Role == "Admin";
 
+    public async Task ReloadSessionAsync()
+    {
+        await _timeEntryService.LoadInProgressSessionAsync();
+        OnPropertyChanged(nameof(IsSessionInProgress));
+    }
+
+    // Add this property for binding in XAML if desired
+    public bool IsSessionInProgress => _timeEntryService.InProgressSession != null;
     private async Task OnClockInAsync()
     {
         var loc = await _geoService.GetCurrentLocationAsync();

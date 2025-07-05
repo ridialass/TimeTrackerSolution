@@ -28,9 +28,12 @@ public partial class EndSessionViewModel : BaseViewModel
         EndCommand = new Command(async () => await OnEndSessionAsync());
     }
 
-    // Properties exposed for binding
-
-    public TimeEntryDto? InProgressSession => _timeEntryService.InProgressSession;
+    private TimeEntryDto? _inProgressSession;
+    public TimeEntryDto? InProgressSession
+    {
+        get => _inProgressSession;
+        set => SetProperty(ref _inProgressSession, value);
+    }
 
     public string InProgressSessionInfo =>
         InProgressSession != null
@@ -62,6 +65,15 @@ public partial class EndSessionViewModel : BaseViewModel
     {
         get => selectedDinnerPaidBy;
         set => SetProperty(ref selectedDinnerPaidBy, value);
+    }
+
+    public async Task ReloadSessionAsync()
+    {
+        // Recharge la session depuis le stockage persistant
+        await _timeEntryService.LoadInProgressSessionAsync();
+        InProgressSession = _timeEntryService.InProgressSession;
+        OnPropertyChanged(nameof(InProgressSessionInfo));
+        OnPropertyChanged(nameof(InProgressSessionIncludesTravel));
     }
 
     private async Task OnEndSessionAsync()
@@ -100,6 +112,6 @@ public partial class EndSessionViewModel : BaseViewModel
 
         await _timeEntryService.EndAndSaveCurrentSessionAsync();
 
-        await Shell.Current.GoToAsync(nameof(HomePage));
+        await Shell.Current.GoToAsync("///HomePage");
     }
 }
