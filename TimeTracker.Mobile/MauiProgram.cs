@@ -40,7 +40,7 @@ public static class MauiProgram
         services.AddHttpClient<IApiClientService, ApiClientService>(client =>
         {
 #if ANDROID
-            client.BaseAddress = new Uri("https://10.0.2.2:7205/");
+            client.BaseAddress = new Uri("https://192.168.96.161:7205/");
 #else
             client.BaseAddress = new Uri("https://localhost:7205/");
 #endif

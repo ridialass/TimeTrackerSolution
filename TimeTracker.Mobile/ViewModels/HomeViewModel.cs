@@ -26,7 +26,6 @@ public partial class HomeViewModel : BaseViewModel
         set => SetProperty(ref selectedSessionType, value);
     }
 
-    
     private bool includesTravelTime;
     public bool IncludesTravelTime
     {
@@ -34,7 +33,6 @@ public partial class HomeViewModel : BaseViewModel
         set => SetProperty(ref includesTravelTime, value);
     }
 
-  
     private string travelHours = string.Empty;
     public string TravelHours
     {
@@ -42,7 +40,6 @@ public partial class HomeViewModel : BaseViewModel
         set => SetProperty(ref travelHours, value);
     }
 
-    
     private string travelMinutes = string.Empty;
     public string TravelMinutes
     {
@@ -50,7 +47,6 @@ public partial class HomeViewModel : BaseViewModel
         set => SetProperty(ref travelMinutes, value);
     }
 
-   
     private DinnerPaidBy selectedDinnerPaidBy = DinnerPaidBy.None;
     public DinnerPaidBy SelectedDinnerPaidBy
     {
@@ -91,8 +87,8 @@ public partial class HomeViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsSessionInProgress));
     }
 
-    // Add this property for binding in XAML if desired
     public bool IsSessionInProgress => _timeEntryService.InProgressSession != null;
+
     private async Task OnClockInAsync()
     {
         var loc = await _geoService.GetCurrentLocationAsync();
@@ -139,12 +135,13 @@ public partial class HomeViewModel : BaseViewModel
             endAddr = await _geoService.GetAddressFromCoordinatesAsync(lat, lon);
         }
 
-        TimeSpan? travelSpan = null;
+        // Correction : calcul et affectation de TravelDurationHours
+        double? travelDurationHours = null;
         if (includesTravelTime
             && int.TryParse(travelHours, out var h)
             && int.TryParse(travelMinutes, out var m))
         {
-            travelSpan = TimeSpan.FromHours(h + m / 60.0);
+            travelDurationHours = h + m / 60.0;
         }
 
         var completed = new TimeEntryDto
@@ -160,16 +157,16 @@ public partial class HomeViewModel : BaseViewModel
             EndAddress = endAddr,
             SessionType = _currentEntry.SessionType,
             IncludesTravelTime = _currentEntry.IncludesTravelTime,
-            TravelDurationHours = _currentEntry.TravelDurationHours,
+            TravelDurationHours = travelDurationHours, // <-- Correction ici
             DinnerPaid = selectedDinnerPaidBy,
             Location = _currentEntry.Location,
             UserId = _currentEntry.UserId,
             Username = _currentEntry.Username
         };
 
-        if (travelSpan.HasValue)
+        if (travelDurationHours.HasValue)
         {
-            Console.WriteLine($"Durée estimée du trajet : {travelSpan.Value}");
+            Console.WriteLine($"Durée estimée du trajet : {TimeSpan.FromHours(travelDurationHours.Value)}");
         }
 
         try

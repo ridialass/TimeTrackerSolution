@@ -93,16 +93,16 @@ public partial class EndSessionViewModel : BaseViewModel
             endAddress = await _geoService.GetAddressFromCoordinatesAsync(lat, lon);
         }
 
+        // --- Correction ici ---
+        double? travelDurationHours = null;
         if (session.IncludesTravelTime
             && int.TryParse(travelHours, out var h)
             && int.TryParse(travelMinutes, out var m))
         {
-            session.TravelDurationHours = h + (m / 60.0);
+            travelDurationHours = h + m / 60.0;
         }
-        else
-        {
-            session.TravelDurationHours = null;
-        }
+        session.TravelDurationHours = travelDurationHours;
+        // --- Fin correction ---
 
         session.EndTime = DateTime.Now;
         session.EndLatitude = lat;

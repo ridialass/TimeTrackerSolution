@@ -46,7 +46,7 @@ public partial class TimeEntriesViewModel : BaseViewModel
             if (result.IsSuccess && result.Value is not null)
             {
                 timeEntries.Clear();
-                foreach (var entry in result.Value)
+                foreach (var entry in result.Value.Where(e => e.EndTime != null))
                     timeEntries.Add(entry);
             }
             else
