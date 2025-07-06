@@ -11,5 +11,6 @@ namespace TimeTracker.Mobile.Services
         Task SetAsync(string key, string value);
         Task<string?> GetAsync(string key);
         void Remove(string key);
+        Task RemoveAsync(string key);
     }
 }

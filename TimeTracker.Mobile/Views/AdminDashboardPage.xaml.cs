@@ -9,4 +9,13 @@ public partial class AdminDashboardPage : ContentPage
         InitializeComponent();
         BindingContext = vm;
     }
+    private async void OnBackToHomeClicked(object sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(nameof(HomePage));
+    }
+    private async void OnLogoutClicked(object sender, EventArgs e)
+    {
+        if (Application.Current is App app)
+            await app.LogoutAsync();
+    }
 }

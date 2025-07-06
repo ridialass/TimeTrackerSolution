@@ -23,4 +23,9 @@ public partial class StartSessionPage : ContentPage
         Shell.Current.GoToAsync(nameof(HomePage));
         return true; // empêche le comportement par défaut (pop sans route valide)
     }
+    private async void OnLogoutClicked(object sender, EventArgs e)
+    {
+        if (Application.Current is App app)
+            await app.LogoutAsync();
+    }
 }

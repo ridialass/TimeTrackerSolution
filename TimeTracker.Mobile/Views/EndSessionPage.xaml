@@ -5,6 +5,13 @@
     xmlns:vm="clr-namespace:TimeTracker.Mobile.ViewModels"
     x:Class="TimeTracker.Mobile.Views.EndSessionPage"
     Title="End Session">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem
+            Text="Logout"
+            Order="Primary"
+            Priority="0"
+            Clicked="OnLogoutClicked"/>
+    </ContentPage.ToolbarItems>
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">

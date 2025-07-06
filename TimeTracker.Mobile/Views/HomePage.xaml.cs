@@ -73,6 +73,16 @@ namespace TimeTracker.Mobile.Views
             base.OnAppearing();
             await _sessionService.LoadInProgressSessionAsync();
         }
+        protected override bool OnBackButtonPressed()
+        {
+            Shell.Current.GoToAsync(nameof(HomePage));
+            return true;
+        }
+        private async void OnLogoutClicked(object sender, EventArgs e)
+        {
+            if (Application.Current is App app)
+                await app.LogoutAsync();
+        }
     }
 
 }

@@ -1,27 +1,31 @@
-﻿using Microsoft.Extensions.Logging;
-using TimeTracker.Core.Enums;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using TimeTracker.Mobile.Services;
-using TimeTracker.Mobile.Views;
 
 namespace TimeTracker.Mobile;
 
 public partial class App : Application
 {
-    private readonly IAuthService _authService;
-    private readonly IServiceProvider _services;
+    public static IServiceProvider ServiceProvider { get; private set; } = default!;
+
+    private readonly ISessionStateService _session;
     private readonly ILogger<App> _logger;
 
-    public App(IAuthService authService, IServiceProvider services, ILogger<App> logger, AppShell shell)
+    // Ajoute IServiceProvider provider aux paramètres du constructeur
+    public App(
+        ISessionStateService session,
+        ILogger<App> logger,
+        AppShell shell,
+        IServiceProvider provider)
     {
         InitializeComponent();
 
-        _authService = authService;
-        _services = services;
-        _logger = logger;
+        ServiceProvider = provider; // <- Stocke le provider dans la propriété statique
 
+        _session = session;
+        _logger = logger;
         MainPage = shell;
 
-        // Lance la tentative de restauration de session après affichage du Shell
         MainPage.Dispatcher.Dispatch(async () => await TryRestoreSessionOnLaunch());
     }
 
@@ -29,31 +33,7 @@ public partial class App : Application
     {
         try
         {
-            var shell = Shell.Current;
-
-            // Si aucune session : LoginPage reste affichée (seul ShellContent dans le Shell)
-            if (!await _authService.TryRestoreSessionAsync())
-            {
-                shell.FlyoutBehavior = FlyoutBehavior.Disabled;
-                return;
-            }
-
-            // Session restaurée → activer menu
-            shell.FlyoutBehavior = FlyoutBehavior.Flyout;
-
-            // Ajouter dynamiquement le menu selon le rôle
-            if (shell is AppShell appShell)
-                appShell.ConfigureFlyoutForRole(_authService.CurrentUser!.Role);
-
-            var role = _authService.CurrentUser?.Role ?? string.Empty;
-
-            if (Enum.TryParse<UserRole>(role, out var userRole))
-            {
-                var target = userRole == UserRole.Admin ? "AdminDashboardPage" : "HomePage";
-
-                // Navigation absolue vers la page cible
-                await shell.GoToAsync($"//{target}");
-            }
+            await _session.TryRestoreSessionAsync();
         }
         catch (Exception ex)
         {
@@ -61,4 +41,6 @@ public partial class App : Application
             await Shell.Current.DisplayAlert("Erreur", "Une erreur s’est produite au lancement.", "OK");
         }
     }
+
+    public async Task LogoutAsync() => await _session.LogoutAsync();
 }

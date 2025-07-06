@@ -7,60 +7,12 @@ namespace TimeTracker.Mobile.Services
 {
     public class NavigationService : INavigationService
     {
-        public async Task GoToLoginPageAsync()
-        {
-            await SafeNavigateAsync("///LoginPage");
-        }
-
-        public async Task GoToHomePageAsync()
-        {
-            await SafeNavigateAsync("///HomePage");
-        }
-
-        public async Task GoToAdminDashboardPageAsync()
-        {
-            await SafeNavigateAsync("///AdminDashboardPage");
-        }
-
-        public async Task GoToAsync(string route, IDictionary<string, object>? parameters = null)
-        {
-            await SafeNavigateAsync(route, parameters);
-        }
-
-        private static async Task SafeNavigateAsync(string route, IDictionary<string, object>? parameters = null)
-        {
-            try
-            {
-                // Pages accessibles en navigation absolue (ShellContent racine)
-                var absoluteRoutes = new HashSet<string>
-                {
-                    "LoginPage",
-                    "HomePage",
-                    "AdminDashboardPage"
-                    // Ajoute ici d'autres pages Shell racine si besoin
-                };
-
-                if (absoluteRoutes.Contains(route.TrimStart('/')))
-                {
-                    var absRoute = route.StartsWith("///") ? route : $"///{route.TrimStart('/')}";
-                    if (parameters != null)
-                        await Shell.Current.GoToAsync(absRoute, parameters);
-                    else
-                        await Shell.Current.GoToAsync(absRoute);
-                }
-                else
-                {
-                    // Navigation relative ou via route enregistrée
-                    if (parameters != null)
-                        await Shell.Current.GoToAsync(route, parameters);
-                    else
-                        await Shell.Current.GoToAsync(route);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Navigation to {route} failed: {ex.Message}");
-            }
-        }
+        public Task GoToLoginPageAsync() => Shell.Current.GoToAsync("LoginPage");
+        public Task GoToHomePageAsync() => Shell.Current.GoToAsync("//HomePage");
+        public Task GoToAdminDashboardPageAsync() => Shell.Current.GoToAsync("//AdminDashboardPage");
+        public Task GoToStartSessionPageAsync() => Shell.Current.GoToAsync(nameof(Views.StartSessionPage));
+        public Task GoToEndSessionPageAsync() => Shell.Current.GoToAsync(nameof(Views.EndSessionPage));
+        public Task GoToTimeEntriesPageAsync() => Shell.Current.GoToAsync(nameof(Views.TimeEntriesPage));
+        public Task GoBackAsync() => Shell.Current.GoToAsync("..");
     }
 }

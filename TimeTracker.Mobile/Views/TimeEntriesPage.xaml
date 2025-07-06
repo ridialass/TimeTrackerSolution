@@ -3,11 +3,20 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModels="clr-namespace:TimeTracker.Mobile.ViewModels"
              x:Class="TimeTracker.Mobile.Views.TimeEntriesPage">
-
+    <ContentPage.ToolbarItems>
+        <ToolbarItem
+            Text="Logout"
+            Order="Primary"
+            Priority="0"
+            Clicked="OnLogoutClicked"/>
+    </ContentPage.ToolbarItems>
 
     <ContentPage.Content>
         <Grid RowDefinitions="Auto,*">
             <StackLayout Padding="10">
+                <!-- BOUTON “Retour à l’Accueil” -->
+                <Button Text="⌂ Back to Home"  Clicked="OnBackToHomeClicked" HorizontalOptions="Start" />
+
                 <Label Text="Historique des pointages" FontAttributes="Bold" FontSize="20"/>
                 <CollectionView ItemsSource="{Binding TimeEntries}">
                     <CollectionView.ItemTemplate>

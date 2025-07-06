@@ -18,13 +18,4 @@ public partial class LoginPage : ContentPage
 
     }
 
-    //protected override void OnAppearing()
-    //{
-    //    base.OnAppearing();
-    //    // ✅ Clear any previous error messages when the page appears
-    //    if (BindingContext is LoginViewModel vm)
-    //        vm.ErrorMessage = string.Empty;
-    //    // ✅ Re-enable the Flyout when navigating back to LoginPage
-    //    Shell.SetFlyoutBehavior(this, FlyoutBehavior.Disabled);
-    //}
 }

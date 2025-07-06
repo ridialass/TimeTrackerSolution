@@ -5,8 +5,15 @@
     xmlns:vm="clr-namespace:TimeTracker.Mobile.ViewModels"
     x:Class="TimeTracker.Mobile.Views.HomePage"
     Title="Home">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem
+            Text="Logout"
+            Order="Primary"
+            Priority="0"
+            Clicked="OnLogoutClicked"/>
+    </ContentPage.ToolbarItems>
 
-
+    
     <VerticalStackLayout 
       Padding="40" 
       Spacing="20"

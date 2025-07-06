@@ -1,30 +1,26 @@
 ﻿using TimeTracker.Core.Enums;
+using TimeTracker.Mobile.Services;
 
 namespace TimeTracker.Mobile
 {
     public partial class AppShell : Shell
     {
+        private MenuItem? _logoutMenuItem;
+
         public AppShell()
         {
             InitializeComponent();
 
-            // Déclare toutes les routes Shell nécessaires
-            Routing.RegisterRoute("LoginPage", typeof(Views.LoginPage));
+            // NE PAS ENREGISTRER LoginPage comme route globale ici !
+            // Routing.RegisterRoute("LoginPage", typeof(Views.LoginPage));  // <-- À SUPPRIMER
+
             Routing.RegisterRoute("HomePage", typeof(Views.HomePage));
             Routing.RegisterRoute("AdminDashboardPage", typeof(Views.AdminDashboardPage));
             Routing.RegisterRoute("StartSessionPage", typeof(Views.StartSessionPage));
             Routing.RegisterRoute("EndSessionPage", typeof(Views.EndSessionPage));
             Routing.RegisterRoute("TimeEntriesPage", typeof(Views.TimeEntriesPage));
-            // Ajoute ici toute autre page qui utilise GoToAsync
-            // Exemples :
-            // Routing.RegisterRoute("ProfilePage", typeof(Views.ProfilePage));
-            // Routing.RegisterRoute("SettingsPage", typeof(Views.SettingsPage));
-
         }
 
-        /// <summary>
-        /// Rajoute dynamiquement les items du menu selon le rôle
-        /// </summary>
         public void ConfigureFlyoutForRole(string role)
         {
             Items.Clear();
@@ -43,7 +39,7 @@ namespace TimeTracker.Mobile
                                 new ShellContent
                                 {
                                     Title = "Dashboard",
-                                    ContentTemplate = new DataTemplate(typeof(Views.AdminDashboardPage)),
+                                    ContentTemplate = new DataTemplate(() => App.ServiceProvider.GetRequiredService<Views.AdminDashboardPage>()),
                                     Route = "AdminDashboardPage"
                                 }
                             }
@@ -60,7 +56,7 @@ namespace TimeTracker.Mobile
                                 new ShellContent
                                 {
                                     Title = "Accueil",
-                                    ContentTemplate = new DataTemplate(typeof(Views.HomePage)),
+                                    ContentTemplate = new DataTemplate(() => App.ServiceProvider.GetRequiredService<Views.HomePage>()),
                                     Route = "HomePage"
                                 }
                             }
@@ -68,6 +64,43 @@ namespace TimeTracker.Mobile
                         break;
                 }
             }
+
+            // Ajout du bouton Déconnexion APRÈS les FlyoutItem
+            if (_logoutMenuItem == null)
+            {
+                _logoutMenuItem = new MenuItem
+                {
+                    Text = "Déconnexion",
+                    Command = new Command(async () =>
+                    {
+                        if (Application.Current is App app)
+                            await app.LogoutAsync();
+                    })
+                };
+            }
+            Items.Add(_logoutMenuItem);
+        }
+
+        public async Task ResetForLogoutAsync()
+        {
+            Items.Clear();
+            CurrentItem = null;
+            FlyoutBehavior = FlyoutBehavior.Disabled;
+
+            // Injection DI pour LoginPage
+            var loginShellContent = new ShellContent
+            {
+                Title = "Connexion",
+                ContentTemplate = new DataTemplate(() => App.ServiceProvider.GetRequiredService<Views.LoginPage>()),
+                Route = "LoginPage"
+            };
+            Items.Add(loginShellContent);
+
+            // Sélectionne la LoginPage comme page active
+            CurrentItem = loginShellContent;
+
+            // Pas besoin de GoToAsync ici
+            await Task.CompletedTask;
         }
     }
 }

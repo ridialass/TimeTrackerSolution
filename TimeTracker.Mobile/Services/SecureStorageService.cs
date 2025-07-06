@@ -10,4 +10,9 @@ public class SecureStorageService : ISecureStorageService
     public Task<string?> GetAsync(string key) => SecureStorage.GetAsync(key);
 
     public void Remove(string key) => SecureStorage.Remove(key);
+    public Task RemoveAsync(string key)
+    {
+        SecureStorage.Default.Remove(key);
+        return Task.CompletedTask;
+    }
 }
