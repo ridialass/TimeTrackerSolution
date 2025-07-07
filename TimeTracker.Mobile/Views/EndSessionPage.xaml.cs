@@ -23,11 +23,6 @@ public partial class EndSessionPage : ContentPage
         await Shell.Current.GoToAsync("///HomePage");
     }
 
-    protected override bool OnBackButtonPressed()
-    {
-        Shell.Current.GoToAsync(nameof(HomePage));
-        return true;
-    }
     private async void OnLogoutClicked(object sender, EventArgs e)
     {
         if (Application.Current is App app)

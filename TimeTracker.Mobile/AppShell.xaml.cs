@@ -11,9 +11,7 @@ namespace TimeTracker.Mobile
         {
             InitializeComponent();
 
-            // NE PAS ENREGISTRER LoginPage comme route globale ici !
-            // Routing.RegisterRoute("LoginPage", typeof(Views.LoginPage));  // <-- À SUPPRIMER
-
+            // NE PAS ENREGISTRER LoginPage ici (déjà dans le XAML)
             Routing.RegisterRoute("HomePage", typeof(Views.HomePage));
             Routing.RegisterRoute("AdminDashboardPage", typeof(Views.AdminDashboardPage));
             Routing.RegisterRoute("StartSessionPage", typeof(Views.StartSessionPage));

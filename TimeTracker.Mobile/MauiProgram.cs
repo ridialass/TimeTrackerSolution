@@ -19,14 +19,11 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
-        // ──────────────
-        // 👉 Logging
         builder.Logging.AddDebug();
 
         var services = builder.Services;
 
-        // ──────────────
-        // 👉 Services de stockage et navigation
+        // Services de stockage et navigation
         services.AddSingleton<App>();
         services.AddSingleton<ISecureStorage>(SecureStorage.Default);
         services.AddSingleton<ISecureStorageService, SecureStorageService>();
@@ -34,8 +31,7 @@ public static class MauiProgram
         services.AddSingleton<IGeolocationService, GeolocationService>();
         services.AddSingleton<ISessionStateService, SessionStateService>();
 
-        // ──────────────
-        // 👉 Handlers HTTP
+        // Handlers HTTP
         services.AddTransient<AuthHeaderHandler>();
 
         services.AddHttpClient<IApiClientService, ApiClientService>(client =>
@@ -56,12 +52,10 @@ public static class MauiProgram
 #endif
         }).AddHttpMessageHandler<AuthHeaderHandler>();
 
-        // ──────────────
-        // 👉 Services métiers
+        // Services métiers
         services.AddSingleton<IAuthService, AuthService>();
 
-        // ──────────────
-        // 👉 ViewModels (Transient)
+        // ViewModels (Transient)
         services.AddTransient<LoginViewModel>();
         services.AddTransient<RegistrationViewModel>();
         services.AddTransient<HomeViewModel>();
@@ -70,8 +64,7 @@ public static class MauiProgram
         services.AddTransient<AdminDashboardViewModel>();
         services.AddTransient<TimeEntriesViewModel>();
 
-        // ──────────────
-        // 👉 Views (navigation MAUI)
+        // Views (navigation MAUI)
         services.AddTransient<LoginPage>();
         services.AddTransient<RegistrationPage>();
         services.AddTransient<HomePage>();
@@ -80,8 +73,7 @@ public static class MauiProgram
         services.AddTransient<AdminDashboardPage>();
         services.AddTransient<TimeEntriesPage>();
 
-        // ──────────────
-        // 👉 Shell & App
+        // Shell & App
         services.AddSingleton<AppShell>();
         services.AddSingleton<App>();
 

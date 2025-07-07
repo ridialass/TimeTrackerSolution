@@ -8,6 +8,7 @@ namespace TimeTracker.Mobile.ViewModels;
 public partial class LoginViewModel : BaseViewModel
 {
     private readonly ISessionStateService _sessionService;
+    private readonly INavigationService _navigationService;
 
     private string username = string.Empty;
     public string Username
@@ -23,9 +24,10 @@ public partial class LoginViewModel : BaseViewModel
         set => SetProperty(ref password, value);
     }
 
-    public LoginViewModel(ISessionStateService sessionService)
+    public LoginViewModel(ISessionStateService sessionService, INavigationService navigationService)
     {
         _sessionService = sessionService;
+        _navigationService = navigationService;
     }
 
     [RelayCommand]
@@ -38,7 +40,14 @@ public partial class LoginViewModel : BaseViewModel
         {
             var success = await _sessionService.LoginAsync(username, password);
             if (!success)
+            {
                 ErrorMessage = "Échec de la connexion : identifiants invalides ou erreur serveur.";
+                return;
+            }
+
+            // Si connexion OK, navigation vers la HomePage (ou dashboard selon rôle)
+            // Ici on suppose que le rôle est déjà géré côté sessionService
+            await _navigationService.GoToHomePageAsync();
         }
         catch (Exception ex)
         {

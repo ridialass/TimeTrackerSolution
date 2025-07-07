@@ -10,11 +10,10 @@ public partial class StartSessionPage : ContentPage
 		InitializeComponent();
         BindingContext = vm;
     }
-    
+
     private async void OnBackToHomeClicked(object sender, System.EventArgs e)
     {
-        // Navigue vers HomePage (route enregistrée dans AppShell)
-        await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+        await Shell.Current.GoToAsync("///HomePage");
     }
 
     protected override bool OnBackButtonPressed()

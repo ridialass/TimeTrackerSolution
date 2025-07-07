@@ -11,7 +11,6 @@ public partial class App : Application
     private readonly ISessionStateService _session;
     private readonly ILogger<App> _logger;
 
-    // Ajoute IServiceProvider provider aux paramètres du constructeur
     public App(
         ISessionStateService session,
         ILogger<App> logger,
@@ -20,7 +19,7 @@ public partial class App : Application
     {
         InitializeComponent();
 
-        ServiceProvider = provider; // <- Stocke le provider dans la propriété statique
+        ServiceProvider = provider;
 
         _session = session;
         _logger = logger;
