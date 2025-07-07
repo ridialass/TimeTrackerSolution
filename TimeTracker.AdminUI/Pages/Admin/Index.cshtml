@@ -21,7 +21,7 @@
         </div>
     </div>
 
-    <!-- 2. Filter Sessions by User -->
+    <!-- 2. Filter Sessions by User and Date -->
     <div class="col-lg-4">
         <div class="card shadow-sm">
             <div class="card-header bg-light">
@@ -39,6 +39,26 @@
                             }
                         </select>
                     </div>
+                    <div class="col-12">
+                        <label class="form-label">Période</label>
+                        <select asp-for="SelectedPeriod" class="form-select" id="periodSelect" onchange="toggleCustomDates(this.value)">
+                            <option value="all">Toutes</option>
+                            <option value="week">Cette semaine</option>
+                            <option value="month">Ce mois-ci</option>
+                            <option value="custom">Personnalisé</option>
+                        </select>
+                    </div>
+                    <div class="col-12 row" id="customDates" style="display:none;">
+                        <div class="col">
+                            <label asp-for="CustomStartDate" class="form-label">Du</label>
+                            <input asp-for="CustomStartDate" type="date" class="form-control" />
+                        </div>
+                        <div class="col">
+                            <label asp-for="CustomEndDate" class="form-label">au</label>
+                            <input asp-for="CustomEndDate" type="date" class="form-control" />
+                        </div>
+                    </div>
+                    <input type="hidden" asp-for="WeekOffset" />
                     <div class="col-auto">
                         <button type="submit" class="btn btn-primary">Charger</button>
                     </div>
@@ -57,9 +77,50 @@
                 </h5>
             </div>
             <div class="card-body">
+                @if (Model.SelectedEmployeeId != 0)
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <form method="post" asp-page-handler="LoadSessions" style="display:inline;">
+                            <input type="hidden" name="SelectedEmployeeId" value="@Model.SelectedEmployeeId" />
+                            <input type="hidden" name="SelectedPeriod" value="@Model.SelectedPeriod" />
+                            <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
+                            <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
+                            <input type="hidden" name="WeekOffset" value="@(Model.WeekOffset - 1)" />
+                            <button type="submit" class="btn btn-link">&laquo; Semaine précédente</button>
+                        </form>
+                        <span>
+                            @Model.CurrentWeekStart.ToString("dd/MM/yyyy") - @Model.CurrentWeekEnd.ToString("dd/MM/yyyy")
+                        </span>
+                        @if (Model.WeekOffset < 0)
+                        {
+                            <form method="post" asp-page-handler="LoadSessions" style="display:inline;">
+                                <input type="hidden" name="SelectedEmployeeId" value="@Model.SelectedEmployeeId" />
+                                <input type="hidden" name="SelectedPeriod" value="@Model.SelectedPeriod" />
+                                <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
+                                <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
+                                <input type="hidden" name="WeekOffset" value="@(Model.WeekOffset + 1)" />
+                                <button type="submit" class="btn btn-link">Semaine suivante &raquo;</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-link text-muted" disabled>Semaine suivante &raquo;</button>
+                        }
+                    </div>
+                }
                 @if (Model.FilteredEntries != null && Model.FilteredEntries.Any())
                 {
                     <div class="table-responsive">
+                        <!-- EXPORT BUTTON posts ALL filter info -->
+                        <form method="post" asp-page-handler="ExportCsv" class="mt-3 text-end">
+                            <input type="hidden" name="SelectedEmployeeId" value="@Model.SelectedEmployeeId" />
+                            <input type="hidden" name="SelectedPeriod" value="@Model.SelectedPeriod" />
+                            <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
+                            <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
+                            <button type="submit" class="btn btn-info">
+                                <i class="bi bi-download me-1"></i>Exporter CSV
+                            </button>
+                        </form>
                         <table class="table table-striped align-middle">
                             <thead class="table-light">
                                 <tr>
@@ -92,11 +153,6 @@
                             </tbody>
                         </table>
                     </div>
-                    <form method="post" asp-page-handler="ExportCsv" class="mt-3 text-end">
-                        <button type="submit" class="btn btn-info">
-                            <i class="bi bi-download me-1"></i>Exporter CSV
-                        </button>
-                    </form>
                 }
                 else
                 {
@@ -106,3 +162,14 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function toggleCustomDates(val) {
+            document.getElementById('customDates').style.display = val === 'custom' ? 'flex' : 'none';
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleCustomDates(document.getElementById('periodSelect').value);
+        });
+    </script>
+}

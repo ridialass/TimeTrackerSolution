@@ -32,35 +32,9 @@ namespace TimeTracker.API.Controllers
         }
 
 
-        ////[AllowAnonymous] // Pour le setup initial, retire-le ensuite
-        //[HttpPost("register")]
-        //[Authorize(Roles = "Admin")]
-        //public async Task<IActionResult> Register(
-        //[FromBody] RegisterRequestDto model)
-        //{
-        //    if (!ModelState.IsValid)
-        //        // pour débugger, renvoyer la liste des erreurs
-        //        return BadRequest(new { errors = ModelState });
+        
 
-        //    // On mappe manuellement (ou via AutoMapper si vous préférez) :
-        //    var dto = new EmployeeDto
-        //    {
-        //        Username = model.Username,
-        //        Role = model.Role,
-        //        FirstName = model.FirstName,
-        //        LastName = model.LastName,
-        //        Town = model.Town,
-        //        Country = model.Country
-        //    };
-
-        //    bool created = await _auth.RegisterAsync(dto, model.Password);
-        //    if (!created)
-        //        return Conflict(new { message = "Username already exists" });
-
-        //    return Ok(new { username = model.Username });
-        //}
-
-        [AllowAnonymous]
+        // [AllowAnonymous]
         [HttpPost("register")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto model)
