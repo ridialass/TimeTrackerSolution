@@ -1,185 +1,106 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Maui.Controls;
-using System;
+using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Services;
-using TimeTracker.Mobile.Views;
 
 namespace TimeTracker.Mobile.ViewModels;
 
 public partial class HomeViewModel : BaseViewModel
 {
-    public ObservableCollection<WorkSessionType> SessionTypes { get; }
-        = new((WorkSessionType[])Enum.GetValues(typeof(WorkSessionType)));
+    // ... Existing observable properties ...
 
-    public ObservableCollection<DinnerPaidBy> DinnerPaidByOptions { get; }
-        = new((DinnerPaidBy[])Enum.GetValues(typeof(DinnerPaidBy)));
-
-    private WorkSessionType selectedSessionType;
-    public WorkSessionType SelectedSessionType
-    {
-        get => selectedSessionType;
-        set => SetProperty(ref selectedSessionType, value);
-    }
-
-    private bool includesTravelTime;
-    public bool IncludesTravelTime
-    {
-        get => includesTravelTime;
-        set => SetProperty(ref includesTravelTime, value);
-    }
-
-    private string travelHours = string.Empty;
-    public string TravelHours
-    {
-        get => travelHours;
-        set => SetProperty(ref travelHours, value);
-    }
-
-    private string travelMinutes = string.Empty;
-    public string TravelMinutes
-    {
-        get => travelMinutes;
-        set => SetProperty(ref travelMinutes, value);
-    }
-
-    private DinnerPaidBy selectedDinnerPaidBy = DinnerPaidBy.None;
-    public DinnerPaidBy SelectedDinnerPaidBy
-    {
-        get => selectedDinnerPaidBy;
-        set => SetProperty(ref selectedDinnerPaidBy, value);
-    }
-
-    public ICommand ClockInCommand { get; }
-    public ICommand ClockOutCommand { get; }
-    public ICommand GoToHistoryCommand { get; }
-
-    private TimeEntryDto? _currentEntry;
     private readonly IAuthService _authService;
     private readonly IMobileTimeEntryService _timeEntryService;
     private readonly IGeolocationService _geoService;
+    private readonly INavigationService _navigationService;
+    private readonly IDialogService _dialogService;
 
     public HomeViewModel(
         IAuthService authService,
         IMobileTimeEntryService timeEntryService,
-        IGeolocationService geoService)
+        IGeolocationService geoService,
+        INavigationService navigationService,
+        IDialogService dialogService)
     {
         _authService = authService;
         _timeEntryService = timeEntryService;
         _geoService = geoService;
-
-        ClockInCommand = new Command(async () => await OnClockInAsync());
-        ClockOutCommand = new Command(async () => await OnClockOutAsync());
-        GoToHistoryCommand = new Command(async () =>
-            await Shell.Current.GoToAsync(nameof(TimeEntriesPage)));
+        _navigationService = navigationService;
+        _dialogService = dialogService;
     }
 
-    public bool IsCurrentUserAdmin =>
-        _authService.CurrentUser?.Role == "Admin";
-
-    public async Task ReloadSessionAsync()
+    [RelayCommand]
+    private async Task StartSessionAsync()
     {
-        await _timeEntryService.LoadInProgressSessionAsync();
-        OnPropertyChanged(nameof(IsSessionInProgress));
+        if (_timeEntryService.InProgressSession != null)
+        {
+            await _dialogService.ShowAlertAsync(
+                "Session en cours",
+                "Vous avez déjà une session non terminée. Veuillez d'abord terminer cette session.",
+                "OK");
+            return;
+        }
+        await _navigationService.GoToStartSessionPageAsync();
     }
 
-    public bool IsSessionInProgress => _timeEntryService.InProgressSession != null;
-
-    private async Task OnClockInAsync()
+    [RelayCommand]
+    private async Task EndSessionAsync()
     {
-        var loc = await _geoService.GetCurrentLocationAsync();
-        var addr = "Location unavailable";
-        double lat = 0, lon = 0;
-
-        if (loc != null)
+        if (_timeEntryService.InProgressSession == null)
         {
-            lat = loc.Latitude;
-            lon = loc.Longitude;
-            addr = await _geoService.GetAddressFromCoordinatesAsync(lat, lon);
+            await _dialogService.ShowAlertAsync(
+                "Pas de session en cours",
+                "Aucune session n'est en cours. Veuillez d'abord démarrer une session.",
+                "OK");
+            return;
         }
-
-        _currentEntry = new TimeEntryDto
-        {
-            UserId = _authService.CurrentUser!.Id,
-            Username = _authService.CurrentUser.UserName!,
-            SessionType = selectedSessionType,
-            StartTime = DateTime.UtcNow,
-            StartLatitude = lat,
-            StartLongitude = lon,
-            StartAddress = addr,
-            IncludesTravelTime = includesTravelTime,
-            DinnerPaid = DinnerPaidBy.None,
-            Location = addr
-        };
-
-        travelHours = "";
-        travelMinutes = "";
+        await _navigationService.GoToEndSessionPageAsync();
     }
 
-    private async Task OnClockOutAsync()
+    [RelayCommand]
+    private async Task GoToHistoryAsync()
     {
-        if (_currentEntry is null) return;
+        await _navigationService.GoToTimeEntriesPageAsync();
+    }
 
-        var loc = await _geoService.GetCurrentLocationAsync();
-        var endAddr = "Location unavailable";
-        double lat = 0, lon = 0;
-
-        if (loc != null)
+    [RelayCommand]
+    private async Task GoToAdminDashboardAsync()
+    {
+        var currentUser = _authService.CurrentUser;
+        // Correction: Safely parse string role to enum for comparison
+        if (currentUser == null ||
+            !System.Enum.TryParse<UserRole>(currentUser.Role, out var roleEnum) ||
+            roleEnum != UserRole.Admin)
         {
-            lat = loc.Latitude;
-            lon = loc.Longitude;
-            endAddr = await _geoService.GetAddressFromCoordinatesAsync(lat, lon);
+            await _dialogService.ShowAlertAsync(
+                "Accès refusé",
+                "Vous n'avez pas les droits pour accéder à l'Admin Dashboard.",
+                "OK");
+            return;
         }
+        await _navigationService.GoToAdminDashboardPageAsync();
+    }
 
-        // Correction : calcul et affectation de TravelDurationHours
-        double? travelDurationHours = null;
-        if (includesTravelTime
-            && int.TryParse(travelHours, out var h)
-            && int.TryParse(travelMinutes, out var m))
-        {
-            travelDurationHours = h + m / 60.0;
-        }
+    [RelayCommand]
+    private async Task LogoutAsync()
+    {
+        if (Application.Current is App app)
+            await app.LogoutAsync();
+    }
 
-        var completed = new TimeEntryDto
+    // Correction: Safely compare to string "Admin" or use enum if you want
+    public bool IsCurrentUserAdmin
+    {
+        get
         {
-            Id = _currentEntry.Id,
-            StartTime = _currentEntry.StartTime,
-            EndTime = DateTime.UtcNow,
-            StartLatitude = _currentEntry.StartLatitude,
-            StartLongitude = _currentEntry.StartLongitude,
-            StartAddress = _currentEntry.StartAddress,
-            EndLatitude = lat,
-            EndLongitude = lon,
-            EndAddress = endAddr,
-            SessionType = _currentEntry.SessionType,
-            IncludesTravelTime = _currentEntry.IncludesTravelTime,
-            TravelDurationHours = travelDurationHours, // <-- Correction ici
-            DinnerPaid = selectedDinnerPaidBy,
-            Location = _currentEntry.Location,
-            UserId = _currentEntry.UserId,
-            Username = _currentEntry.Username
-        };
-
-        if (travelDurationHours.HasValue)
-        {
-            Console.WriteLine($"Durée estimée du trajet : {TimeSpan.FromHours(travelDurationHours.Value)}");
-        }
-
-        try
-        {
-            await _timeEntryService.CreateTimeEntryAsync(completed);
-        }
-        catch
-        {
-            // TODO : afficher un message
-        }
-        finally
-        {
-            _currentEntry = null;
+            var role = _authService.CurrentUser?.Role;
+            return System.Enum.TryParse<UserRole>(role, out var roleEnum) && roleEnum == UserRole.Admin;
         }
     }
+
+    // ... Any additional properties/methods ...
 }

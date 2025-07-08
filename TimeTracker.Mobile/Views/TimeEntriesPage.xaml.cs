@@ -23,9 +23,9 @@ public partial class TimeEntriesPage : ContentPage
     {
         await Shell.Current.GoToAsync("//HomePage");
     }
-    private async void OnLogoutClicked(object sender, EventArgs e)
-    {
-        if (Application.Current is App app)
-            await app.LogoutAsync();
-    }
+    //private async void OnLogoutClicked(object sender, EventArgs e)
+    //{
+    //    if (Application.Current is App app)
+    //        await app.LogoutAsync();
+    //}
 }

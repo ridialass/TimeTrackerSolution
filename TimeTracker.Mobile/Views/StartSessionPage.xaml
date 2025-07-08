@@ -5,13 +5,13 @@
     xmlns:vm="clr-namespace:TimeTracker.Mobile.ViewModels"
     x:Class="TimeTracker.Mobile.Views.StartSessionPage"
     Title="Start Session">
-    <ContentPage.ToolbarItems>
+    <!--<ContentPage.ToolbarItems>
         <ToolbarItem
             Text="Logout"
             Order="Primary"
             Priority="0"
             Clicked="OnLogoutClicked"/>
-    </ContentPage.ToolbarItems>
+    </ContentPage.ToolbarItems>-->
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">

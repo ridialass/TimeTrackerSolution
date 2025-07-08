@@ -3,13 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModels="clr-namespace:TimeTracker.Mobile.ViewModels"
              x:Class="TimeTracker.Mobile.Views.TimeEntriesPage">
-    <ContentPage.ToolbarItems>
+    <!--<ContentPage.ToolbarItems>
         <ToolbarItem
             Text="Logout"
             Order="Primary"
             Priority="0"
             Clicked="OnLogoutClicked"/>
-    </ContentPage.ToolbarItems>
+    </ContentPage.ToolbarItems>-->
 
     <ContentPage.Content>
         <Grid RowDefinitions="Auto,*">

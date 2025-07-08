@@ -10,34 +10,32 @@
             Text="Logout"
             Order="Primary"
             Priority="0"
-            Clicked="OnLogoutClicked"/>
+            Command="{Binding LogoutCommand}" />
     </ContentPage.ToolbarItems>
 
-    
-    <VerticalStackLayout 
-      Padding="40" 
+    <VerticalStackLayout
+      Padding="40"
       Spacing="20"
       VerticalOptions="Center">
 
-        <Button 
-      Text="Start Session" 
-      Clicked="OnStartSessionClicked" />
+        <Button
+          Text="Start Session"
+          Command="{Binding StartSessionCommand}" />
 
-        <Button 
-      Text="End Session" 
-      Clicked="OnEndSessionClicked" />
+        <Button
+          Text="End Session"
+          Command="{Binding EndSessionCommand}" />
 
-        <Button 
-      Text="History" 
-      Clicked="OnHistoryClicked" />
+        <Button
+          Text="History"
+          Command="{Binding GoToHistoryCommand}" />
 
-        <!-- Dans HomePage.xaml, ajoutez un Binding à IsVisible -->
-        <Button 
-      Text="Admin Dashboard" 
-      Clicked="OnAdminDashboardClicked" 
-      BackgroundColor="#333"
-      TextColor="White"
-      IsVisible="{Binding IsCurrentUserAdmin}" />
+        <Button
+          Text="Admin Dashboard"
+          Command="{Binding GoToAdminDashboardCommand}"
+          BackgroundColor="#333"
+          TextColor="White"
+          IsVisible="{Binding IsCurrentUserAdmin}" />
 
     </VerticalStackLayout>
 </ContentPage>

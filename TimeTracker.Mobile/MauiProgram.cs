@@ -28,6 +28,7 @@ public static class MauiProgram
         services.AddSingleton<ISecureStorage>(SecureStorage.Default);
         services.AddSingleton<ISecureStorageService, SecureStorageService>();
         services.AddSingleton<INavigationService, NavigationService>();
+        builder.Services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IGeolocationService, GeolocationService>();
         services.AddSingleton<ISessionStateService, SessionStateService>();
 
@@ -37,7 +38,7 @@ public static class MauiProgram
         services.AddHttpClient<IApiClientService, ApiClientService>(client =>
         {
 #if ANDROID
-            client.BaseAddress = new Uri("http://192.168.187.110:7205/");
+            client.BaseAddress = new Uri("http://10.0.2.2:7205/");
 #else
             client.BaseAddress = new Uri("https://localhost:7205/");
 #endif
@@ -46,7 +47,7 @@ public static class MauiProgram
         services.AddHttpClient<IMobileTimeEntryService, MobileTimeEntryService>(client =>
         {
 #if ANDROID
-            client.BaseAddress = new Uri("http://192.168.187.110:7205/");
+            client.BaseAddress = new Uri("http://10.0.2.2:7205/");
 #else
             client.BaseAddress = new Uri("https://localhost:7205/");
 #endif

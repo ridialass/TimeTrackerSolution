@@ -12,10 +12,10 @@ public partial class App : Application
     private readonly ILogger<App> _logger;
 
     public App(
-        ISessionStateService session,
-        ILogger<App> logger,
-        AppShell shell,
-        IServiceProvider provider)
+    ISessionStateService session,
+    ILogger<App> logger,
+    AppShell shell,
+    IServiceProvider provider)
     {
         InitializeComponent();
 
@@ -25,7 +25,11 @@ public partial class App : Application
         _logger = logger;
         MainPage = shell;
 
-        MainPage.Dispatcher.Dispatch(async () => await TryRestoreSessionOnLaunch());
+        // Laisse le temps au Shell d'être actif avant de naviguer
+        MainPage.Dispatcher.Dispatch(async () => {
+            await Task.Delay(100); // <= Ajoute ce délai
+            await TryRestoreSessionOnLaunch();
+        });
     }
 
     private async Task TryRestoreSessionOnLaunch()
@@ -37,9 +41,12 @@ public partial class App : Application
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur au démarrage de l'application");
-            await Shell.Current.DisplayAlert("Erreur", "Une erreur s’est produite au lancement.", "OK");
+            // On vérifie que la page active est bien un Shell pour éviter une exception ici aussi
+            if (Shell.Current != null)
+                await Shell.Current.DisplayAlert("Erreur", "Une erreur s’est produite au lancement.", "OK");
         }
     }
 
-    public async Task LogoutAsync() => await _session.LogoutAsync();
+    public async Task LogoutAsync()
+        => await _session.LogoutAsync();
 }
