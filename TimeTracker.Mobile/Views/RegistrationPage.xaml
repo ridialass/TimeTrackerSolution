@@ -3,25 +3,32 @@
     x:Class="TimeTracker.Mobile.Views.RegistrationPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:vm="clr-namespace:TimeTracker.Mobile.ViewModels"
-    Title="User Registration">
+    xmlns:resx="clr-namespace:TimeTracker.Mobile.Resources.Strings"
+    Title="{x:Static resx:AppResources.Registration_Title}">
 
     <ScrollView>
         <StackLayout Padding="16" Spacing="8">
 
-            <Entry Placeholder="Username" Text="{Binding Username}" />
-            <Entry Placeholder="Password" Text="{Binding Password}" IsPassword="True" />
-            <Entry Placeholder="Email" Text="{Binding Email}" />
-            <Entry Placeholder="First Name" Text="{Binding FirstName}" />
-            <Entry Placeholder="Last Name" Text="{Binding LastName}" />
-            <Entry Placeholder="Town" Text="{Binding Town}" />
-            <Entry Placeholder="Country" Text="{Binding Country}" />
-            <Entry Placeholder="Role" Text="{Binding Role}" />
+            <Entry Placeholder="{x:Static resx:AppResources.Registration_Username}" Text="{Binding Username}" />
+            <Entry Placeholder="{x:Static resx:AppResources.Registration_Password}" Text="{Binding Password}" IsPassword="True" />
+            <Entry Placeholder="{x:Static resx:AppResources.Registration_Email}" Text="{Binding Email}" />
+            <Entry Placeholder="{x:Static resx:AppResources.Registration_FirstName}" Text="{Binding FirstName}" />
+            <Entry Placeholder="{x:Static resx:AppResources.Registration_LastName}" Text="{Binding LastName}" />
+            <Entry Placeholder="{x:Static resx:AppResources.Registration_Town}" Text="{Binding Town}" />
+            <Entry Placeholder="{x:Static resx:AppResources.Registration_Country}" Text="{Binding Country}" />
+            <Entry Placeholder="{x:Static resx:AppResources.Registration_Role}" Text="{Binding Role}" />
 
-            <Button Text="Register" Command="{Binding RegisterCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
+            <Button Text="{x:Static resx:AppResources.Registration_RegisterBtn}"
+                    Command="{Binding RegisterCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
 
-            <Label Text="{Binding RegistrationSuccess}" TextColor="Green" IsVisible="{Binding RegistrationSuccess, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
-            <Label Text="{Binding RegistrationError}" TextColor="Red" IsVisible="{Binding RegistrationError, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+            <Label Text="{Binding RegistrationSuccess}"
+                   TextColor="Green"
+                   IsVisible="{Binding RegistrationSuccess, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+
+            <Label Text="{Binding RegistrationError}"
+                   TextColor="Red"
+                   IsVisible="{Binding RegistrationError, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
 
         </StackLayout>
     </ScrollView>

@@ -6,6 +6,7 @@ using System.Windows.Input;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Resources.Strings; // Ajout pour i18n
 
 namespace TimeTracker.Mobile.ViewModels;
 
@@ -39,9 +40,9 @@ public partial class HomeViewModel : BaseViewModel
         if (_timeEntryService.InProgressSession != null)
         {
             await _dialogService.ShowAlertAsync(
-                "Session en cours",
-                "Vous avez déjà une session non terminée. Veuillez d'abord terminer cette session.",
-                "OK");
+                AppResources.Home_StartSession_Alert_Title,
+                AppResources.Home_StartSession_Alert_AlreadyStarted,
+                AppResources.Home_OK);
             return;
         }
         await _navigationService.GoToStartSessionPageAsync();
@@ -53,9 +54,9 @@ public partial class HomeViewModel : BaseViewModel
         if (_timeEntryService.InProgressSession == null)
         {
             await _dialogService.ShowAlertAsync(
-                "Pas de session en cours",
-                "Aucune session n'est en cours. Veuillez d'abord démarrer une session.",
-                "OK");
+                AppResources.Home_EndSession_Alert_Title,
+                AppResources.Home_EndSession_Alert_NoSession,
+                AppResources.Home_OK);
             return;
         }
         await _navigationService.GoToEndSessionPageAsync();
@@ -71,15 +72,14 @@ public partial class HomeViewModel : BaseViewModel
     private async Task GoToAdminDashboardAsync()
     {
         var currentUser = _authService.CurrentUser;
-        // Correction: Safely parse string role to enum for comparison
         if (currentUser == null ||
             !System.Enum.TryParse<UserRole>(currentUser.Role, out var roleEnum) ||
             roleEnum != UserRole.Admin)
         {
             await _dialogService.ShowAlertAsync(
-                "Accès refusé",
-                "Vous n'avez pas les droits pour accéder à l'Admin Dashboard.",
-                "OK");
+                AppResources.Home_AdminDashboard_Alert_Title,
+                AppResources.Home_AdminDashboard_Alert_AccessDenied,
+                AppResources.Home_OK);
             return;
         }
         await _navigationService.GoToAdminDashboardPageAsync();
@@ -92,7 +92,6 @@ public partial class HomeViewModel : BaseViewModel
             await app.LogoutAsync();
     }
 
-    // Correction: Safely compare to string "Admin" or use enum if you want
     public bool IsCurrentUserAdmin
     {
         get

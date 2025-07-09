@@ -2,60 +2,67 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:vm="clr-namespace:TimeTracker.Mobile.ViewModels"
+    xmlns:resx="clr-namespace:TimeTracker.Mobile.Resources.Strings"
     x:Class="TimeTracker.Mobile.Views.EndSessionPage"
-    Title="End Session">
-    <!--<ContentPage.ToolbarItems>
-        <ToolbarItem
-            Text="Logout"
-            Order="Primary"
-            Priority="0"
-            Clicked="OnLogoutClicked"/>
-    </ContentPage.ToolbarItems>-->
+    Title="{x:Static resx:AppResources.EndSession_Title}">
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
             <!-- BOUTON “Retour à l’Accueil” -->
-            <Button Text="⌂ Back to Home"  Clicked="OnBackToHomeClicked" HorizontalOptions="Start" />
+            <Button 
+                Text="{x:Static resx:AppResources.EndSession_BackToHome}"  
+                Clicked="OnBackToHomeClicked" 
+                HorizontalOptions="Start"
+                AutomationProperties.Name="{x:Static resx:AppResources.EndSession_BackToHome}" />
 
             <!-- Afficher le type de session en cours, pour info -->
             <Label 
-        Text="Session in progress:" 
-        FontAttributes="Bold" />
+                Text="{x:Static resx:AppResources.EndSession_SessionInProgress}" 
+                FontAttributes="Bold"
+                AutomationProperties.Name="{x:Static resx:AppResources.EndSession_SessionInProgress}" />
             <Label 
-        Text="{Binding InProgressSessionInfo}" 
-        FontSize="16" 
-        TextColor="DimGray" />
+                Text="{Binding InProgressSessionInfo}" 
+                FontSize="16" 
+                TextColor="DimGray"
+                AutomationProperties.Name="{x:Static resx:AppResources.EndSession_SessionInfo}" />
 
             <!-- Si IncludesTravelTime == true, on affiche deux champs Heures/Minutes -->
             <HorizontalStackLayout Spacing="15" IsVisible="{Binding InProgressSessionIncludesTravel}">
                 <VerticalStackLayout>
-                    <Label Text="Travel Hours" />
+                    <Label 
+                        Text="{x:Static resx:AppResources.EndSession_TravelHours}" 
+                        AutomationProperties.Name="{x:Static resx:AppResources.EndSession_TravelHours}" />
                     <Entry
-            Placeholder="0"
-            Keyboard="Numeric"
-            Text="{Binding TravelHours}" />
+                        Placeholder="0"
+                        Keyboard="Numeric"
+                        Text="{Binding TravelHours}" />
                 </VerticalStackLayout>
 
                 <VerticalStackLayout>
-                    <Label Text="Travel Minutes" />
+                    <Label 
+                        Text="{x:Static resx:AppResources.EndSession_TravelMinutes}"
+                        AutomationProperties.Name="{x:Static resx:AppResources.EndSession_TravelMinutes}" />
                     <Entry
-            Placeholder="00"
-            Keyboard="Numeric"
-            Text="{Binding TravelMinutes}" />
+                        Placeholder="00"
+                        Keyboard="Numeric"
+                        Text="{Binding TravelMinutes}" />
                 </VerticalStackLayout>
             </HorizontalStackLayout>
 
             <!-- Choix de qui paye le dîner -->
-            <Label Text="Who paid for dinner?" FontAttributes="Bold" />
+            <Label 
+                Text="{x:Static resx:AppResources.EndSession_DinnerPaidBy}" 
+                FontAttributes="Bold"
+                AutomationProperties.Name="{x:Static resx:AppResources.EndSession_DinnerPaidBy}" />
             <Picker
-        ItemsSource="{Binding DinnerPaidByOptions}"
-        SelectedItem="{Binding SelectedDinnerPaidBy}" />
+                ItemsSource="{Binding DinnerPaidByOptions}"
+                SelectedItem="{Binding SelectedDinnerPaidBy}" />
 
             <Button 
-        Text="End Session" 
-        Command="{Binding EndCommand}" 
-        HorizontalOptions="Center" />
+                Text="{x:Static resx:AppResources.EndSession_EndSessionBtn}" 
+                Command="{Binding EndCommand}" 
+                HorizontalOptions="Center"
+                AutomationProperties.Name="{x:Static resx:AppResources.EndSession_EndSessionBtn}" />
 
         </VerticalStackLayout>
     </ScrollView>

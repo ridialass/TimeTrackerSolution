@@ -1,4 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿// SECURITE :
+// Ne jamais logger ni persister le mot de passe utilisateur dans ce service.
+// Toujours transmettre les identifiants via HTTPS et uniquement via POST (jamais URL).
+// Seul le token JWT peut être stocké localement, pas le mot de passe.
+
+using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Mobile.Utils;
 using TimeTracker.Mobile.Models;

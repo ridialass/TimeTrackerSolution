@@ -8,6 +8,7 @@ using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Services;
 using TimeTracker.Mobile.Views;
+using TimeTracker.Mobile.Resources.Strings; // Ajout pour i18n
 
 namespace TimeTracker.Mobile.ViewModels;
 
@@ -37,8 +38,8 @@ public partial class EndSessionViewModel : BaseViewModel
 
     public string InProgressSessionInfo =>
         InProgressSession != null
-            ? $"{InProgressSession.SessionType} – démarrée à {InProgressSession.StartTime:g}"
-            : "Aucune session en cours";
+            ? $"{InProgressSession.SessionType} – {AppResources.EndSession_StartedAt} {InProgressSession.StartTime:g}"
+            : AppResources.EndSession_NoSessionInProgress;
 
     public bool InProgressSessionIncludesTravel =>
         InProgressSession?.IncludesTravelTime == true;
@@ -80,10 +81,16 @@ public partial class EndSessionViewModel : BaseViewModel
     {
         var session = InProgressSession;
         if (session == null)
+        {
+            await Application.Current.MainPage.DisplayAlert(
+                AppResources.EndSession_Error_Title,
+                AppResources.EndSession_Error_NoSession,
+                AppResources.EndSession_Error_OK);
             return;
+        }
 
         var loc = await _geoService.GetCurrentLocationAsync();
-        string endAddress = "Localisation indisponible";
+        string endAddress = AppResources.EndSession_LocationUnavailable;
         double lat = 0, lon = 0;
 
         if (loc != null)

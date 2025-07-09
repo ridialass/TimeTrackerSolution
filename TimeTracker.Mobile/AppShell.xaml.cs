@@ -1,4 +1,5 @@
 ﻿using TimeTracker.Core.Enums;
+using TimeTracker.Mobile.Resources.Strings; // Ajout pour l'i18n
 
 namespace TimeTracker.Mobile
 {
@@ -64,13 +65,13 @@ namespace TimeTracker.Mobile
                     case UserRole.Admin:
                         Items.Add(new FlyoutItem
                         {
-                            Title = "Dashboard Admin",
+                            Title = AppResources.AdminDashboard_Title, // i18n
                             Route = "AdminDashboardPage",
                             Items =
                             {
                                 new ShellContent
                                 {
-                                    Title = "Dashboard",
+                                    Title = AppResources.AdminDashboard_Tab, // i18n
                                     ContentTemplate = new DataTemplate(() =>
                                     {
                                         var page = App.ServiceProvider?.GetService<Views.AdminDashboardPage>();
@@ -88,13 +89,13 @@ namespace TimeTracker.Mobile
                     default:
                         Items.Add(new FlyoutItem
                         {
-                            Title = "Accueil",
+                            Title = AppResources.Home_Title, // i18n
                             Route = "HomePage",
                             Items =
                             {
                                 new ShellContent
                                 {
-                                    Title = "Accueil",
+                                    Title = AppResources.Home_Tab, // i18n
                                     ContentTemplate = new DataTemplate(() =>
                                     {
                                         var page = App.ServiceProvider?.GetService<Views.HomePage>();
@@ -113,7 +114,7 @@ namespace TimeTracker.Mobile
             // Ajoute le logout
             Items.Add(new MenuItem
             {
-                Text = "Déconnexion",
+                Text = AppResources.Logout, // i18n
                 Command = new Command(async () =>
                 {
                     if (Application.Current is App app)

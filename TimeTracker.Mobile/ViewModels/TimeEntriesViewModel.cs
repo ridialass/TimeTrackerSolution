@@ -1,9 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Resources.Strings; // Ajout pour i18n
 
 namespace TimeTracker.Mobile.ViewModels;
 
@@ -18,8 +20,6 @@ public partial class TimeEntriesViewModel : BaseViewModel
         get => timeEntries;
         set => SetProperty(ref timeEntries, value);
     }
-
-    // 🔥 Removed duplicated errorMessage — already inherited
 
     public TimeEntriesViewModel(IApiClientService apiClient, IAuthService authService)
     {
@@ -38,7 +38,7 @@ public partial class TimeEntriesViewModel : BaseViewModel
             var user = _authService.CurrentUser;
             if (user == null)
             {
-                ErrorMessage = "Not authenticated.";
+                ErrorMessage = AppResources.TimeEntries_NotAuthenticated;
                 return;
             }
 
@@ -51,7 +51,7 @@ public partial class TimeEntriesViewModel : BaseViewModel
             }
             else
             {
-                ErrorMessage = result.Error ?? "Failed to load time entries.";
+                ErrorMessage = result.Error ?? AppResources.TimeEntries_FailedToLoad;
             }
         }
         finally
@@ -59,5 +59,4 @@ public partial class TimeEntriesViewModel : BaseViewModel
             IsBusy = false;
         }
     }
-
 }

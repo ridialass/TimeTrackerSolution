@@ -7,6 +7,7 @@ using System.Windows.Input;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Resources.Strings; // Ajout pour i18n
 
 namespace TimeTracker.Mobile.ViewModels;
 
@@ -50,7 +51,7 @@ public partial class StartSessionViewModel : BaseViewModel
     private async Task OnStartSessionAsync()
     {
         var loc = await _geoService.GetCurrentLocationAsync();
-        string address = "Localisation indisponible";
+        string address = AppResources.StartSession_LocationUnavailable;
         double lat = 0, lon = 0;
 
         if (loc != null)
@@ -64,9 +65,9 @@ public partial class StartSessionViewModel : BaseViewModel
         if (user == null)
         {
             await Shell.Current.DisplayAlert(
-                "Erreur",
-                "Aucun utilisateur connecté.",
-                "OK");
+                AppResources.StartSession_Error_Title,
+                AppResources.StartSession_Error_NoUser,
+                AppResources.StartSession_Error_OK);
             return;
         }
 
@@ -95,9 +96,9 @@ public partial class StartSessionViewModel : BaseViewModel
         catch
         {
             await Shell.Current.DisplayAlert(
-                "Erreur",
-                "Impossible de démarrer la session.",
-                "OK");
+                AppResources.StartSession_Error_Title,
+                AppResources.StartSession_Error_CannotStart,
+                AppResources.StartSession_Error_OK);
             return;
         }
 

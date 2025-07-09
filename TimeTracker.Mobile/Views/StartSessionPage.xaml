@@ -2,12 +2,13 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:vm="clr-namespace:TimeTracker.Mobile.ViewModels"
+    xmlns:resx="clr-namespace:TimeTracker.Mobile.Resources.Strings"
     x:Class="TimeTracker.Mobile.Views.StartSessionPage"
-    Title="Start Session">
+    Title="{x:Static resx:AppResources.StartSession_Title}">
+
     <!--<ContentPage.ToolbarItems>
         <ToolbarItem
-            Text="Logout"
+            Text="{x:Static resx:AppResources.Logout}"
             Order="Primary"
             Priority="0"
             Clicked="OnLogoutClicked"/>
@@ -16,20 +17,33 @@
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
             <!-- BOUTON “Retour à l’Accueil” -->
-            <Button Text="⌂ Back to Home"  Clicked="OnBackToHomeClicked" HorizontalOptions="Start" />
+            <Button 
+                Text="{x:Static resx:AppResources.StartSession_BackToHome}"
+                Clicked="OnBackToHomeClicked"
+                HorizontalOptions="Start"
+                AutomationProperties.Name="{x:Static resx:AppResources.StartSession_BackToHome}" />
 
-            <Label Text="Select Session Type" FontAttributes="Bold" />
+            <Label
+                Text="{x:Static resx:AppResources.StartSession_SelectType}"
+                FontAttributes="Bold"
+                AutomationProperties.Name="{x:Static resx:AppResources.StartSession_SelectType}" />
             <Picker 
-        ItemsSource="{Binding SessionTypes}" 
-        SelectedItem="{Binding SelectedSessionType}" />
+                ItemsSource="{Binding SessionTypes}" 
+                SelectedItem="{Binding SelectedSessionType}" />
 
             <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
                 <CheckBox IsChecked="{Binding IncludesTravelTime}" />
-                <Label Text="Includes Travel?" VerticalOptions="Center" />
+                <Label 
+                    Text="{x:Static resx:AppResources.StartSession_IncludesTravel}"
+                    VerticalOptions="Center"
+                    AutomationProperties.Name="{x:Static resx:AppResources.StartSession_IncludesTravel}" />
             </HorizontalStackLayout>
 
-            <Button Text="Start Session" Command="{Binding StartCommand}" 
-              HorizontalOptions="Center" />
+            <Button 
+                Text="{x:Static resx:AppResources.StartSession_StartBtn}"
+                Command="{Binding StartCommand}" 
+                HorizontalOptions="Center"
+                AutomationProperties.Name="{x:Static resx:AppResources.StartSession_StartBtn}" />
 
         </VerticalStackLayout>
     </ScrollView>

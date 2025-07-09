@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Resources.Strings; // Ajout pour i18n
 
 namespace TimeTracker.Mobile.ViewModels;
 
@@ -17,7 +18,7 @@ public partial class RegistrationViewModel : BaseViewModel
         get => username;
         set => SetProperty(ref username, value);
     }
-     private string password = string.Empty;
+    private string password = string.Empty;
     public string Password
     {
         get => password;
@@ -66,7 +67,7 @@ public partial class RegistrationViewModel : BaseViewModel
         get => registrationSuccess;
         set => SetProperty(ref registrationSuccess, value);
     }
-    // 🔥 REMOVED duplicate ObservableProperty for errorMessage
+    // ErrorMessage hérité de BaseViewModel
 
     public RegistrationViewModel(IAuthService authService)
     {
@@ -99,9 +100,9 @@ public partial class RegistrationViewModel : BaseViewModel
 
             var result = await _authService.RegisterAsync(dto);
             if (result.IsSuccess)
-                registrationSuccess = "Registration successful!";
+                registrationSuccess = AppResources.Registration_Success;
             else
-                ErrorMessage = result.Error ?? "Registration failed.";
+                ErrorMessage = result.Error ?? AppResources.Registration_Failed;
         }
         finally
         {

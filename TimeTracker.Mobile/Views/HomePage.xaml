@@ -2,15 +2,17 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:vm="clr-namespace:TimeTracker.Mobile.ViewModels"
+    xmlns:resx="clr-namespace:TimeTracker.Mobile.Resources.Strings"
     x:Class="TimeTracker.Mobile.Views.HomePage"
-    Title="Home">
+    Title="{x:Static resx:AppResources.Home_Title}">
+
     <ContentPage.ToolbarItems>
         <ToolbarItem
-            Text="Logout"
+            Text="{x:Static resx:AppResources.Logout}"
             Order="Primary"
             Priority="0"
-            Command="{Binding LogoutCommand}" />
+            Command="{Binding LogoutCommand}" 
+            AutomationProperties.Name="{x:Static resx:AppResources.Logout}" />
     </ContentPage.ToolbarItems>
 
     <VerticalStackLayout
@@ -19,23 +21,27 @@
       VerticalOptions="Center">
 
         <Button
-          Text="Start Session"
-          Command="{Binding StartSessionCommand}" />
+          Text="{x:Static resx:AppResources.Home_StartSession}"
+          Command="{Binding StartSessionCommand}"
+          AutomationProperties.Name="{x:Static resx:AppResources.Home_StartSession}" />
 
         <Button
-          Text="End Session"
-          Command="{Binding EndSessionCommand}" />
+          Text="{x:Static resx:AppResources.Home_EndSession}"
+          Command="{Binding EndSessionCommand}"
+          AutomationProperties.Name="{x:Static resx:AppResources.Home_EndSession}" />
 
         <Button
-          Text="History"
-          Command="{Binding GoToHistoryCommand}" />
+          Text="{x:Static resx:AppResources.Home_History}"
+          Command="{Binding GoToHistoryCommand}"
+          AutomationProperties.Name="{x:Static resx:AppResources.Home_History}" />
 
         <Button
-          Text="Admin Dashboard"
+          Text="{x:Static resx:AppResources.Home_AdminDashboard}"
           Command="{Binding GoToAdminDashboardCommand}"
           BackgroundColor="#333"
           TextColor="White"
-          IsVisible="{Binding IsCurrentUserAdmin}" />
+          IsVisible="{Binding IsCurrentUserAdmin}"
+          AutomationProperties.Name="{x:Static resx:AppResources.Home_AdminDashboard}" />
 
     </VerticalStackLayout>
 </ContentPage>

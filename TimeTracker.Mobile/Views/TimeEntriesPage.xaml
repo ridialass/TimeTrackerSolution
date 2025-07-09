@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:viewModels="clr-namespace:TimeTracker.Mobile.ViewModels"
+             xmlns:resx="clr-namespace:TimeTracker.Mobile.Resources.Strings"
              x:Class="TimeTracker.Mobile.Views.TimeEntriesPage">
+
     <!--<ContentPage.ToolbarItems>
         <ToolbarItem
-            Text="Logout"
+            Text="{x:Static resx:AppResources.Logout}"
             Order="Primary"
             Priority="0"
             Clicked="OnLogoutClicked"/>
@@ -15,25 +16,33 @@
         <Grid RowDefinitions="Auto,*">
             <StackLayout Padding="10">
                 <!-- BOUTON “Retour à l’Accueil” -->
-                <Button Text="⌂ Back to Home"  Clicked="OnBackToHomeClicked" HorizontalOptions="Start" />
+                <Button 
+                    Text="{x:Static resx:AppResources.TimeEntries_BackToHome}"  
+                    Clicked="OnBackToHomeClicked" 
+                    HorizontalOptions="Start"
+                    AutomationProperties.Name="{x:Static resx:AppResources.TimeEntries_BackToHome}" />
 
-                <Label Text="Historique des pointages" FontAttributes="Bold" FontSize="20"/>
+                <Label 
+                    Text="{x:Static resx:AppResources.TimeEntries_Title}" 
+                    FontAttributes="Bold" 
+                    FontSize="20"
+                    AutomationProperties.Name="{x:Static resx:AppResources.TimeEntries_Title}" />
                 <CollectionView ItemsSource="{Binding TimeEntries}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Frame Padding="10" Margin="5" HasShadow="True" CornerRadius="12" BackgroundColor="#f8f8f8">
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="{Binding SessionType}" FontAttributes="Bold" FontSize="18" TextColor="DarkBlue" />
-                                    <Label Text="{Binding StartTime, StringFormat='🕒 Start: {0:G}'}" TextColor="DarkBlue" />
-                                    <Label Text="{Binding EndTime, StringFormat='🏁 End: {0:G}'}" TextColor="DarkBlue" />
-                                    <Label Text="{Binding WorkDuration, StringFormat='⏱ Total Duration: {0:%h}h {0:%m}m'}"
+                                    <Label Text="{Binding StartTime, StringFormat='🕒 {0}'}" TextColor="DarkBlue" />
+                                    <Label Text="{Binding EndTime, StringFormat='🏁 {0}'}" TextColor="DarkBlue" />
+                                    <Label Text="{Binding WorkDuration, StringFormat='{x:Static resx:AppResources.TimeEntries_TotalDuration}'}"
                                       IsVisible="{Binding WorkDuration, Converter={StaticResource NullToBoolConverter}}" TextColor="DarkBlue" />
-                                    <Label Text="{Binding IncludesTravelTime, StringFormat='🚗 Travel Included: {0}'}" TextColor="DarkBlue" />
-                                    <Label Text="{Binding TravelTimeEstimate, StringFormat='🚕 Temps de trajet : {0:hh\\:mm}'}"
+                                    <Label Text="{Binding IncludesTravelTime, StringFormat='{x:Static resx:AppResources.TimeEntries_TravelIncluded}'}" TextColor="DarkBlue" />
+                                    <Label Text="{Binding TravelTimeEstimate, StringFormat='{x:Static resx:AppResources.TimeEntries_TravelTime}'}"
                                     IsVisible="{Binding IncludesTravelTime}" TextColor="DarkBlue" />
-                                    <Label Text="{Binding StartAddress, StringFormat='📍 Start: {0}'}" TextColor="DarkBlue" />
-                                    <Label Text="{Binding EndAddress, StringFormat='📍 End: {0}'}" TextColor="DarkBlue" />
-                                    <Label Text="{Binding DinnerPaid, StringFormat='🍽 Dinner: {0}'}" TextColor="DarkBlue" />
+                                    <Label Text="{Binding StartAddress, StringFormat='{x:Static resx:AppResources.TimeEntries_StartAddress}'}" TextColor="DarkBlue" />
+                                    <Label Text="{Binding EndAddress, StringFormat='{x:Static resx:AppResources.TimeEntries_EndAddress}'}" TextColor="DarkBlue" />
+                                    <Label Text="{Binding DinnerPaid, StringFormat='{x:Static resx:AppResources.TimeEntries_DinnerPaid}'}" TextColor="DarkBlue" />
                                 </VerticalStackLayout>
                             </Frame>
                         </DataTemplate>

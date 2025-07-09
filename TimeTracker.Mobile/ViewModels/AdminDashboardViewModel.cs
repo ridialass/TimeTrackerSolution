@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Resources.Strings; // Ajout pour i18n
 
 namespace TimeTracker.Mobile.ViewModels;
 
@@ -19,8 +20,6 @@ public partial class AdminDashboardViewModel : BaseViewModel
         get => users;
         set => SetProperty(ref users, value);
     }
-
-    // 🔁 REMOVED duplicate errorMessage: it's already in BaseViewModel
 
     public AdminDashboardViewModel(
         IApiClientService apiClient,
@@ -49,7 +48,7 @@ public partial class AdminDashboardViewModel : BaseViewModel
             }
             else
             {
-                ErrorMessage = result.Error ?? "Failed to load users.";
+                ErrorMessage = result.Error ?? AppResources.AdminDashboard_LoadUsers_Error;
             }
         }
         finally

@@ -3,26 +3,30 @@
     x:Class="TimeTracker.Mobile.Views.AdminDashboardPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:vm="clr-namespace:TimeTracker.Mobile.ViewModels"
-    Title="Admin Dashboard">
-    <!--<ContentPage.ToolbarItems>
-        <ToolbarItem
-            Text="Logout"
-            Order="Primary"
-            Priority="0"
-            Clicked="OnLogoutClicked"/>
-    </ContentPage.ToolbarItems>-->
-
-
+    xmlns:resx="clr-namespace:TimeTracker.Mobile.Resources.Strings"
+    Title="{x:Static resx:AppResources.AdminDashboard_Title}">
 
     <StackLayout Padding="16">
+
         <!-- BOUTON “Retour à l’Accueil” -->
-        <Button Text="⌂ Back to Home"  Clicked="OnBackToHomeClicked" HorizontalOptions="Start" />
+        <Button
+            Text="{x:Static resx:AppResources.AdminDashboard_BackToHome}"
+            Clicked="OnBackToHomeClicked"
+            HorizontalOptions="Start"
+            AutomationProperties.Name="{x:Static resx:AppResources.AdminDashboard_BackToHome}" />
 
+        <Label
+            Text="{x:Static resx:AppResources.AdminDashboard_Title}"
+            FontAttributes="Bold"
+            FontSize="Large"
+            HorizontalOptions="Center"
+            AutomationProperties.Name="{x:Static resx:AppResources.AdminDashboard_Title}" />
 
-        <Label Text="Admin Dashboard" FontAttributes="Bold" FontSize="Large" HorizontalOptions="Center" />
-
-        <Button Text="Refresh" Command="{Binding LoadUsersCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
+        <Button
+            Text="{x:Static resx:AppResources.AdminDashboard_Refresh}"
+            Command="{Binding LoadUsersCommand}"
+            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+            AutomationProperties.Name="{x:Static resx:AppResources.AdminDashboard_Refresh}" />
 
         <ListView ItemsSource="{Binding Users}" IsPullToRefreshEnabled="True"
                   RefreshCommand="{Binding LoadUsersCommand}" IsRefreshing="{Binding IsBusy}">
@@ -33,9 +37,17 @@
             </ListView.ItemTemplate>
         </ListView>
 
-        <Label Text="{Binding ErrorMessage}" TextColor="Red" IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+        <Label
+            Text="{Binding ErrorMessage}"
+            TextColor="Red"
+            IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}"
+            AutomationProperties.Name="{x:Static resx:AppResources.AdminDashboard_Error}"
+            />
 
-        <Button Text="Logout" Command="{Binding LogoutCommand}" />
+        <Button
+            Text="{x:Static resx:AppResources.Logout}"
+            Command="{Binding LogoutCommand}"
+            AutomationProperties.Name="{x:Static resx:AppResources.Logout}" />
 
     </StackLayout>
 </ContentPage>

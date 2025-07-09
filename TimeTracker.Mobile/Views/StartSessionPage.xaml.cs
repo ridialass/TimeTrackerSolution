@@ -16,15 +16,4 @@ public partial class StartSessionPage : ContentPage
         await Shell.Current.GoToAsync("///HomePage");
     }
 
-    //    protected override bool OnBackButtonPressed()
-    //    {
-    //        // Plutôt que de bloquer absolument, on navigue explicitement vers HomePage
-    //        Shell.Current.GoToAsync(nameof(HomePage));
-    //        return true; // empêche le comportement par défaut (pop sans route valide)
-    //    }
-    //    private async void OnLogoutClicked(object sender, EventArgs e)
-    //    {
-    //        if (Application.Current is App app)
-    //            await app.LogoutAsync();
-    //    }
 }

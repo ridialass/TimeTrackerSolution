@@ -1,8 +1,12 @@
-﻿using System;
+﻿// SECURITE :
+// Ne jamais logger ni persister le mot de passe utilisateur dans ce service.
+// Toujours transmettre les identifiants via HTTPS et uniquement via POST (jamais URL).
+// Seul le token JWT peut être stocké localement, pas le mot de passe.
+
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
@@ -28,6 +32,7 @@ public class AuthService : IAuthService
 
     public async Task<Result<LoginResponseDto>> LoginAsync(string username, string password)
     {
+        // Le mot de passe n'est jamais loggué ni stocké ici. 
         var result = await _apiClient.LoginAsync(username, password);
         if (result.IsSuccess && !string.IsNullOrEmpty(result.Value?.Token))
         {
@@ -39,7 +44,7 @@ public class AuthService : IAuthService
 
     public async Task<Result<bool>> RegisterAsync(RegisterRequestDto dto)
     {
-        // Let the API enforce that only admins can register users
+        // L'API doit imposer que seuls les admins peuvent enregistrer des utilisateurs.
         return await _apiClient.RegisterAsync(dto);
     }
 
@@ -56,12 +61,14 @@ public class AuthService : IAuthService
         if (string.IsNullOrWhiteSpace(token))
             return false;
         CurrentUser = ParseJwt(token);
+        // Supprimer immédiatement le token expiré
+        if (CurrentUser == null && !string.IsNullOrWhiteSpace(token))
+            await _secureStorage.RemoveAsync(TokenKey);
         return CurrentUser != null;
     }
 
     private ApplicationUserSession? ParseJwt(string token)
     {
-        
         try
         {
             var handler = new JwtSecurityTokenHandler();
@@ -70,6 +77,7 @@ public class AuthService : IAuthService
             var username = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub || c.Type == "unique_name" || c.Type == ClaimTypes.Name)?.Value;
             var role = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
+            // Si le token est expiré, retourne null (et il sera supprimé)
             if (jwt.ValidTo < DateTime.UtcNow) return null;
 
             if (!int.TryParse(idClaim, out var userId) || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))

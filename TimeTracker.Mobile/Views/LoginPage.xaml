@@ -2,31 +2,63 @@
 <ContentPage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:vm="clr-namespace:TimeTracker.Mobile.ViewModels"
+    xmlns:resx="clr-namespace:TimeTracker.Mobile.Resources.Strings"
     x:Class="TimeTracker.Mobile.Views.LoginPage"
-    Title="Login">
+    Title="{x:Static resx:AppResources.Login_Title}">
 
     <VerticalStackLayout Padding="30" Spacing="20" VerticalOptions="Center">
 
-        <Label Text="Username" />
-        <Entry 
-      Placeholder="Entrez votre nom d’utilisateur" 
-      Text="{Binding Username}" />
+        <!-- Username -->
+        <Label x:Name="UsernameLabel"
+               Text="{x:Static resx:AppResources.Login_Username}"
+               AutomationProperties.Name="{x:Static resx:AppResources.Login_Username}"
+               AutomationProperties.IsInAccessibleTree="True" />
 
-        <Label Text="Password" />
         <Entry 
-      Placeholder="Mot de passe" 
-      Text="{Binding Password}" 
-      IsPassword="True" />
+            Placeholder="{x:Static resx:AppResources.Login_Placeholder_Username}"
+            Text="{Binding Username}"
+            AutomationProperties.LabeledBy="{x:Reference UsernameLabel}"
+            AutomationProperties.Name="{x:Static resx:AppResources.Login_Placeholder_Username}"
+            AutomationProperties.IsInAccessibleTree="True" />
 
+        <!-- Password -->
+        <Label x:Name="PasswordLabel"
+               Text="{x:Static resx:AppResources.Login_Password}"
+               AutomationProperties.Name="{x:Static resx:AppResources.Login_Password}"
+               AutomationProperties.IsInAccessibleTree="True" />
+
+        <Entry 
+            Placeholder="{x:Static resx:AppResources.Login_Placeholder_Password}"
+            Text="{Binding Password}"
+            IsPassword="True"
+            AutomationProperties.LabeledBy="{x:Reference PasswordLabel}"
+            AutomationProperties.Name="{x:Static resx:AppResources.Login_Placeholder_Password}"
+            AutomationProperties.IsInAccessibleTree="True" />
+
+        <!-- Login Button -->
         <Button 
-      Text="Login" 
-      Command="{Binding LoginCommand}" />
+            Text="{x:Static resx:AppResources.Login_Button}"
+            Command="{Binding LoginCommand}"
+            IsEnabled="{Binding CanLogin}"
+            AutomationProperties.Name="{x:Static resx:AppResources.Login_Button}"
+            AutomationProperties.IsInAccessibleTree="True" />
 
+        <!-- Loading Indicator -->
+        <ActivityIndicator 
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            AutomationProperties.Name="{x:Static resx:AppResources.Login_Loading}"
+            AutomationProperties.IsInAccessibleTree="True" />
+
+        <!-- Error Message -->
         <Label 
-      Text="{Binding ErrorMessage}" 
-      TextColor="Red" 
-      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+            Text="{Binding ErrorMessage}" 
+            TextColor="Red" 
+            IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}"
+            AutomationProperties.Name="{x:Static resx:AppResources.Login_Error_Label}"
+            AutomationProperties.IsInAccessibleTree="True" />
 
     </VerticalStackLayout>
 </ContentPage>

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices.Sensors;
+using CommunityToolkit.Maui.Alerts;
 
 namespace TimeTracker.Mobile.Services;
 
@@ -24,7 +26,7 @@ public class GeolocationService : IGeolocationService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[GeolocationService] Failed to get location: {ex.Message}");
+            await Toast.Make($"Erreur localisation : {ex.Message}", CommunityToolkit.Maui.Core.ToastDuration.Long).Show();
             return null;
         }
     }
@@ -33,7 +35,18 @@ public class GeolocationService : IGeolocationService
     {
         try
         {
-            var placemarks = await Geocoding.GetPlacemarksAsync(latitude, longitude);
+            // Timeout "maison" : si MAUI ne supporte pas CancellationToken ici
+            var geocodeTask = Geocoding.GetPlacemarksAsync(latitude, longitude);
+            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(10));
+            var finishedTask = await Task.WhenAny(geocodeTask, timeoutTask);
+
+            if (finishedTask == timeoutTask)
+            {
+                await Toast.Make("La géolocalisation a mis trop de temps.", CommunityToolkit.Maui.Core.ToastDuration.Long).Show();
+                return "Localisation trop longue ou indisponible";
+            }
+
+            var placemarks = await geocodeTask;
             var placemark = placemarks?.FirstOrDefault();
 
             if (placemark != null)
@@ -44,9 +57,9 @@ public class GeolocationService : IGeolocationService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[GeolocationService] Reverse geocoding failed: {ex.Message}");
+            await Toast.Make($"Erreur géolocalisation : {ex.Message}", CommunityToolkit.Maui.Core.ToastDuration.Long).Show();
         }
 
-        return "Unknown Location";
+        return "Localisation inconnue";
     }
 }
