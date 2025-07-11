@@ -351,4 +351,7 @@
   <data name="TimeEntries_FailedToLoad" xml:space="preserve">
     <value>Caricamento timbrature fallito.</value>
   </data>
+  <data name="Login_Error_Locked" xml:space="preserve">
+    <value />
+  </data>
 </root>

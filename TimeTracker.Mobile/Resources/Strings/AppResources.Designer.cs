@@ -403,6 +403,15 @@ namespace TimeTracker.Mobile.Resources.Strings {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à .
+        /// </summary>
+        internal static string Login_Error_Locked {
+            get {
+                return ResourceManager.GetString("Login_Error_Locked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à Connexion.
         /// </summary>
         internal static string Login_Flyout_Title {

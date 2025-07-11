@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 
 namespace TimeTracker.Infrastructure.Repositories
@@ -15,5 +13,7 @@ namespace TimeTracker.Infrastructure.Repositories
         Task<ApplicationUser?> GetByIdAsync(int id);
         Task<ApplicationUser?> GetByUsernameAsync(string username);
         Task<bool> UpdateAsync(ApplicationUser entity);
+
+        Task<(IEnumerable<ApplicationUser> Items, int TotalCount)> GetPagedAsync(EmployeeQueryParameters query);
     }
 }

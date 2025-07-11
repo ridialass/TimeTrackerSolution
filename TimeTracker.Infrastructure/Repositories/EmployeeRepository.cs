@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 
 namespace TimeTracker.Infrastructure.Repositories
@@ -49,6 +50,38 @@ namespace TimeTracker.Infrastructure.Repositories
             _db.Entry(entity).State = EntityState.Modified;
             await _db.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<(IEnumerable<ApplicationUser> Items, int TotalCount)> GetPagedAsync(EmployeeQueryParameters query)
+        {
+            var employees = _db.Users.AsQueryable();
+
+            // Filtrage
+            if (!string.IsNullOrEmpty(query.FirstName))
+                employees = employees.Where(e => e.FirstName != null && e.FirstName.Contains(query.FirstName));
+            if (!string.IsNullOrEmpty(query.LastName))
+                employees = employees.Where(e => e.LastName != null && e.LastName.Contains(query.LastName));
+            if (!string.IsNullOrEmpty(query.Email))
+                employees = employees.Where(e => e.Email != null && e.Email.Contains(query.Email));
+            if (!string.IsNullOrEmpty(query.Town))
+                employees = employees.Where(e => e.Town != null && e.Town.Contains(query.Town));
+            if (!string.IsNullOrEmpty(query.Country))
+                employees = employees.Where(e => e.Country != null && e.Country.Contains(query.Country));
+            if (query.Role.HasValue)
+                employees = employees.Where(e => e.Role == query.Role);
+
+            var total = await employees.CountAsync();
+
+            // Pagination
+            int skip = (query.Page - 1) * query.PageSize;
+            var results = await employees
+                .OrderBy(e => e.Id)
+                .Skip(skip)
+                .Take(query.PageSize)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return (results, total);
         }
     }
 }

@@ -6,30 +6,24 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<h2 class="mb-4 text-primary">@ViewData["Title"]</h2>
-
 <div class="row g-4">
-    <!-- 1. Create New User Button -->
-    <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-body text-center py-5">
-                <h5 class="card-title mb-3">Nouvel utilisateur</h5>
-                <a asp-page="/Account/Register" class="btn btn-lg btn-success">
-                    <i class="bi bi-person-plus-fill me-2"></i>Créer un utilisateur
-                </a>
-            </div>
-        </div>
+    <!-- Nouveau bouton Créer un utilisateur, aligné à droite du titre -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary m-0">@ViewData["Title"]</h2>
+        <a asp-page="/Account/Register" class="btn btn-success">
+            <i class="bi bi-person-plus-fill me-2"></i>Créer un utilisateur
+        </a>
     </div>
 
     <!-- 2. Filter Sessions by User and Date -->
-    <div class="col-lg-4">
+    <div class="col-lg-12">
         <div class="card shadow-sm">
             <div class="card-header bg-light">
                 <strong>Filtrer les sessions</strong>
             </div>
             <div class="card-body">
                 <form method="post" asp-page-handler="LoadSessions" class="row gx-2 gy-3 align-items-end">
-                    <div class="col-12">
+                    <div class="col-3">
                         <label asp-for="SelectedEmployeeId" class="form-label">Employé</label>
                         <select asp-for="SelectedEmployeeId" class="form-select">
                             <option value="0">-- Sélectionner --</option>
@@ -39,7 +33,7 @@
                             }
                         </select>
                     </div>
-                    <div class="col-12">
+                    <div class="col-3">
                         <label class="form-label">Période</label>
                         <select asp-for="SelectedPeriod" class="form-select" id="periodSelect" onchange="toggleCustomDates(this.value)">
                             <option value="all">Toutes</option>
@@ -48,7 +42,7 @@
                             <option value="custom">Personnalisé</option>
                         </select>
                     </div>
-                    <div class="col-12 row" id="customDates" style="display:none;">
+                    <div class="col-3 row" id="customDates" style="display:none;">
                         <div class="col">
                             <label asp-for="CustomStartDate" class="form-label">Du</label>
                             <input asp-for="CustomStartDate" type="date" class="form-control" />
@@ -68,7 +62,7 @@
     </div>
 
     <!-- 3. Sessions for Selected User -->
-    <div class="col-lg-8">
+    <div class="col-lg-12">
         <div class="card shadow-sm">
             <div class="card-header bg-light">
                 <h5 class="mb-0">
@@ -125,14 +119,16 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Type</th>
-                                    <th>Début</th>
-                                    <th>Fin</th>
+                                    @* <th>Début</th>
+                                    <th>Fin</th> *@
                                     <th>Durée</th>
                                     <th>Déplacement</th>
                                     <th>Temps déplacement</th>
-                                    <th>Adresse début</th>
-                                    <th>Adresse fin</th>
+                                    @* <th>Adresse début</th>
+                                    <th>Adresse fin</th> *@
                                     <th>Dîner payé</th>
+                                    <!-- Ajout colonne Actions -->
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -140,14 +136,26 @@
                                 {
                                     <tr>
                                         <td>@s.SessionType</td>
-                                        <td>@s.StartTime.ToLocalTime().ToString("g")</td>
-                                        <td>@(s.EndTime.HasValue? s.EndTime.Value.ToLocalTime().ToString("g") : "—")</td>
+                                        @* <td>@s.StartTime.ToLocalTime().ToString("g")</td>
+                                        <td>@(s.EndTime.HasValue? s.EndTime.Value.ToLocalTime().ToString("g") : "—")</td> *@
                                         <td>@(s.WorkDuration.HasValue ? $"{(int)s.WorkDuration.Value.TotalHours}h{s.WorkDuration.Value.Minutes}m" : "—")</td>
                                         <td>@(s.IncludesTravelTime ? "Oui" : "Non")</td>
                                         <td>@(s.TravelTimeEstimate.HasValue? s.TravelTimeEstimate.Value.ToString(@"hh\:mm") : "—")</td>
-                                        <td>@s.StartAddress</td>
-                                        <td>@s.EndAddress</td>
+                                        @* <td>@s.StartAddress</td>
+                                        <td>@s.EndAddress</td> *@
                                         <td>@s.DinnerPaid</td>
+                                        <!-- Bouton Détails -->
+                                        <td>
+                                            @* <a asp-page="/Admin/DetailsTimeEntry"
+                                               asp-route-id="@s.Id"
+                                               class="btn btn-sm btn-info"
+                                               title="Détails">
+                                                <i class="bi bi-eye"></i>
+                                            </a> *@
+                                            <a asp-page="/Admin/DetailsTimeEntry" asp-route-id="@s.Id" class="btn btn-info">
+                                                <i class="bi bi-person-plus-fill me-2"></i>Détails
+                                            </a>
+                                        </td>
                                     </tr>
                                 }
                             </tbody>

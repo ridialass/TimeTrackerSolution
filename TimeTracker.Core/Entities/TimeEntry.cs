@@ -20,7 +20,7 @@ namespace TimeTracker.Core.Entities
         public double? EndLatitude { get; set; }
         public double? EndLongitude { get; set; }
         public string? EndAddress { get; set; }
-
+        public bool IsAdminModified { get; set; }
         public WorkSessionType SessionType { get; set; }
         public bool IncludesTravelTime { get; set; }
         public double? TravelDurationHours { get; set; }

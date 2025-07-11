@@ -27,7 +27,7 @@ public partial class LoginViewModel : BaseViewModel
                 OnPropertyChanged(nameof(CanLogin));
                 // Masque le message d'erreur si l'utilisateur modifie un champ
                 if (!string.IsNullOrEmpty(ErrorMessage))
-                    ErrorMessage = AppResources.Login_Error_EmptyFields;
+                    ErrorMessage = string.Empty;
             }
         }
     }
@@ -43,7 +43,7 @@ public partial class LoginViewModel : BaseViewModel
                 OnPropertyChanged(nameof(CanLogin));
                 // Masque le message d'erreur si l'utilisateur modifie un champ
                 if (!string.IsNullOrEmpty(ErrorMessage))
-                    ErrorMessage = AppResources.Login_Error_EmptyFields;
+                    ErrorMessage = string.Empty;
             }
         }
     }
@@ -76,7 +76,7 @@ public partial class LoginViewModel : BaseViewModel
     public async Task LoginAsync()
     {
         IsBusy = true;
-        ErrorMessage = AppResources.Login_Error_EmptyFields;
+        ErrorMessage = string.Empty; // Masquer le message d'erreur pendant la connexion
 
         try
         {
@@ -89,7 +89,6 @@ public partial class LoginViewModel : BaseViewModel
                 return;
             }
 
-            await _navigationService.GoToHomePageAsync();
         }
         catch
         {

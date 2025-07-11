@@ -1,0 +1,33 @@
+﻿@page
+@model TimeTracker.AdminUI.Pages.Admin.CreateTimeEntryModel
+@using TimeTracker.Core.DTOs
+@using TimeTracker.Core.Enums
+@{
+    ViewData["Title"] = "Créer un pointage";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form method="post">
+    <div class="mb-3">
+        <label asp-for="TimeEntry.StartTime" class="form-label">Début</label>
+        <input asp-for="TimeEntry.StartTime" type="datetime-local" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="TimeEntry.EndTime" class="form-label">Fin</label>
+        <input asp-for="TimeEntry.EndTime" type="datetime-local" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="TimeEntry.SessionType" class="form-label">Type</label>
+        <select asp-for="TimeEntry.SessionType" class="form-select">
+            @foreach (WorkSessionType t in Enum.GetValues(typeof(WorkSessionType)))
+            {
+                <option value="@t">@t</option>
+            }
+        </select>
+    </div>
+    <!-- Ajoute ici les autres champs nécessaires -->
+    <input type="hidden" asp-for="TimeEntry.UserId" />
+    <button type="submit" class="btn btn-success">Créer</button>
+    <a asp-page="/Admin/Index" class="btn btn-secondary">Annuler</a>
+</form>

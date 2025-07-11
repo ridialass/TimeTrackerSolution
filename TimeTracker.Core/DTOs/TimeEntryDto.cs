@@ -23,6 +23,7 @@ namespace TimeTracker.Core.DTOs
         public string? EndAddress { get; set; }
 
         public WorkSessionType SessionType { get; set; }
+        public bool IsAdminModified { get; set; }
         public bool IncludesTravelTime { get; set; }
         public double? TravelDurationHours { get; set; }
 

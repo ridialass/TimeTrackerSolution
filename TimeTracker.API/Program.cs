@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Localization;
+using System.Globalization;
 using System.Text;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
@@ -97,6 +99,18 @@ builder.Services
 builder.Services
     .AddScoped<ITimeEntryService, TimeEntryService>();
 
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { new CultureInfo("fr"), new CultureInfo("en") };
+    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("fr");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    // Détecte la culture via le header Accept-Language
+    options.RequestCultureProviders.Insert(0, new Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider());
+});
+
 // 5) Ajouter les contrôleurs (API)
 builder.Services.AddControllers();
 
@@ -161,7 +175,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // app.UseHttpsRedirection();
-
+app.UseRequestLocalization();
 // **L’ordre ici est fondamental :**
 app.UseAuthentication();
 app.UseAuthorization();
@@ -169,3 +183,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

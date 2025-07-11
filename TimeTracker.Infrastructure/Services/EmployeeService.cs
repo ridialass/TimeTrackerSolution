@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
+using TimeTracker.Core.Enums;
 using TimeTracker.Core.Interfaces;
 using TimeTracker.Infrastructure.Repositories;
 
@@ -44,10 +45,56 @@ namespace TimeTracker.Infrastructure.Services
                 : _mapper.Map<EmployeeDto>(user);
         }
 
-        public async Task<bool> UpdateEmployeeAsync(EmployeeDto dto)
+        // Mise à jour complète (PUT)
+        public async Task<bool> UpdateEmployeeAsync(UpdateEmployeeDto dto)
         {
-            var entity = _mapper.Map<ApplicationUser>(dto);
-            return await _repo.UpdateAsync(entity);
+            var existing = await _repo.GetByIdAsync(dto.Id);
+            if (existing == null)
+                return false;
+
+            // Mettre à jour les champs principaux
+            if (dto.FirstName != null)
+                existing.FirstName = dto.FirstName;
+            if (dto.LastName != null)
+                existing.LastName = dto.LastName;
+            if (dto.Email != null)
+                existing.Email = dto.Email;
+            if (dto.Town != null)
+                existing.Town = dto.Town;
+            if (dto.Country != null)
+                existing.Country = dto.Country;
+            if (dto.Role.HasValue)
+                existing.Role = dto.Role.Value;
+
+            return await _repo.UpdateAsync(existing);
+        }
+
+        // Mise à jour partielle (PATCH)
+        public async Task<bool> PatchEmployeeAsync(int id, PatchEmployeeDto dto)
+        {
+            var existing = await _repo.GetByIdAsync(id);
+            if (existing == null)
+                return false;
+
+            if (dto.FirstName != null)
+                existing.FirstName = dto.FirstName;
+            if (dto.LastName != null)
+                existing.LastName = dto.LastName;
+            if (dto.Email != null)
+                existing.Email = dto.Email;
+            if (dto.Town != null)
+                existing.Town = dto.Town;
+            if (dto.Country != null)
+                existing.Country = dto.Country;
+            if (dto.Role.HasValue)
+                existing.Role = dto.Role.Value;
+
+            return await _repo.UpdateAsync(existing);
+        }
+        public async Task<(IEnumerable<EmployeeDto> Items, int TotalCount)> GetEmployeesPagedAsync(EmployeeQueryParameters query)
+        {
+            var (results, total) = await _repo.GetPagedAsync(query);
+            return (results.Select(u => _mapper.Map<EmployeeDto>(u)), total);
         }
     }
 }

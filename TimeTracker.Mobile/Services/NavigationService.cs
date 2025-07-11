@@ -10,38 +10,51 @@ namespace TimeTracker.Mobile.Services
         {
             if (Shell.Current is Shell shell)
             {
-                var flyoutItem = shell.CurrentItem as FlyoutItem;
-                if (flyoutItem?.Route == "LoginPage")
-                    return Task.CompletedTask; // Déjà sur LoginPage
-
-                // Sélectionne LoginPage comme item actif si présent
                 var loginFlyoutItem = shell.Items.OfType<FlyoutItem>().FirstOrDefault(i => i.Route == "LoginPage");
                 if (loginFlyoutItem != null)
+                {
+                    if (shell.CurrentItem == loginFlyoutItem)
+                        return Task.CompletedTask;
                     shell.CurrentItem = loginFlyoutItem;
+                    return Task.CompletedTask;
+                }
+                throw new System.Exception("Aucune racine LoginPage disponible dans le Shell !");
             }
-            return Shell.Current.GoToAsync("//LoginPage");
+            throw new System.Exception("Shell.Current n'est pas un Shell valide.");
         }
 
         public Task GoToHomePageAsync()
         {
             if (Shell.Current is Shell shell)
             {
-                var flyoutItem = shell.CurrentItem as FlyoutItem;
-                if (flyoutItem?.Route == "HomePage")
+                var homeFlyoutItem = shell.Items.OfType<FlyoutItem>().FirstOrDefault(i => i.Route == "HomePage");
+                if (homeFlyoutItem != null)
+                {
+                    if (shell.CurrentItem == homeFlyoutItem)
+                        return Task.CompletedTask;
+                    shell.CurrentItem = homeFlyoutItem;
                     return Task.CompletedTask;
+                }
+                throw new System.Exception("Aucune racine HomePage disponible dans le Shell !");
             }
-            return Shell.Current.GoToAsync("//HomePage");
+            throw new System.Exception("Shell.Current n'est pas un Shell valide.");
         }
 
         public Task GoToAdminDashboardPageAsync()
         {
             if (Shell.Current is Shell shell)
             {
-                var flyoutItem = shell.CurrentItem as FlyoutItem;
-                if (flyoutItem?.Route == "AdminDashboardPage")
+                var adminFlyoutItem = shell.Items.OfType<FlyoutItem>().FirstOrDefault(i => i.Route == "AdminDashboardPage");
+                if (adminFlyoutItem != null)
+                {
+                    if (shell.CurrentItem == adminFlyoutItem)
+                        return Task.CompletedTask;
+                    shell.CurrentItem = adminFlyoutItem;
                     return Task.CompletedTask;
+                }
+                throw new System.Exception("Aucune racine AdminDashboardPage disponible dans le Shell !");
             }
-            return Shell.Current.GoToAsync("//AdminDashboardPage");
+            throw new System.Exception("Shell.Current n'est pas un Shell valide.");
         }
 
         public Task GoToStartSessionPageAsync()

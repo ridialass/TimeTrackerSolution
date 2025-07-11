@@ -14,12 +14,12 @@ namespace TimeTracker.API.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly IMapper _mapper;
-        private readonly ITimeEntryService _timeEntryService;    // ← on déclare le service
+        private readonly ITimeEntryService _timeEntryService;
 
         public TimeEntriesController(
             ApplicationDbContext db,
             IMapper mapper,
-            ITimeEntryService timeEntryService   // ← on l’injecte
+            ITimeEntryService timeEntryService
         )
         {
             _db = db;
@@ -27,7 +27,7 @@ namespace TimeTracker.API.Controllers
             _timeEntryService = timeEntryService;
         }
 
-        // PATCH : Ajout de la gestion du filtre par userId
+        // GET: api/TimeEntries?userId=xx
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int? userId = null)
         {
@@ -43,13 +43,7 @@ namespace TimeTracker.API.Controllers
             }
         }
 
-        [HttpGet("ApplicationUser/{employeeId:int}")]
-        public async Task<IActionResult> GetByEmployee(int employeeId)
-        {
-            var list = await _timeEntryService.GetTimeEntriesByUserAsync(employeeId);
-            return Ok(list);
-        }
-
+        // GET: api/TimeEntries/{id}
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -58,13 +52,13 @@ namespace TimeTracker.API.Controllers
             return Ok(te);
         }
 
+        // POST: api/TimeEntries
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] TimeEntryDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Utilisation du service pour l'ajout, qui mappe correctement tous les champs du DTO, y compris le GPS
             var created = await _timeEntryService.AddTimeEntryAsync(dto);
 
             return CreatedAtAction(nameof(GetById),
@@ -72,6 +66,39 @@ namespace TimeTracker.API.Controllers
                                    created);
         }
 
+        // PUT: api/TimeEntries/{id}
+        [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Update(int id, [FromBody] TimeEntryDto dto)
+        {
+            if (id != dto.Id)
+                return BadRequest("ID mismatch.");
+
+            dto.IsAdminModified = true; // Marquer la modif admin
+
+            var updated = await _timeEntryService.UpdateTimeEntryAsync(dto);
+            if (!updated)
+                return NotFound();
+
+            return NoContent();
+        }
+
+        // PATCH: api/TimeEntries/{id}
+        [HttpPatch("{id:int}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Patch(int id, [FromBody] TimeEntryDto dto)
+        {
+            dto.Id = id;
+            dto.IsAdminModified = true; // Marquer la modif admin
+
+            var updated = await _timeEntryService.UpdateTimeEntryAsync(dto);
+            if (!updated)
+                return NotFound();
+
+            return NoContent();
+        }
+
+        // DELETE: api/TimeEntries/{id}
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {

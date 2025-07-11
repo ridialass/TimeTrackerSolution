@@ -47,7 +47,7 @@ namespace TimeTracker.AdminUI.Pages.Admin
         private async Task LoadEmployeesAsync()
         {
             var client = CreateAuthenticatedClient();
-            var response = await client.GetAsync("api/employee");
+            var response = await client.GetAsync("api/employees");
             var body = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

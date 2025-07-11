@@ -351,4 +351,7 @@
   <data name="TimeEntries_FailedToLoad" xml:space="preserve">
     <value>Échec du chargement des pointages.</value>
   </data>
+  <data name="Login_Error_Locked" xml:space="preserve">
+    <value />
+  </data>
 </root>

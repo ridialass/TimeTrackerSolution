@@ -1,0 +1,66 @@
+﻿@page "{id:int}"
+@model TimeTracker.AdminUI.Pages.Admin.DetailsTimeEntryModel
+@using TimeTracker.Core.DTOs
+@using TimeTracker.Core.Enums
+@{
+    ViewData["Title"] = "Détail du pointage";
+    var entry = Model.TimeEntry;
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (entry != null)
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Employé</dt>
+                <dd class="col-sm-9">@entry.Username</dd>
+
+                <dt class="col-sm-3">Type</dt>
+                <dd class="col-sm-9">@entry.SessionType</dd>
+
+                <dt class="col-sm-3">Début</dt>
+                <dd class="col-sm-9">@entry.StartTime.ToLocalTime().ToString("g")</dd>
+
+                <dt class="col-sm-3">Fin</dt>
+                <dd class="col-sm-9">
+                    @(entry.EndTime.HasValue? entry.EndTime.Value.ToLocalTime().ToString("g") : "—")
+                </dd>
+
+                <dt class="col-sm-3">Durée</dt>
+                <dd class="col-sm-9">
+                    @(entry.WorkDuration.HasValue ? $"{(int)entry.WorkDuration.Value.TotalHours}h{entry.WorkDuration.Value.Minutes}m" : "—")
+                </dd>
+
+                <dt class="col-sm-3">Déplacement</dt>
+                <dd class="col-sm-9">@((entry.IncludesTravelTime) ? "Oui" : "Non")</dd>
+
+                <dt class="col-sm-3">Temps déplacement</dt>
+                <dd class="col-sm-9">
+                    @(entry.TravelTimeEstimate.HasValue? entry.TravelTimeEstimate.Value.ToString(@"hh\:mm") : "—")
+                </dd>
+
+                <dt class="col-sm-3">Adresse début</dt>
+                <dd class="col-sm-9">@entry.StartAddress</dd>
+
+                <dt class="col-sm-3">Adresse fin</dt>
+                <dd class="col-sm-9">@entry.EndAddress</dd>
+
+                <dt class="col-sm-3">Dîner payé</dt>
+                <dd class="col-sm-9">@entry.DinnerPaid</dd>
+
+                <dt class="col-sm-3">Modifié par admin</dt>
+                <dd class="col-sm-9">
+                    @(entry.IsAdminModified ? "<span class='badge bg-warning'>Oui</span>" : "<span class='badge bg-success'>Non</span>")
+                </dd>
+            </dl>
+            <a asp-page="/Admin/EditTimeEntry" asp-route-id="@entry.Id" class="btn btn-warning">Modifier</a>
+            <a asp-page="/Admin/Index" class="btn btn-secondary">Retour</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger">Aucune donnée trouvée pour ce pointage.</div>
+}

@@ -16,6 +16,7 @@ namespace TimeTracker.Core.Interfaces
         Task<TimeEntryDto?> GetTimeEntryByIdAsync(int id);
         Task<TimeEntryDto> AddTimeEntryAsync(TimeEntryDto dto);
         Task<bool> DeleteTimeEntryAsync(int id);
+        Task<bool> UpdateTimeEntryAsync(TimeEntryDto dto);
     }
 
 }

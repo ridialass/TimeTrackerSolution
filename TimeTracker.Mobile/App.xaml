@@ -6,6 +6,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <converters:StringNotNullOrEmptyConverter x:Key="StringNotNullOrEmptyConverter" />
+            <converters:StringNotNullOrEmptyConverter x:Key="InverseBoolConverter" />
             <converters:NullToBoolConverter x:Key="NullToBoolConverter" />
             <converters:NullOrEmptyToBoolConverter x:Key="NullOrEmptyToBoolConverter" />
         </ResourceDictionary>

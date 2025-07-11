@@ -217,6 +217,12 @@ namespace TimeTracker.Infrastructure.Migrations
                     b.Property<string>("Town")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TwoFactorCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TwoFactorCodeExpiry")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -235,6 +241,34 @@ namespace TimeTracker.Infrastructure.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("TimeTracker.Core.Entities.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Revoked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("TimeTracker.Core.Entities.TimeEntry", b =>
@@ -261,6 +295,9 @@ namespace TimeTracker.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IncludesTravelTime")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAdminModified")
                         .HasColumnType("bit");
 
                     b.Property<string>("Location")
@@ -345,6 +382,17 @@ namespace TimeTracker.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("TimeTracker.Core.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("TimeTracker.Core.Entities.ApplicationUser", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TimeTracker.Core.Entities.TimeEntry", b =>
                 {
                     b.HasOne("TimeTracker.Core.Entities.ApplicationUser", "User")
@@ -358,6 +406,8 @@ namespace TimeTracker.Infrastructure.Migrations
 
             modelBuilder.Entity("TimeTracker.Core.Entities.ApplicationUser", b =>
                 {
+                    b.Navigation("RefreshTokens");
+
                     b.Navigation("TimeEntries");
                 });
 #pragma warning restore 612, 618
