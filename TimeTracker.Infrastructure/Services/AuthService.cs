@@ -96,6 +96,39 @@ namespace TimeTracker.Infrastructure.Services
             return true;
         }
 
+        public async Task ChangePasswordAsync(ChangePasswordRequestDto dto, string username)
+        {
+            // 0) Valider les paramètres
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentException("Le nom d'utilisateur est requis.", nameof(username));
+            
+            if (string.IsNullOrWhiteSpace(dto.CurrentPassword))
+                throw new ArgumentException("Le mot de passe actuel est requis.", nameof(dto.CurrentPassword));
+            
+            if (string.IsNullOrWhiteSpace(dto.NewPassword))
+                throw new ArgumentException("Le nouveau mot de passe est requis.", nameof(dto.NewPassword));
+
+            // 1) Retrouver l'utilisateur
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+                throw new UnauthorizedAccessException("Utilisateur non trouvé.");
+
+            // 2) Vérifier le mot de passe actuel
+            var signInResult = await _signInManager
+                .CheckPasswordSignInAsync(user, dto.CurrentPassword, lockoutOnFailure: false);
+
+            if (!signInResult.Succeeded)
+                throw new UnauthorizedAccessException("Mot de passe actuel invalide.");
+
+            // 3) Changer le mot de passe
+            var changeResult = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            if (!changeResult.Succeeded)
+            {
+                var errors = string.Join(", ", changeResult.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Échec du changement de mot de passe: {errors}");
+            }
+        }
+
         private string GenerateJwtToken(ApplicationUser user, IList<string> roles)
         {
             var jwt = _config.GetSection("JwtSettings");

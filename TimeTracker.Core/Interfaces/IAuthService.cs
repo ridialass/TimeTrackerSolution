@@ -11,5 +11,6 @@ namespace TimeTracker.Core.Interfaces
     {
         Task<LoginResponseDto> AuthenticateAsync(LoginRequestDto request);
         Task<bool> RegisterAsync(RegisterRequestDto model);
+        Task ChangePasswordAsync(ChangePasswordRequestDto dto, string username);
     }
 }
