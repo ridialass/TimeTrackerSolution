@@ -1,5 +1,11 @@
 ﻿@page
+@using Microsoft.Extensions.Localization
+@using TimeTracker.AdminUI.Resources
+@inject IStringLocalizer<Pages> Localizer
 @model TimeTracker.AdminUI.Pages.Account.RegisterModel
+
+
+<p>@Localizer["WelcomeMessage"]</p>
 
 @{
     ViewData["Title"] = "Inscription d’un nouvel employé";

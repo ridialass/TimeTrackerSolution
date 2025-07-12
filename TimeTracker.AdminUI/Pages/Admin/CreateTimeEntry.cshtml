@@ -2,6 +2,9 @@
 @model TimeTracker.AdminUI.Pages.Admin.CreateTimeEntryModel
 @using TimeTracker.Core.DTOs
 @using TimeTracker.Core.Enums
+@using Microsoft.Extensions.Localization
+@using TimeTracker.AdminUI.Resources
+@inject IStringLocalizer<Pages> Localizer
 @{
     ViewData["Title"] = "Créer un pointage";
 }

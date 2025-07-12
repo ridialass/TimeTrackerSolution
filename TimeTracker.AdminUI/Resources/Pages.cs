@@ -1,7 +1,7 @@
-﻿namespace TimeTracker.API.Resources
+﻿namespace TimeTracker.AdminUI.Resources
 {
     // Cette classe sert uniquement de "marqueur" pour la localisation IStringLocalizer<Errors>
-    public class Errors
+    public class Pages
     {
     }
 }

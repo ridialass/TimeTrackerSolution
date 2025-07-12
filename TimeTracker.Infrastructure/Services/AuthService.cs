@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -8,7 +9,9 @@ using System.Text;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
+using TimeTracker.Core.Resources;
 using TimeTracker.Core.Interfaces;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TimeTracker.Infrastructure.Services
 {
@@ -19,19 +22,22 @@ namespace TimeTracker.Infrastructure.Services
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _config;
         private readonly ApplicationDbContext _db;
+        private readonly IStringLocalizer<Errors> _localizer;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole<int>> roleManager,
             SignInManager<ApplicationUser> signInManager,
             IConfiguration config,
-            ApplicationDbContext db)
+            ApplicationDbContext db,
+            IStringLocalizer<Errors> localizer)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
             _config = config;
             _db = db;
+            _localizer = localizer;
         }
 
         public async Task<LoginResponseDto> AuthenticateAsync(LoginRequestDto request)

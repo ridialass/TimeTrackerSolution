@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Interfaces;
-using TimeTracker.API.Resources;
+using TimeTracker.Core.Resources;
 
 namespace TimeTracker.API.Controllers
 {

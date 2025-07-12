@@ -1,5 +1,8 @@
 ﻿@page
 @model ErrorModel
+@using Microsoft.Extensions.Localization
+@using TimeTracker.AdminUI.Resources
+@inject IStringLocalizer<Pages> Localizer
 @{
     ViewData["Title"] = "Error";
 }

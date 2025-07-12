@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using TimeTracker.Core.Entities;
@@ -52,6 +53,18 @@ namespace TimeTracker.AdminUI
 
                 // Vous pouvez définir une AccessDeniedPath si vous avez des pages spéciales
                 options.AccessDeniedPath = "/Account/AccessDenied";
+            });
+
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+            builder.Services.Configure<RequestLocalizationOptions>(options =>
+            {
+                var supportedCultures = new[] { new CultureInfo("fr"), new CultureInfo("it"), new CultureInfo("en") };
+                options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("fr");
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+                // Détecte la culture via le header Accept-Language
+                options.RequestCultureProviders.Insert(0, new Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider());
             });
 
             // ─── 4) Ajouter l’autorisation (si vous avez des policies selon les rôles) ────

@@ -29,24 +29,25 @@ namespace TimeTracker.Infrastructure.Repositories
 
         public async Task<IEnumerable<TimeEntry>> GetAllAsync() =>
             await _db.TimeEntries
-                     .Include(te => te.User)
-                     .OrderByDescending(te => te.StartTime)
-                     .AsNoTracking()
-                     .ToListAsync();
+                .Include(te => te.User)
+                .Where(te => te.EndTime != null) // <--- filtre ajouté
+                .OrderByDescending(te => te.StartTime)
+                .AsNoTracking()
+                .ToListAsync();
 
         public async Task<IEnumerable<TimeEntry>> GetByEmployeeAsync(int employeeId) =>
             await _db.TimeEntries
-                     .Where(te => te.UserId == employeeId)
-                     .Include(te => te.User)
-                     .OrderByDescending(te => te.StartTime)
-                     .AsNoTracking()
-                     .ToListAsync();
+                .Where(te => te.UserId == employeeId && te.EndTime != null) // <--- filtre ajouté
+                .Include(te => te.User)
+                .OrderByDescending(te => te.StartTime)
+                .AsNoTracking()
+                .ToListAsync();
 
         public async Task<TimeEntry?> GetByIdAsync(int id) =>
             await _db.TimeEntries
-                     .Include(te => te.User)
-                     .AsNoTracking()
-                     .FirstOrDefaultAsync(te => te.Id == id);
+                .Include(te => te.User)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(te => te.Id == id);
 
         public async Task<bool> UpdateAsync(TimeEntry entity)
         {

@@ -1,12 +1,15 @@
-﻿using System;
+﻿using AutoMapper;
+using Microsoft.Extensions.Localization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Interfaces;
 using TimeTracker.Infrastructure.Repositories;
+using TimeTracker.Core.Resources;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TimeTracker.Infrastructure.Services
 {
@@ -15,15 +18,18 @@ namespace TimeTracker.Infrastructure.Services
         private readonly ITimeEntryRepository _timeEntryRepo;
         private readonly IEmployeeRepository _employeeRepo;
         private readonly IMapper _mapper;
+        private readonly IStringLocalizer<Errors> _localizer;
 
         public TimeEntryService(
             ITimeEntryRepository timeEntryRepo,
             IEmployeeRepository employeeRepo,
-            IMapper mapper)
+            IMapper mapper,
+            IStringLocalizer<Errors> localizer)
         {
             _timeEntryRepo = timeEntryRepo;
             _employeeRepo = employeeRepo;
             _mapper = mapper;
+            _localizer = localizer;
         }
 
         public async Task<TimeEntryDto> AddTimeEntryAsync(TimeEntryDto dto)

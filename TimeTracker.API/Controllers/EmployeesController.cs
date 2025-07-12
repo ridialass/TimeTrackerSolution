@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using TimeTracker.API.Resources;
+using TimeTracker.Core.Resources;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Interfaces;
 using static System.Runtime.InteropServices.JavaScript.JSType;

@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using AutoMapper;
+using Microsoft.Extensions.Localization;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
 using TimeTracker.Core.Interfaces;
 using TimeTracker.Infrastructure.Repositories;
+using TimeTracker.Core.Resources;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TimeTracker.Infrastructure.Services
 {
@@ -14,11 +17,15 @@ namespace TimeTracker.Infrastructure.Services
     {
         private readonly IEmployeeRepository _repo;
         private readonly IMapper _mapper;
+        private readonly IStringLocalizer<Errors> _localizer;
 
-        public EmployeeService(IEmployeeRepository repo, IMapper mapper)
+        public EmployeeService(IEmployeeRepository repo, 
+            IMapper mapper, 
+            IStringLocalizer<Errors> localizer)
         {
             _repo = repo;
             _mapper = mapper;
+            _localizer = localizer;
         }
 
         public async Task<EmployeeDto> CreateEmployeeAsync(RegisterRequestDto dto)

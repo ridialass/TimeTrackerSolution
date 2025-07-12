@@ -103,7 +103,7 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
-    var supportedCultures = new[] { new CultureInfo("fr"), new CultureInfo("en") };
+    var supportedCultures = new[] { new CultureInfo("fr"), new CultureInfo("it"), new CultureInfo("en") };
     options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("fr");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
