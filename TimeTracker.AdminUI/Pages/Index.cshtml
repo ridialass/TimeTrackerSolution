@@ -1,13 +1,26 @@
 ﻿@page
-@model IndexModel
+@model TimeTracker.AdminUI.Pages.IndexModel
 @using Microsoft.Extensions.Localization
 @using TimeTracker.AdminUI.Resources
-@inject IStringLocalizer<Pages> Localizer
+@inject IStringLocalizer<PagesTexts> Localizer
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = Localizer["Accueil"];
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h2>@Localizer["BienvenueSurTimeTracker"]</h2>
+
+@if (Model.IsAdmin)
+{
+    <p>@Localizer["RedirectionAdmin"]</p>
+}
+else
+{
+    <div class="user-home">
+        <p>@Localizer["Bonjour"], <b>@User.Identity.Name</b>!</p>
+        <ul>
+            <li><a href="/Sessions">@Localizer["MesSessions"]</a></li>
+            <li><a href="/Account/Profile">@Localizer["MonProfil"]</a></li>
+            <li><a href="/Privacy">@Localizer["Confidentialite"]</a></li>
+        </ul>
+    </div>
+}

@@ -2,21 +2,21 @@
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.Extensions.Localization
 @using TimeTracker.AdminUI.Resources
-@inject IStringLocalizer<Pages> Localizer
+@inject IStringLocalizer<PagesTexts> Localizer
 
 <ul class="navbar-nav ms-auto">
     @if (User.Identity?.IsAuthenticated ?? false)
     {
         <li class="nav-item">
             <form method="post" asp-page="/Account/Logout" class="d-inline">
-                <button type="submit" class="nav-link btn btn-link">Logout</button>
+                <button type="submit" class="nav-link btn btn-link">@Localizer["LogoutButton"]</button>
             </form>
         </li>
     }
     else
     {
         <li class="nav-item">
-            <a asp-page="/Account/Login" class="nav-link">Login</a>
+            <a asp-page="/Account/Login" class="nav-link">@Localizer["LoginButton"]</a>
         </li>
     }
 </ul>

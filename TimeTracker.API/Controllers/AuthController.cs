@@ -24,7 +24,11 @@ namespace TimeTracker.API.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new ErrorResponseDto
+                {
+                    Code = "InvalidModel",
+                    Message = _localizer["InvalidModel"]
+                });
 
             try
             {
@@ -46,7 +50,11 @@ namespace TimeTracker.API.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new ErrorResponseDto
+                {
+                    Code = "InvalidModel",
+                    Message = _localizer["InvalidModel"]
+                });
 
             bool created = await _authService.RegisterAsync(model);
             if (!created)
@@ -64,10 +72,14 @@ namespace TimeTracker.API.Controllers
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new ErrorResponseDto
+                {
+                    Code = "InvalidModel",
+                    Message = _localizer["InvalidModel"]
+                });
 
             await _authService.SendForgotPasswordEmailAsync(dto);
-            return Ok(new { message = _localizer["PasswordResetEmailSent"] ?? "Si un compte existe pour cet email, un lien a été envoyé." });
+            return Ok(new { message = _localizer["PasswordResetEmailSent"] });
         }
 
         [HttpPost("reset-password")]
@@ -75,7 +87,11 @@ namespace TimeTracker.API.Controllers
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new ErrorResponseDto
+                {
+                    Code = "InvalidModel",
+                    Message = _localizer["InvalidModel"]
+                });
 
             bool result = await _authService.ResetPasswordAsync(dto);
             if (!result)
@@ -83,45 +99,51 @@ namespace TimeTracker.API.Controllers
                 return BadRequest(new ErrorResponseDto
                 {
                     Code = "ResetFailed",
-                    Message = _localizer["PasswordResetFailed"] ?? "Impossible de réinitialiser le mot de passe. Vérifiez le token ou l'email."
+                    Message = _localizer["PasswordResetFailed"]
                 });
             }
-            return Ok(new { message = _localizer["PasswordResetSuccess"] ?? "Mot de passe réinitialisé avec succès." });
+            return Ok(new { message = _localizer["PasswordResetSuccess"] });
         }
 
-        // ÉTAPE 3 : Endpoint pour rafraîchir le token
         [HttpPost("refresh")]
         [AllowAnonymous]
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new ErrorResponseDto
+                {
+                    Code = "InvalidModel",
+                    Message = _localizer["InvalidModel"]
+                });
 
             var result = await _authService.RefreshTokenAsync(dto);
             if (result == null)
                 return Unauthorized(new ErrorResponseDto
                 {
                     Code = "InvalidRefreshToken",
-                    Message = _localizer["InvalidRefreshToken"] ?? "Refresh token invalide ou expiré."
+                    Message = _localizer["InvalidRefreshToken"]
                 });
 
             return Ok(result);
         }
 
-        // ÉTAPE 2 : Endpoint pour changer le mot de passe
         [HttpPost("change-password")]
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new ErrorResponseDto
+                {
+                    Code = "InvalidModel",
+                    Message = _localizer["InvalidModel"]
+                });
 
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))
                 return Unauthorized(new ErrorResponseDto
                 {
                     Code = "UserNotFound",
-                    Message = "Utilisateur non trouvé."
+                    Message = _localizer["UserNotFound"]
                 });
 
             var result = await _authService.ChangePasswordAsync(dto, username);
@@ -130,56 +152,61 @@ namespace TimeTracker.API.Controllers
                 return BadRequest(new ErrorResponseDto
                 {
                     Code = "ChangePasswordFailed",
-                    Message = "Échec du changement de mot de passe. Vérifiez l'ancien mot de passe."
+                    Message = _localizer["ChangePasswordFailed"]
                 });
             }
-            return Ok(new { message = "Mot de passe changé avec succès." });
+            return Ok(new { message = _localizer["ChangePasswordSuccess"] });
         }
 
-        // ÉTAPE 1 : Endpoint pour envoyer 2FA
         [HttpPost("send-2fa-code")]
         [AllowAnonymous]
         public async Task<IActionResult> Send2FACode([FromBody] Send2FACodeRequestDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new ErrorResponseDto
+                {
+                    Code = "InvalidModel",
+                    Message = _localizer["InvalidModel"]
+                });
 
             var result = await _authService.Send2FACodeAsync(dto);
             if (!result)
                 return BadRequest(new ErrorResponseDto
                 {
                     Code = "Send2FACodeFailed",
-                    Message = "Impossible d'envoyer le code 2FA."
+                    Message = _localizer["Send2FACodeFailed"]
                 });
 
-            return Ok(new { message = "Code 2FA envoyé avec succès." });
+            return Ok(new { message = _localizer["Send2FACodeSuccess"] });
         }
 
-        // ÉTAPE 5 : Endpoint pour vérifier le code 2FA
         [HttpPost("verify-2fa-code")]
         [AllowAnonymous]
         public async Task<IActionResult> Verify2FACode([FromBody] Verify2FACodeRequestDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new ErrorResponseDto
+                {
+                    Code = "InvalidModel",
+                    Message = _localizer["InvalidModel"]
+                });
 
             var result = await _authService.Verify2FACodeAsync(dto);
             if (!result)
                 return Unauthorized(new ErrorResponseDto
                 {
                     Code = "Invalid2FACode",
-                    Message = "Code 2FA invalide ou expiré."
+                    Message = _localizer["Invalid2FACode"]
                 });
 
-            return Ok(new { message = "Code 2FA vérifié avec succès." });
+            return Ok(new { message = _localizer["Verify2FACodeSuccess"] });
         }
 
-        // ÉTAPE 4 : Endpoint protégé pour admin (exemple)
         [HttpGet("protected")]
         [Authorize(Policy = "RequireAdminRole")]
         public IActionResult ProtectedAdminEndpoint()
         {
-            return Ok("Vous êtes authentifié en tant qu’Admin !");
+            return Ok(_localizer["AuthenticatedAsAdmin"]);
         }
     }
 }

@@ -2,20 +2,25 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
+using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using TimeTracker.AdminUI.Resources;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
-using System.Linq;
 
 namespace TimeTracker.AdminUI.Pages.Admin
 {
     [Authorize(Roles = "Admin")]
     public class IndexModel : PageModel
     {
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IStringLocalizer<PagesTexts> _localizer;
+
         public List<EmployeeDto> AllEmployees { get; set; } = new();
         [BindProperty] public int SelectedEmployeeId { get; set; }
         public List<TimeEntryDto> FilteredEntries { get; set; } = new();
@@ -29,19 +34,25 @@ namespace TimeTracker.AdminUI.Pages.Admin
         public DateTime CurrentWeekEnd { get; set; }
         public string? CreateError { get; set; }
         public string? CreateSuccess { get; set; }
-
-        private readonly IHttpClientFactory _httpClientFactory;
         public List<TimeEntryDto> Sessions { get; set; } = new();
 
-        public IndexModel(IHttpClientFactory httpClientFactory)
+        public IndexModel(IHttpClientFactory httpClientFactory, IStringLocalizer<TimeTracker.AdminUI.Resources.PagesTexts> localizer)
         {
             _httpClientFactory = httpClientFactory;
+            _localizer = localizer;
         }
 
         public async Task<IActionResult> OnGetAsync()
         {
+            if (!User.Identity.IsAuthenticated)
+                return RedirectToPage("/Account/Login");
+
+            if (!User.IsInRole("Admin"))
+                return RedirectToPage("/Account/AccessDenied");
+
             await LoadEmployeesAsync();
             return Page();
+        
         }
 
         private async Task LoadEmployeesAsync()
@@ -52,7 +63,8 @@ namespace TimeTracker.AdminUI.Pages.Admin
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"API Error {(int)response.StatusCode}:\n{body}");
+                ViewData["ApiError"] = "Connexion expirée ou non autorisée. Veuillez vous reconnecter.";
+        return;
             }
 
             AllEmployees = JsonSerializer.Deserialize<List<EmployeeDto>>(body,
@@ -65,7 +77,7 @@ namespace TimeTracker.AdminUI.Pages.Admin
             CreateError = CreateSuccess = null;
             if (string.IsNullOrWhiteSpace(NewUser.Username) || string.IsNullOrWhiteSpace(NewUserPassword))
             {
-                CreateError = "Username/password cannot be empty.";
+                CreateError = _localizer["CreateUserEmptyError"];
                 await LoadEmployeesAsync();
                 return Page();
             }
@@ -76,15 +88,15 @@ namespace TimeTracker.AdminUI.Pages.Admin
             var response = await client.PostAsync($"api/auth/register?password={Uri.EscapeDataString(NewUserPassword)}", content);
             if (response.IsSuccessStatusCode)
             {
-                CreateSuccess = $"User '{NewUser.Username}' created successfully.";
+                CreateSuccess = _localizer["CreateUserSuccess", NewUser.Username];
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
             {
-                CreateError = $"Username '{NewUser.Username}' already exists.";
+                CreateError = _localizer["CreateUserConflictError", NewUser.Username];
             }
             else
             {
-                CreateError = "Failed to create user.";
+                CreateError = _localizer["CreateUserGenericError"];
             }
 
             NewUser = new EmployeeDto { Role = UserRole.Technician };
@@ -120,7 +132,6 @@ namespace TimeTracker.AdminUI.Pages.Admin
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
             ) ?? new List<TimeEntryDto>();
 
-            // Always paginate by week, regardless of filter
             DateTime today = DateTime.Today;
             var diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
             var baseWeekStart = today.AddDays(-1 * diff);
@@ -141,15 +152,10 @@ namespace TimeTracker.AdminUI.Pages.Admin
             {
                 filtered = filtered.Where(e => e.StartTime.Date >= CustomStartDate.Value && e.StartTime.Date <= CustomEndDate.Value);
             }
-            else if (SelectedPeriod == "week")
-            {
-                // For week, filter only the current week in the filter; but pagination logic already applies below.
-                // So nothing extra needed here.
-            }
-            // Week window (ALWAYS applied)
+            // else if week: already handled by week window
+
             filtered = filtered.Where(e => e.StartTime.Date >= weekStart && e.StartTime.Date <= weekEnd);
 
-            // Keep only the most complete entry for each session as before
             FilteredEntries = filtered
                 .GroupBy(e => new { e.StartTime, e.Username, e.StartAddress })
                 .Select(g =>
@@ -163,7 +169,6 @@ namespace TimeTracker.AdminUI.Pages.Admin
             return Page();
         }
 
-        // EXPORTS ALL sessions matching current filter (not just displayed week)
         public async Task<IActionResult> OnPostExportCsvAsync(
             int SelectedEmployeeId,
             string SelectedPeriod,
@@ -173,7 +178,7 @@ namespace TimeTracker.AdminUI.Pages.Admin
         {
             if (SelectedEmployeeId == 0)
             {
-                ModelState.AddModelError("", "Aucun employé sélectionné.");
+                ModelState.AddModelError("", _localizer["ExportNoEmployeeError"]);
                 await LoadEmployeesAsync();
                 return Page();
             }
@@ -183,7 +188,7 @@ namespace TimeTracker.AdminUI.Pages.Admin
 
             if (!response.IsSuccessStatusCode)
             {
-                ModelState.AddModelError("", "Erreur lors de la récupération des sessions.");
+                ModelState.AddModelError("", _localizer["ExportSessionApiError"]);
                 await LoadEmployeesAsync();
                 return Page();
             }
@@ -210,9 +215,8 @@ namespace TimeTracker.AdminUI.Pages.Admin
             {
                 filtered = filtered.Where(e => e.StartTime.Date >= CustomStartDate.Value && e.StartTime.Date <= CustomEndDate.Value);
             }
-            // else: all (no additional filtering)
+            // else: all
 
-            // Group logic as before
             var exportEntries = filtered
                 .GroupBy(e => new { e.StartTime, e.Username, e.StartAddress })
                 .Select(g =>
@@ -222,8 +226,21 @@ namespace TimeTracker.AdminUI.Pages.Admin
                 )
                 .ToList();
 
+            // Localized CSV columns
             var sb = new StringBuilder();
-            sb.AppendLine("Id,Username,SessionType,StartTime,EndTime,WorkDuration,IncludesTravel,TravelTime,StartAddress,EndAddress,DinnerPaid");
+            sb.AppendLine(string.Join(",",
+                _localizer["CsvId"],
+                _localizer["CsvUsername"],
+                _localizer["CsvSessionType"],
+                _localizer["CsvStartTime"],
+                _localizer["CsvEndTime"],
+                _localizer["CsvWorkDuration"],
+                _localizer["CsvIncludesTravel"],
+                _localizer["CsvTravelTime"],
+                _localizer["CsvStartAddress"],
+                _localizer["CsvEndAddress"],
+                _localizer["CsvDinnerPaid"]
+            ));
 
             foreach (var s in exportEntries)
             {
@@ -238,18 +255,23 @@ namespace TimeTracker.AdminUI.Pages.Admin
                         return "\"" + field.Replace("\"", "\"\"") + "\"";
                     return field;
                 }
+                // Localized values for SessionType and DinnerPaid
+                string sessionTypeValue = _localizer[$"SessionType_{s.SessionType}"];
+                string includesTravelValue = _localizer[s.IncludesTravelTime ? "YesLabel" : "NoLabel"];
+                string dinnerPaidValue = _localizer[$"DinnerPaidBy_{s.DinnerPaid}"];
+
                 sb.AppendLine(string.Join(",",
                     s.Id,
                     Escape(s.Username),
-                    s.SessionType.ToString(),
+                    Escape(sessionTypeValue),
                     s.StartTime.ToString("O"),
                     endTime,
                     Escape(duration),
-                    s.IncludesTravelTime ? "Yes" : "No",
+                    includesTravelValue,
                     Escape(travel),
                     Escape(s.StartAddress ?? ""),
                     Escape(endAddr),
-                    s.DinnerPaid.ToString()
+                    dinnerPaidValue
                 ));
             }
 

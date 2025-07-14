@@ -1,10 +1,10 @@
 ﻿@page
 @using Microsoft.Extensions.Localization
 @using TimeTracker.AdminUI.Resources
-@inject IStringLocalizer<Pages> Localizer
+@inject IStringLocalizer<PagesTexts> Localizer
 @model TimeTracker.AdminUI.Pages.Account.LoginModel
 @{
-    ViewData["Title"] = "Connexion";
+    ViewData["Title"] = Localizer["LoginTitle"];
 }
 
 <h2>@ViewData["Title"]</h2>
@@ -13,24 +13,25 @@
     <div asp-validation-summary="All" class="text-danger"></div>
 
     <div class="mb-3">
-        <label asp-for="Username" class="form-label"></label>
+        <label asp-for="Username" class="form-label">@Localizer["UsernameLabel"]</label>
         <input asp-for="Username" class="form-control" />
         <span asp-validation-for="Username" class="text-danger"></span>
     </div>
     <div class="mb-3">
-        <label asp-for="Password" class="form-label"></label>
+        <label asp-for="Password" class="form-label">@Localizer["PasswordLabel"]</label>
         <input asp-for="Password" type="password" class="form-control" />
         <span asp-validation-for="Password" class="text-danger"></span>
     </div>
 
     @if (!string.IsNullOrEmpty(Model.ErrorMessage))
     {
-        <div class="alert alert-danger">@Model.ErrorMessage</div>
+        <div class="alert alert-danger">@Localizer[Model.ErrorMessage]</div>
+        <!-- Si le message d'erreur n'est pas localisé côté backend, tu peux créer des clés pour les messages courants -->
     }
 
-    <button type="submit" class="btn btn-primary">Se connecter</button>
+    <button type="submit" class="btn btn-primary">@Localizer["LoginButton"]</button>
 </form>
 
 <div class="mt-3">
-    <p><a asp-page="/Account/ForgotPassword">Mot de passe oublié ?</a></p>
+    <p><a asp-page="/Account/ForgotPassword">@Localizer["ForgotPasswordLink"]</a></p>
 </div>

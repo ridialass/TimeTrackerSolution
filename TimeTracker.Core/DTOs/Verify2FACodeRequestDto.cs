@@ -9,6 +9,7 @@ namespace TimeTracker.Core.DTOs
     public class Verify2FACodeRequestDto
     {
         public string Username { get; set; } = default!;
+        public string? Email { get; set; } // Ajout
         public string Code { get; set; } = default!;
     }
 }

@@ -95,7 +95,9 @@ builder.Services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
 builder.Services
     .AddAutoMapper(typeof(ApplicationMappingProfile).Assembly)
     .AddScoped<IEmployeeService, EmployeeService>()
-    .AddScoped<IAuthService, AuthService>();
+    .AddScoped<IAuthService, AuthService>()
+    .AddScoped<IEmailService, EmailService>()
+    .AddScoped<ITokenService, TokenService>();
 builder.Services
     .AddScoped<ITimeEntryService, TimeEntryService>();
 
@@ -174,7 +176,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseRequestLocalization();
 // **L’ordre ici est fondamental :**
 app.UseAuthentication();

@@ -117,16 +117,43 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="PasswordResetEmailSent" xml:space="preserve">
-    <value>Se esiste un account associato a questa e-mail, è stato inviato un collegamento per reimpostarla.</value>
+  <data name="WorkSessionType_Regular" xml:space="preserve">
+    <value>Normale</value>
   </data>
-  <data name="DuplicateUserOrEmail" xml:space="preserve">
-    <value>Nome utente o email già in uso</value>
+  <data name="WorkSessionType_Night" xml:space="preserve">
+    <value>Notte</value>
   </data>
-  <data name="InvalidModel" xml:space="preserve">
-    <value>Modello di dati non valido</value>
+  <data name="WorkSessionType_OutOfTown" xml:space="preserve">
+    <value>Trasferta</value>
   </data>
-  <data name="EmployeePatched" xml:space="preserve">
-    <value>Dipendente parzialmente aggiornato con successo</value>
+  <data name="WorkSessionType_Extraordinary" xml:space="preserve">
+    <value>Straordinanrio</value>
+  </data>
+  <data name="WorkSessionType_Sickness" xml:space="preserve">
+    <value>Malattia</value>
+  </data>
+  <data name="WorkSessionType_Vacation" xml:space="preserve">
+    <value>Vacanze</value>
+  </data>
+  <data name="WorkSessionType_Other" xml:space="preserve">
+    <value>Altro</value>
+  </data>
+  <data name="DinnerPaidBy_None" xml:space="preserve">
+    <value>Sans</value>
+  </data>
+  <data name="DinnerPaidBy_Employee" xml:space="preserve">
+    <value>Dipedente</value>
+  </data>
+  <data name="DinnerPaidBy_Client" xml:space="preserve">
+    <value>Cliente</value>
+  </data>
+  <data name="UserRole_Technician" xml:space="preserve">
+    <value>Tecnico</value>
+  </data>
+  <data name="UserRole_Admin" xml:space="preserve">
+    <value>Amministratore</value>
+  </data>
+  <data name="UserRole_Employee" xml:space="preserve">
+    <value>Dipedente</value>
   </data>
 </root>

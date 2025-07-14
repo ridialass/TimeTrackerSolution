@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using TimeTracker.Core.Resources;
 using TimeTracker.Core.DTOs;
+using TimeTracker.Core.Enums;
+using TimeTracker.Core.Helpers;
 using TimeTracker.Core.Interfaces;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TimeTracker.API.Controllers
 {
@@ -15,19 +16,46 @@ namespace TimeTracker.API.Controllers
     {
         private readonly IEmployeeService _service;
         private readonly IStringLocalizer<Errors> _localizer;
+        private readonly IStringLocalizer<EnumLabels> _enumLocalizer;
 
-        public EmployeesController(IEmployeeService service, IStringLocalizer<Errors> localizer)
+        public EmployeesController(
+            IEmployeeService service,
+            IStringLocalizer<Errors> localizer,
+            IStringLocalizer<EnumLabels> enumLocalizer
+        )
         {
             _service = service;
             _localizer = localizer;
+            _enumLocalizer = enumLocalizer;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var list = await _service.GetAllEmployeesAsync();
+            Console.WriteLine("Nombre d'employés retournés : " + list.Count());
             return Ok(list);
         }
+
+        //[HttpGet]
+        //public async Task<IActionResult> GetAll()
+        //{
+        //    var list = await _service.GetAllEmployeesAsync();
+
+        //    // Ajoute le label localisé du rôle à chaque employé
+        //    var result = list.Select(emp => new
+        //    {
+        //        emp.Id,
+        //        emp.FirstName,
+        //        emp.LastName,
+        //        emp.Email,
+        //        emp.Role,
+        //        UserRoleLabel = EnumLocalizationHelper.GetEnumLabel(emp.Role, _enumLocalizer),
+        //        // Ajoute ici les autres propriétés du DTO si besoin
+        //    });
+
+        //    return Ok(result);
+        //}
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> Get(int id)
@@ -41,7 +69,19 @@ namespace TimeTracker.API.Controllers
                     Message = _localizer["EmployeeNotFound"]
                 });
             }
-            return Ok(emp);
+
+            var result = new
+            {
+                emp.Id,
+                emp.FirstName,
+                emp.LastName,
+                emp.Email,
+                emp.Role,
+                UserRoleLabel = EnumLocalizationHelper.GetEnumLabel(emp.Role, _enumLocalizer),
+                // autres propriétés...
+            };
+
+            return Ok(result);
         }
 
         [HttpDelete("{id:int}")]
@@ -56,10 +96,9 @@ namespace TimeTracker.API.Controllers
                     Message = _localizer["EmployeeNotFound"]
                 });
             }
-            return NoContent();
+            return Ok(new { message = _localizer["EmployeeDeleted"] });
         }
 
-        // PUT: api/Employees/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateEmployeeDto dto)
         {
@@ -82,10 +121,9 @@ namespace TimeTracker.API.Controllers
                 });
             }
 
-            return NoContent();
+            return Ok(new { message = _localizer["EmployeeUpdated"] ?? "Employé modifié avec succès" });
         }
 
-        // PATCH: api/Employees/5
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> Patch(int id, [FromBody] PatchEmployeeDto dto)
         {
@@ -108,23 +146,45 @@ namespace TimeTracker.API.Controllers
                 });
             }
 
-            return NoContent();
+            return Ok(new { message = _localizer["EmployeePatched"] ?? "Employé mis à jour partiellement avec succès" });
         }
 
-        // Pagination/filtrage
         [HttpGet("paged")]
         public async Task<IActionResult> GetPaged([FromQuery] EmployeeQueryParameters query)
         {
             var (items, totalCount) = await _service.GetEmployeesPagedAsync(query);
             var result = new
             {
-                Items = items,
+                Items = items.Select(emp => new
+                {
+                    emp.Id,
+                    emp.FirstName,
+                    emp.LastName,
+                    emp.Email,
+                    emp.Role,
+                    RoleLabel = EnumLocalizationHelper.GetEnumLabel(emp.Role, _enumLocalizer),
+                    // autres propriétés...
+                }),
                 TotalCount = totalCount,
                 Page = query.Page,
                 PageSize = query.PageSize,
                 PageCount = (int)Math.Ceiling((double)totalCount / query.PageSize)
             };
             return Ok(result);
+        }
+
+        // Route pour exposer tous les labels traduits des rôles (pour l'UI)
+        [HttpGet("role-labels")]
+        [AllowAnonymous]
+        public IActionResult GetRoleLabels()
+        {
+            var labels = Enum.GetValues(typeof(UserRole))
+                .Cast<UserRole>()
+                .ToDictionary(
+                    e => (int)e,
+                    e => EnumLocalizationHelper.GetEnumLabel(e, _enumLocalizer)
+                );
+            return Ok(labels);
         }
     }
 }

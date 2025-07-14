@@ -1,6 +1,6 @@
 ﻿@using Microsoft.Extensions.Localization
 @using TimeTracker.AdminUI.Resources
-@inject IStringLocalizer<Pages> Localizer
+@inject IStringLocalizer<PagesTexts> Localizer
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,22 +15,67 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Admin Dashboard</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Admin/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a class="navbar-brand" asp-area="" asp-page="/Index">@Localizer["AdminDashboard"]</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                        <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Admin/Index">@Localizer["Home"]</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">@Localizer["Privacy"]</a>
+                            </li>
+                        </ul>
+                        <partial name="_LoginPartial" />
+                    </div>
+                }
+                else
+                {
+                    <a class="navbar-brand" asp-area="" asp-page="/Index">@Localizer["Accueil"]</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                        <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Sessions/Index">@Localizer["MesSessions"]</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Account/Profile">@Localizer["MonProfil"]</a>
+                            </li>
+                        </ul>
+                        <partial name="_LoginPartial" />
+                    </div>
+                }
+                @{
+                    // Utilise le code de langue sur 2 lettres pour la sélection
+                    var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                    var cultures = new[] { "fr", "en", "it" };
+                    var labels = new Dictionary<string, string> { { "fr", "Français" }, { "en", "English" }, { "it", "Italiano" } };
+                }
+                <form method="post" asp-page="/_Culture" class="d-inline" style="margin-right:1em;">
+                    <label for="culture" class="visually-hidden">Choisir la langue</label>
+                    <select id="culture" name="culture" onchange="this.form.submit()" class="form-select form-select-sm d-inline" style="width:auto;">
+                        @foreach (var culture in cultures)
+                        {
+                            if (culture == currentCulture)
+                            {
+                                <option value="@culture" selected>@labels[culture]</option>
+                            }
+                            else
+                            {
+                                <option value="@culture">@labels[culture]</option>
+                            }
+                        }
+                    </select>
+                    <input type="hidden" name="returnUrl" value="@ViewContext.HttpContext.Request.Path" />
+                </form>
             </div>
         </nav>
     </header>
@@ -42,7 +87,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - TimeTracker.AdminUI - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            &copy; 2025 - TimeTracker.AdminUI - <a asp-area="" asp-page="/Privacy">@Localizer["Privacy"]</a>
         </div>
     </footer>
 

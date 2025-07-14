@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using TimeTracker.API.Controllers;
-using TimeTracker.API.Ressources;
+using TimeTracker.Core.Resources;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Interfaces;
 using Xunit;

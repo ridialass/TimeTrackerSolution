@@ -4,34 +4,34 @@
 @using TimeTracker.Core.Enums
 @using Microsoft.Extensions.Localization
 @using TimeTracker.AdminUI.Resources
-@inject IStringLocalizer<Pages> Localizer
+@inject IStringLocalizer<PagesTexts> Localizer
 @{
-    ViewData["Title"] = "Modifier un pointage";
+    ViewData["Title"] = Localizer["EditTimeEntryTitle"];
 }
 
 <h2>@ViewData["Title"]</h2>
 
 <form method="post">
     <div class="mb-3">
-        <label asp-for="TimeEntry.StartTime" class="form-label">Début</label>
+        <label asp-for="TimeEntry.StartTime" class="form-label">@Localizer["StartTimeLabel"]</label>
         <input asp-for="TimeEntry.StartTime" type="datetime-local" class="form-control" />
     </div>
     <div class="mb-3">
-        <label asp-for="TimeEntry.EndTime" class="form-label">Fin</label>
+        <label asp-for="TimeEntry.EndTime" class="form-label">@Localizer["EndTimeLabel"]</label>
         <input asp-for="TimeEntry.EndTime" type="datetime-local" class="form-control" />
     </div>
     <div class="mb-3">
-        <label asp-for="TimeEntry.SessionType" class="form-label">Type</label>
+        <label asp-for="TimeEntry.SessionType" class="form-label">@Localizer["SessionTypeLabel"]</label>
         <select asp-for="TimeEntry.SessionType" class="form-select">
             @foreach (WorkSessionType t in Enum.GetValues(typeof(WorkSessionType)))
             {
-                <option value="@t">@t</option>
+                <option value="@t">@Localizer[$"SessionType_{t}"]</option>
             }
         </select>
     </div>
-    <!-- Ajoute ici les autres champs nécessaires -->
+    <!-- Ajoute ici les autres champs nécessaires, en localisant les labels comme ci-dessus -->
     <input type="hidden" asp-for="TimeEntry.Id" />
     <input type="hidden" asp-for="TimeEntry.UserId" />
-    <button type="submit" class="btn btn-warning">Enregistrer</button>
-    <a asp-page="/Admin/Index" class="btn btn-secondary">Annuler</a>
+    <button type="submit" class="btn btn-warning">@Localizer["SaveButton"]</button>
+    <a asp-page="/Admin/Index" class="btn btn-secondary">@Localizer["CancelButton"]</a>
 </form>

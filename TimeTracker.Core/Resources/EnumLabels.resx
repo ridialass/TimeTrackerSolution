@@ -117,16 +117,43 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="EmployeeDeleted" xml:space="preserve">
-    <value>Employé supprimé avec succès</value>
+  <data name="WorkSessionType_Regular" xml:space="preserve">
+    <value>Ordinaire</value>
   </data>
-  <data name="EmployeeNotFound" xml:space="preserve">
-    <value>Employé introuvable</value>
+  <data name="WorkSessionType_Night" xml:space="preserve">
+    <value>Nuit</value>
   </data>
-  <data name="InvalidModel" xml:space="preserve">
-    <value>Modèle de données invalide</value>
+  <data name="WorkSessionType_OutOfTown" xml:space="preserve">
+    <value>Déplacement</value>
   </data>
-  <data name="Unauthorized" xml:space="preserve">
-    <value>Accès non autorisé</value>
+  <data name="WorkSessionType_Extraordinary" xml:space="preserve">
+    <value>Extra-Horaire</value>
+  </data>
+  <data name="WorkSessionType_Sickness" xml:space="preserve">
+    <value>Maladie</value>
+  </data>
+  <data name="WorkSessionType_Vacation" xml:space="preserve">
+    <value>Congé</value>
+  </data>
+  <data name="WorkSessionType_Other" xml:space="preserve">
+    <value>Autre</value>
+  </data>
+  <data name="DinnerPaidBy_None" xml:space="preserve">
+    <value>Senza</value>
+  </data>
+  <data name="DinnerPaidBy_Employee" xml:space="preserve">
+    <value>Employé</value>
+  </data>
+  <data name="DinnerPaidBy_Client" xml:space="preserve">
+    <value>Par le Client</value>
+  </data>
+  <data name="UserRole_Technician" xml:space="preserve">
+    <value>Technicien</value>
+  </data>
+  <data name="UserRole_Admin" xml:space="preserve">
+    <value>Administrateur</value>
+  </data>
+  <data name="UserRole_Employee" xml:space="preserve">
+    <value>Employé</value>
   </data>
 </root>

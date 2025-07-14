@@ -9,5 +9,6 @@ namespace TimeTracker.Core.DTOs
     public class Send2FACodeRequestDto
     {
         public string Username { get; set; } = default!;
+        public string? Email { get; set; }
     }
 }

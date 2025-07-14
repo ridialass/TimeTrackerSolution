@@ -5,8 +5,9 @@ using Microsoft.Extensions.Localization;
 using System.Security.Claims;
 using TimeTracker.Core.Resources;
 using TimeTracker.Core.DTOs;
-using TimeTracker.Core.Entities;
 using TimeTracker.Core.Interfaces;
+using TimeTracker.Core.Enums;
+using TimeTracker.Core.Helpers;
 
 namespace TimeTracker.API.Controllers
 {
@@ -19,18 +20,21 @@ namespace TimeTracker.API.Controllers
         private readonly IMapper _mapper;
         private readonly ITimeEntryService _timeEntryService;
         private readonly IStringLocalizer<Errors> _localizer;
+        private readonly IStringLocalizer<EnumLabels> _enumLocalizer;
 
         public TimeEntriesController(
             ApplicationDbContext db,
             IMapper mapper,
-            ITimeEntryService timeEntryService, 
-            IStringLocalizer<Errors> localizer
+            ITimeEntryService timeEntryService,
+            IStringLocalizer<Errors> localizer,
+            IStringLocalizer<EnumLabels> enumLocalizer
         )
         {
             _db = db;
             _mapper = mapper;
             _timeEntryService = timeEntryService;
             _localizer = localizer;
+            _enumLocalizer = enumLocalizer;
         }
 
         // GET: api/TimeEntries?userId=xx
@@ -44,21 +48,40 @@ namespace TimeTracker.API.Controllers
             {
                 if (string.IsNullOrEmpty(currentUserId))
                 {
-                    return Unauthorized();
+                    return Unauthorized(new ErrorResponseDto
+                    {
+                        Code = "Unauthorized",
+                        Message = _localizer["Unauthorized"]
+                    });
                 }
                 userId = int.Parse(currentUserId);
             }
 
+            IEnumerable<TimeEntryDto> list;
             if (userId.HasValue)
-            {
-                var list = await _timeEntryService.GetTimeEntriesByUserAsync(userId.Value);
-                return Ok(list); // 200 OK
-            }
+                list = await _timeEntryService.GetTimeEntriesByUserAsync(userId.Value);
             else
+                list = await _timeEntryService.GetAllTimeEntriesAsync();
+
+            // Ajoute le label localisé pour SessionType et DinnerPaidBy à chaque item
+            var result = list.Select(te => new
             {
-                var list = await _timeEntryService.GetAllTimeEntriesAsync();
-                return Ok(list); // 200 OK
-            }
+                te.Id,
+                te.StartTime,
+                te.EndTime,
+                te.UserId,
+                te.Username,
+                te.SessionType,
+                SessionTypeLabel = EnumLocalizationHelper.GetEnumLabel(te.SessionType, _enumLocalizer),
+                te.IsAdminModified,
+                te.IncludesTravelTime,
+                te.DinnerPaid,
+                DinnerPaidLabel = EnumLocalizationHelper.GetEnumLabel(te.DinnerPaid, _enumLocalizer),
+                te.Location,
+                // autres propriétés...
+            });
+
+            return Ok(result);
         }
 
         // GET: api/TimeEntries/{id}
@@ -66,15 +89,75 @@ namespace TimeTracker.API.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var te = await _timeEntryService.GetTimeEntryByIdAsync(id);
-            if (te == null) return NotFound(); // 404
+            if (te == null)
+                return NotFound(new ErrorResponseDto
+                {
+                    Code = "TimeEntryNotFound",
+                    Message = _localizer["TimeEntryNotFound"]
+                });
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var isAdmin = User.IsInRole("Admin");
 
             if (!isAdmin && te.UserId.ToString() != currentUserId)
-                return Forbid(); // 403
+                return StatusCode(403, new ErrorResponseDto
+                {
+                    Code = "Forbidden",
+                    Message = _localizer["Forbidden"]
+                });
 
-            return Ok(te); // 200 OK
+            var result = new
+            {
+                te.Id,
+                te.StartTime,
+                te.EndTime,
+                te.UserId,
+                te.Username,
+                te.SessionType,
+                SessionTypeLabel = EnumLocalizationHelper.GetEnumLabel(te.SessionType, _enumLocalizer),
+                te.IsAdminModified,
+                te.IncludesTravelTime,
+                te.DinnerPaid,
+                DinnerPaidLabel = EnumLocalizationHelper.GetEnumLabel(te.DinnerPaid, _enumLocalizer),
+                te.Location,
+                // autres propriétés...
+            };
+
+            return Ok(result);
+        }
+
+        // GET: api/TimeEntries/enum-labels
+        [HttpGet("enum-labels")]
+        [AllowAnonymous]
+        public IActionResult GetEnumLabels()
+        {
+            var workSessionTypeLabels = Enum.GetValues(typeof(WorkSessionType))
+                .Cast<WorkSessionType>()
+                .ToDictionary(
+                    e => (int)e,
+                    e => EnumLocalizationHelper.GetEnumLabel(e, _enumLocalizer)
+                );
+
+            var dinnerPaidByLabels = Enum.GetValues(typeof(DinnerPaidBy))
+                .Cast<DinnerPaidBy>()
+                .ToDictionary(
+                    e => (int)e,
+                    e => EnumLocalizationHelper.GetEnumLabel(e, _enumLocalizer)
+                );
+
+            var userRoleLabels = Enum.GetValues(typeof(UserRole))
+                .Cast<UserRole>()
+                .ToDictionary(
+                    e => (int)e,
+                    e => EnumLocalizationHelper.GetEnumLabel(e, _enumLocalizer)
+                );
+
+            return Ok(new
+            {
+                WorkSessionType = workSessionTypeLabels,
+                DinnerPaidBy = dinnerPaidByLabels,
+                UserRole = userRoleLabels
+            });
         }
 
         // POST: api/TimeEntries
@@ -82,13 +165,17 @@ namespace TimeTracker.API.Controllers
         public async Task<IActionResult> Create([FromBody] TimeEntryDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState); // 400
+                return BadRequest(new ErrorResponseDto
+                {
+                    Code = "InvalidModel",
+                    Message = _localizer["InvalidModel"]
+                });
 
             var created = await _timeEntryService.AddTimeEntryAsync(dto);
 
             return CreatedAtAction(nameof(GetById),
                                    new { id = created.Id },
-                                   created); // 201 Created
+                                   created);
         }
 
         // PUT: api/TimeEntries/{id}
@@ -97,15 +184,23 @@ namespace TimeTracker.API.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] TimeEntryDto dto)
         {
             if (id != dto.Id)
-                return BadRequest("ID mismatch."); // 400
+                return BadRequest(new ErrorResponseDto
+                {
+                    Code = "IdMismatch",
+                    Message = _localizer["IdMismatch"]
+                });
 
             dto.IsAdminModified = true;
 
             var updated = await _timeEntryService.UpdateTimeEntryAsync(dto);
             if (!updated)
-                return NotFound(); // 404
+                return NotFound(new ErrorResponseDto
+                {
+                    Code = "TimeEntryNotFound",
+                    Message = _localizer["TimeEntryNotFound"]
+                });
 
-            return NoContent(); // 204
+            return Ok(new { message = _localizer["TimeEntryUpdated"] });
         }
 
         // PATCH: api/TimeEntries/{id}
@@ -118,9 +213,13 @@ namespace TimeTracker.API.Controllers
 
             var updated = await _timeEntryService.UpdateTimeEntryAsync(dto);
             if (!updated)
-                return NotFound(); // 404
+                return NotFound(new ErrorResponseDto
+                {
+                    Code = "TimeEntryNotFound",
+                    Message = _localizer["TimeEntryNotFound"]
+                });
 
-            return NoContent(); // 204
+            return Ok(new { message = _localizer["TimeEntryPatched"] });
         }
 
         // DELETE: api/TimeEntries/{id}
@@ -128,8 +227,13 @@ namespace TimeTracker.API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             bool deleted = await _timeEntryService.DeleteTimeEntryAsync(id);
-            if (!deleted) return NotFound(); // 404
-            return NoContent(); // 204
+            if (!deleted)
+                return NotFound(new ErrorResponseDto
+                {
+                    Code = "TimeEntryNotFound",
+                    Message = _localizer["TimeEntryNotFound"]
+                });
+            return Ok(new { message = _localizer["TimeEntryDeleted"] });
         }
     }
 }

@@ -1,21 +1,27 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
+using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using TimeTracker.AdminUI.Resources;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
-using System.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TimeTracker.AdminUI.Pages
 {
     [Authorize(Roles = "Admin")]
     public class PrivacyModel : PageModel
     {
+        [Inject]
+        private IStringLocalizer<PagesTexts> Localizer { get; set; }
         public List<EmployeeDto> AllEmployees { get; set; } = new();
         [BindProperty] public int SelectedEmployeeId { get; set; }
         public List<TimeEntryDto> FilteredEntries { get; set; } = new();

@@ -60,13 +60,14 @@ namespace TimeTracker.AdminUI
             builder.Services.Configure<RequestLocalizationOptions>(options =>
             {
                 var supportedCultures = new[] { new CultureInfo("fr"), new CultureInfo("it"), new CultureInfo("en") };
-                options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("fr");
+                options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("it");
                 options.SupportedCultures = supportedCultures;
                 options.SupportedUICultures = supportedCultures;
-                // Détecte la culture via le header Accept-Language
-                options.RequestCultureProviders.Insert(0, new Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider());
+                // 1. Cookie provider (user selection) - priorité la plus haute
+                options.RequestCultureProviders.Insert(0, new Microsoft.AspNetCore.Localization.CookieRequestCultureProvider());
+                // 2. Accept-Language header provider (navigateur)
+                options.RequestCultureProviders.Insert(1, new Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider());
             });
-
             // ─── 4) Ajouter l’autorisation (si vous avez des policies selon les rôles) ────
             builder.Services.AddAuthorization(options =>
             {
@@ -92,7 +93,13 @@ namespace TimeTracker.AdminUI
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(
                     new MediaTypeWithQualityHeaderValue("application/json"));
-            });
+            })
+                .ConfigurePrimaryHttpMessageHandler(() =>
+                    new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                    }
+            );
 
             var app = builder.Build();
 
@@ -110,6 +117,7 @@ namespace TimeTracker.AdminUI
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseRequestLocalization();
 
             // IMPORTANT : Authentication puis Authorization
             app.UseAuthentication();

@@ -1,73 +1,74 @@
 ﻿@page
 @using Microsoft.Extensions.Localization
 @using TimeTracker.AdminUI.Resources
-@inject IStringLocalizer<Pages> Localizer
+@inject IStringLocalizer<PagesTexts> Localizer
 @model TimeTracker.AdminUI.Pages.Account.RegisterModel
-
 
 <p>@Localizer["WelcomeMessage"]</p>
 
 @{
-    ViewData["Title"] = "Inscription d’un nouvel employé";
+    ViewData["Title"] = Localizer["RegisterTitle"];
 }
 
 <h2>@ViewData["Title"]</h2>
 
 <form method="post" class="mt-4">
     <div class="form-group mb-3">
-        <label asp-for="Username" class="form-label"></label>
+        <label asp-for="Username" class="form-label">@Localizer["UsernameLabel"]</label>
         <input asp-for="Username" class="form-control" />
         <span asp-validation-for="Username" class="text-danger"></span>
     </div>
     <div class="form-group mb-3">
-        <label asp-for="Email" class="form-label"></label>
+        <label asp-for="Email" class="form-label">@Localizer["EmailLabel"]</label>
         <input asp-for="Email" class="form-control" />
         <span asp-validation-for="Email" class="text-danger"></span>
     </div>
     <div class="form-group mb-3">
-        <label asp-for="Password" class="form-label"></label>
+        <label asp-for="Password" class="form-label">@Localizer["PasswordLabel"]</label>
         <input asp-for="Password" type="password" class="form-control" />
         <span asp-validation-for="Password" class="text-danger"></span>
     </div>
     <div class="form-group mb-3">
-        <label asp-for="Role" class="form-label"></label>
+        <label asp-for="Role" class="form-label">@Localizer["RoleLabel"]</label>
         <select asp-for="Role" class="form-select">
-            <option value="Employee">Employee</option>
-            <option value="Admin">Admin</option>
-            <option value="Technician">Technician</option>
+            <option value="Employee">@Localizer["RoleEmployee"]</option>
+            <option value="Admin">@Localizer["RoleAdmin"]</option>
+            <option value="Technician">@Localizer["RoleTechnician"]</option>
         </select>
         <span asp-validation-for="Role" class="text-danger"></span>
     </div>
     <div class="form-group mb-3">
-        <label asp-for="FirstName" class="form-label"></label>
+        <label asp-for="FirstName" class="form-label">@Localizer["FirstNameLabel"]</label>
         <input asp-for="FirstName" class="form-control" />
         <span asp-validation-for="FirstName" class="text-danger"></span>
     </div>
     <div class="form-group mb-3">
-        <label asp-for="LastName" class="form-label"></label>
+        <label asp-for="LastName" class="form-label">@Localizer["LastNameLabel"]</label>
         <input asp-for="LastName" class="form-control" />
         <span asp-validation-for="LastName" class="text-danger"></span>
     </div>
     <div class="form-group mb-3">
-        <label asp-for="Town" class="form-label"></label>
+        <label asp-for="Town" class="form-label">@Localizer["TownLabel"]</label>
         <input asp-for="Town" class="form-control" />
         <span asp-validation-for="Town" class="text-danger"></span>
     </div>
     <div class="form-group mb-3">
-        <label asp-for="Country" class="form-label"></label>
+        <label asp-for="Country" class="form-label">@Localizer["CountryLabel"]</label>
         <input asp-for="Country" class="form-control" />
         <span asp-validation-for="Country" class="text-danger"></span>
     </div>
 
     @if (!string.IsNullOrEmpty(Model.ErrorMessage))
     {
-        <div class="alert alert-danger">@Model.ErrorMessage</div>
+        <div class="alert alert-danger">@Localizer[Model.ErrorMessage]</div>
+        <!-- Ou simplement: <div class="alert alert-danger">@Model.ErrorMessage</div> si déjà localisé -->
     }
 
     @if (!string.IsNullOrEmpty(Model.SuccessMessage))
     {
-        <div class="alert alert-success">@Model.SuccessMessage</div>
+        <div class="alert alert-success">@Localizer[Model.SuccessMessage]</div>
+        <!-- Idem ici -->
     }
 
-    <button type="submit" class="btn btn-success">Créer cet utilisateur</button>
+    <button type="submit" class="btn btn-success">@Localizer["RegisterButton"]</button>
 </form>

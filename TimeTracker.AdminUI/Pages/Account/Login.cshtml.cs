@@ -51,6 +51,7 @@ namespace TimeTracker.AdminUI.Pages.Account
             var json = JsonSerializer.Serialize(loginDto);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
+            // IMPORTANT : URL absolue !
             var response = await client.PostAsync("api/auth/login", content);
             if (!response.IsSuccessStatusCode)
             {

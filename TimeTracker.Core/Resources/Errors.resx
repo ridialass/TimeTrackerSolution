@@ -117,16 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="EmployeeDeleted" xml:space="preserve">
-    <value>Employé supprimé avec succès</value>
+  <data name="PasswordResetEmailSent" xml:space="preserve">
+    <value>Si un compte existe pour cet email, un lien de réinitialisation a été envoyé.</value>
   </data>
-  <data name="EmployeeNotFound" xml:space="preserve">
-    <value>Employé introuvable</value>
+  <data name="DuplicateUserOrEmail" xml:space="preserve">
+    <value>Nom d’utilisateur ou email déjà utilisé</value>
   </data>
   <data name="InvalidModel" xml:space="preserve">
     <value>Modèle de données invalide</value>
   </data>
-  <data name="Unauthorized" xml:space="preserve">
-    <value>Accès non autorisé</value>
+  <data name="EmployeePatched" xml:space="preserve">
+    <value>Employé mis à jour partiellement avec succès</value>
   </data>
 </root>

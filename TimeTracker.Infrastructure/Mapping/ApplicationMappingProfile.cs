@@ -1,5 +1,4 @@
-﻿// ApplicationMappingProfile.cs
-using AutoMapper;
+﻿using AutoMapper;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 
@@ -11,7 +10,8 @@ namespace TimeTracker.Infrastructure.Mapping
         {
             // ---- UTILISATEURS ----
             CreateMap<ApplicationUser, EmployeeDto>()
-                .ForMember(d => d.Role, opt => opt.MapFrom(src => src.Role));
+                .ForMember(d => d.Role, opt => opt.MapFrom(src => src.Role))
+                .ForMember(d => d.Username, opt => opt.MapFrom(src => src.UserName)); // <-- AJOUTÉ
 
             CreateMap<RegisterRequestDto, ApplicationUser>(MemberList.None)
                 .ForMember(d => d.UserName, opt => opt.MapFrom(src => src.Username))

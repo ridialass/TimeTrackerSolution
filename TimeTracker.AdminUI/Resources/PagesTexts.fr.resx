@@ -1,0 +1,537 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ActionsLabel" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="AdminDashboard" xml:space="preserve">
+    <value>Tableau de bord Admin</value>
+  </data>
+  <data name="AllPeriodsOption" xml:space="preserve">
+    <value>Toutes</value>
+  </data>
+  <data name="AuthenticatedAsAdmin" xml:space="preserve">
+    <value>Vous êtes authentifié en tant qu’Admin !</value>
+  </data>
+  <data name="BackButton" xml:space="preserve">
+    <value>Retour</value>
+  </data>
+  <data name="BackToHomeButton" xml:space="preserve">
+    <value>Retour à l'accueil</value>
+  </data>
+  <data name="BackToLoginButton" xml:space="preserve">
+    <value>Retour à la connexion</value>
+  </data>
+  <data name="CancelButton" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="ChangePasswordFailed" xml:space="preserve">
+    <value>Échec du changement de mot de passe. Vérifiez l’ancien mot de passe.</value>
+  </data>
+  <data name="ChangePasswordSuccess" xml:space="preserve">
+    <value>Mot de passe changé avec succès.</value>
+  </data>
+  <data name="CountryLabel" xml:space="preserve">
+    <value>Pays</value>
+  </data>
+  <data name="CreateButton" xml:space="preserve">
+    <value>Créer</value>
+  </data>
+  <data name="CreateEmployeeButton" xml:space="preserve">
+    <value>Créer Employé</value>
+  </data>
+  <data name="CreateTimeEntryTitle" xml:space="preserve">
+    <value>Créer un pointage</value>
+  </data>
+  <data name="CustomOption" xml:space="preserve">
+    <value>Personnalisée</value>
+  </data>
+  <data name="DetailsButton" xml:space="preserve">
+    <value>Détails</value>
+  </data>
+  <data name="DetailsTimeEntryTitle" xml:space="preserve">
+    <value>Détail du pointage</value>
+  </data>
+  <data name="DevelopmentModeHeader" xml:space="preserve">
+    <value>Mode développement</value>
+  </data>
+  <data name="DevelopmentModeInfo" xml:space="preserve">
+    <value>Passer en mode développement affiche des informations détaillées sur l’erreur survenue.</value>
+  </data>
+  <data name="DevelopmentWarningBody" xml:space="preserve">
+    <value>Cela peut dévoiler des informations sensibles aux utilisateurs. Pour le débogage local, activez le mode développement en définissant la variable d’environnement ASPNETCORE_ENVIRONMENT à Developement puis redémarrez l’application.</value>
+  </data>
+  <data name="DevelopmentWarningHeader" xml:space="preserve">
+    <value>Le mode développement ne doit pas être activé en production.</value>
+  </data>
+  <data name="DinnerPaid" xml:space="preserve">
+    <value>Repas Payé</value>
+  </data>
+  <data name="DinnerPaidBy_Company" xml:space="preserve">
+    <value>Entreprise</value>
+  </data>
+  <data name="DinnerPaidBy_Employee" xml:space="preserve">
+    <value>Employé</value>
+  </data>
+  <data name="DinnerPaidBy_None" xml:space="preserve">
+    <value>Non</value>
+  </data>
+  <data name="DinnerPaidLabel" xml:space="preserve">
+    <value>Dîner payé</value>
+  </data>
+  <data name="DurationLabel" xml:space="preserve">
+    <value>Durée</value>
+  </data>
+  <data name="EditButton" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="EditTimeEntryTitle" xml:space="preserve">
+    <value>Modifier un pointage</value>
+  </data>
+  <data name="EmailLabel" xml:space="preserve">
+    <value>Adresse e-mail</value>
+  </data>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>L’email est requis.</value>
+  </data>
+  <data name="EmployeeDeleted" xml:space="preserve">
+    <value>Employé supprimé avec succès</value>
+  </data>
+  <data name="EmployeeLabel" xml:space="preserve">
+    <value>Employé</value>
+  </data>
+  <data name="EmployeeNotFound" xml:space="preserve">
+    <value>Employé introuvable</value>
+  </data>
+  <data name="EmployeeUpdated" xml:space="preserve">
+    <value>Employé modifié avec succès</value>
+  </data>
+  <data name="EndAddressLabel" xml:space="preserve">
+    <value>Adresse fin</value>
+  </data>
+  <data name="EndTimeLabel" xml:space="preserve">
+    <value>Fin</value>
+  </data>
+  <data name="EndTimeRequired" xml:space="preserve">
+    <value>L’heure de fin est requise.</value>
+  </data>
+  <data name="ErrorHeader" xml:space="preserve">
+    <value>Erreur</value>
+  </data>
+  <data name="ErrorOccurredMessage" xml:space="preserve">
+    <value>Une erreur est survenue lors du traitement de votre demande.</value>
+  </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>Erreur</value>
+  </data>
+  <data name="ExportCsvButton" xml:space="preserve">
+    <value>Exporter CSV</value>
+  </data>
+  <data name="FirstNameLabel" xml:space="preserve">
+    <value>Prénom</value>
+  </data>
+  <data name="Forbidden" xml:space="preserve">
+    <value>Action interdite</value>
+  </data>
+  <data name="ForgotPasswordLink" xml:space="preserve">
+    <value>Mot de passe oublié ?</value>
+  </data>
+  <data name="ForgotPasswordTitle" xml:space="preserve">
+    <value>Mot de passe oublié</value>
+  </data>
+  <data name="FromLabel" xml:space="preserve">
+    <value>Du</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Accueil</value>
+  </data>
+  <data name="IdMismatch" xml:space="preserve">
+    <value>Incohérence entre l'identifiant de la ressource et celui fourni</value>
+  </data>
+  <data name="IncludesTravelTimeLabel" xml:space="preserve">
+    <value>Déplacement</value>
+  </data>
+  <data name="Invalid2FACode" xml:space="preserve">
+    <value>Code 2FA invalide ou expiré.</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Informations d'identification non valides</value>
+  </data>
+  <data name="InvalidModel" xml:space="preserve">
+    <value>Modèle de données invalide</value>
+  </data>
+  <data name="InvalidRefreshToken" xml:space="preserve">
+    <value>Refresh token invalide ou expiré.</value>
+  </data>
+  <data name="IsAdminModifiedLabel" xml:space="preserve">
+    <value>Modifié par admin</value>
+  </data>
+  <data name="LastNameLabel" xml:space="preserve">
+    <value>Nom</value>
+  </data>
+  <data name="LoginButton" xml:space="preserve">
+    <value>Se connecter</value>
+  </data>
+  <data name="LoginTitle" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="LogoutButton" xml:space="preserve">
+    <value>Déconnexion</value>
+  </data>
+  <data name="LogoutMessage" xml:space="preserve">
+    <value>Vous avez été déconnecté.</value>
+  </data>
+  <data name="LogoutTitle" xml:space="preserve">
+    <value>Déconnexion</value>
+  </data>
+  <data name="MesSessions" xml:space="preserve">
+    <value>Mes sessions</value>
+  </data>
+  <data name="MonProfil" xml:space="preserve">
+    <value>Mon profil</value>
+  </data>
+  <data name="NextWeekButton" xml:space="preserve">
+    <value>Semaine suivante</value>
+  </data>
+  <data name="NoDataFoundMessage" xml:space="preserve">
+    <value>Aucune donnée trouvée pour ce pointage.</value>
+  </data>
+  <data name="NoLabel" xml:space="preserve">
+    <value>Non</value>
+  </data>
+  <data name="NoSessionsMessage" xml:space="preserve">
+    <value>Aucune session à afficher.</value>
+  </data>
+  <data name="PasswordLabel" xml:space="preserve">
+    <value>Mot de passe</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Le mot de passe est requis.</value>
+  </data>
+  <data name="PasswordResetEmailLog" xml:space="preserve">
+    <value>Token de réinitialisation envoyé à</value>
+  </data>
+  <data name="PasswordResetFailed" xml:space="preserve">
+    <value>Impossible de réinitialiser le mot de passe. Vérifiez le token ou l’email.</value>
+  </data>
+  <data name="PasswordResetSuccess" xml:space="preserve">
+    <value>Mot de passe réinitialisé avec succès</value>
+  </data>
+  <data name="PeriodLabel" xml:space="preserve">
+    <value>Période</value>
+  </data>
+  <data name="PreviousWeekButton" xml:space="preserve">
+    <value>Semaine précédente</value>
+  </data>
+  <data name="Privacy" xml:space="preserve">
+    <value>Confidentialité</value>
+  </data>
+  <data name="RegisterButton" xml:space="preserve">
+    <value>Créer cet utilisateur</value>
+  </data>
+  <data name="RegisterTitle" xml:space="preserve">
+    <value>Inscription d’un nouvel employé</value>
+  </data>
+  <data name="RequestIdLabel" xml:space="preserve">
+    <value>ID de la requête :</value>
+  </data>
+  <data name="RoleAdmin" xml:space="preserve">
+    <value>Administrateur</value>
+  </data>
+  <data name="RoleEmployee" xml:space="preserve">
+    <value>Employé</value>
+  </data>
+  <data name="RoleLabel" xml:space="preserve">
+    <value>Rôle</value>
+  </data>
+  <data name="RoleRequired" xml:space="preserve">
+    <value>Le rôle est requis.</value>
+  </data>
+  <data name="RoleTechnician" xml:space="preserve">
+    <value>Technicien</value>
+  </data>
+  <data name="SaveButton" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="SecretKeyMissing" xml:space="preserve">
+    <value>Clé secrète JWT manquante dans la configuration.</value>
+  </data>
+  <data name="SelectLabel" xml:space="preserve">
+    <value>Sélectionner</value>
+  </data>
+  <data name="Send2FACodeEmailLog" xml:space="preserve">
+    <value>Code 2FA envoyé à</value>
+  </data>
+  <data name="Send2FACodeFailed" xml:space="preserve">
+    <value>Impossible d’envoyer le code 2FA.</value>
+  </data>
+  <data name="Send2FACodeSuccess" xml:space="preserve">
+    <value>Code 2FA envoyé avec succès.</value>
+  </data>
+  <data name="SendResetLinkButton" xml:space="preserve">
+    <value>Envoyer le lien de réinitialisation</value>
+  </data>
+  <data name="SessionsForLabel" xml:space="preserve">
+    <value>Sessions pour</value>
+  </data>
+  <data name="SessionTypeLabel" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="StartAddressLabel" xml:space="preserve">
+    <value>Adresse début</value>
+  </data>
+  <data name="StartTimeLabel" xml:space="preserve">
+    <value>Début</value>
+  </data>
+  <data name="StartTimeRequired" xml:space="preserve">
+    <value>L’heure de début est requise.</value>
+  </data>
+  <data name="SubmitButton" xml:space="preserve">
+    <value>Valider</value>
+  </data>
+  <data name="ThisMonthOption" xml:space="preserve">
+    <value>Ce mois-ci</value>
+  </data>
+  <data name="ThisWeekOption" xml:space="preserve">
+    <value>Cette semaine</value>
+  </data>
+  <data name="TimeEntryDeleted" xml:space="preserve">
+    <value>Entrée de temps supprimée avec succès</value>
+  </data>
+  <data name="TimeEntryNotFound" xml:space="preserve">
+    <value>Entrée de temps introuvable</value>
+  </data>
+  <data name="TimeEntryPatched" xml:space="preserve">
+    <value>Entrée de temps modifiée partiellement avec succès</value>
+  </data>
+  <data name="TimeEntryUpdated" xml:space="preserve">
+    <value>Entrée de temps modifiée avec succès</value>
+  </data>
+  <data name="TimePeriodRequired" xml:space="preserve">
+    <value>La durée est requise.</value>
+  </data>
+  <data name="ToLabel" xml:space="preserve">
+    <value>Au</value>
+  </data>
+  <data name="TownLabel" xml:space="preserve">
+    <value>Ville</value>
+  </data>
+  <data name="TravelTimeEstimateLabel" xml:space="preserve">
+    <value>Temps déplacement</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Accès non autorisé</value>
+  </data>
+  <data name="UsernameLabel" xml:space="preserve">
+    <value>Nom d'utilisateur</value>
+  </data>
+  <data name="UsernameRequired" xml:space="preserve">
+    <value>Le nom d’utilisateur est requis.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Utilisateur non trouvé.</value>
+  </data>
+  <data name="Verify2FACodeSuccess" xml:space="preserve">
+    <value>Code 2FA vérifié avec succès.</value>
+  </data>
+  <data name="WelcomeMessage" xml:space="preserve">
+    <value>Bienvenue ! Veuillez remplir le formulaire ci-dessous.</value>
+  </data>
+  <data name="YesLabel" xml:space="preserve">
+    <value>Oui</value>
+  </data>
+  <data name="PrivacyTitle" xml:space="preserve">
+    <value>Politique de confidentialité</value>
+  </data>
+  <data name="PrivacyDescription" xml:space="preserve">
+    <value>Utilisez cette page pour détailler la politique de confidentialité de votre site.</value>
+  </data>
+  <data name="SessionType_Regular" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="SessionType_Night" xml:space="preserve">
+    <value>Nocturne</value>
+  </data>
+  <data name="SessionType_OutOfTown" xml:space="preserve">
+    <value>Déplacement</value>
+  </data>
+  <data name="SessionType_Extraordinary" xml:space="preserve">
+    <value>Extra</value>
+  </data>
+  <data name="SessionType_Sickness" xml:space="preserve">
+    <value>Maladie</value>
+  </data>
+  <data name="SessionType_Vacation" xml:space="preserve">
+    <value>Vacances</value>
+  </data>
+  <data name="SessionType_Other" xml:space="preserve">
+    <value>Autre</value>
+  </data>
+  <data name="CreateUserEmptyError" xml:space="preserve">
+    <value>Le nom d'utilisateur/mot de passe ne peut pas être vide.</value>
+  </data>
+  <data name="CreateUserSuccess" xml:space="preserve">
+    <value>Utilisateur '{0}' créé avec succès.</value>
+  </data>
+  <data name="CreateUserConflictError" xml:space="preserve">
+    <value>Le nom d'utilisateur '{0}' existe déjà.</value>
+  </data>
+  <data name="CreateUserGenericError" xml:space="preserve">
+    <value>Échec de la création de l'utilisateur.</value>
+  </data>
+  <data name="ExportNoEmployeeError" xml:space="preserve">
+    <value>Aucun employé sélectionné.</value>
+  </data>
+  <data name="ExportSessionApiError" xml:space="preserve">
+    <value>Erreur lors de la récupération des sessions.</value>
+  </data>
+  <data name="CsvId" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="CsvUsername" xml:space="preserve">
+    <value>Nom d'utilisateur</value>
+  </data>
+  <data name="CsvSessionType" xml:space="preserve">
+    <value>Type de session</value>
+  </data>
+  <data name="CsvStartTime" xml:space="preserve">
+    <value>Début</value>
+  </data>
+  <data name="CsvEndTime" xml:space="preserve">
+    <value>Fin</value>
+  </data>
+  <data name="CsvWorkDuration" xml:space="preserve">
+    <value>Durée</value>
+  </data>
+  <data name="CsvIncludesTravel" xml:space="preserve">
+    <value>Déplacement</value>
+  </data>
+  <data name="CsvTravelTime" xml:space="preserve">
+    <value>Temps déplacement</value>
+  </data>
+  <data name="CsvStartAddress" xml:space="preserve">
+    <value>Adresse début</value>
+  </data>
+  <data name="CsvEndAddress" xml:space="preserve">
+    <value>Adresse fin</value>
+  </data>
+  <data name="CsvDinnerPaid" xml:space="preserve">
+    <value>Repas payé</value>
+  </data>
+</root>

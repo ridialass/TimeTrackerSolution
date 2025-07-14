@@ -11,7 +11,6 @@ using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
 using TimeTracker.Core.Resources;
 using TimeTracker.Core.Interfaces;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TimeTracker.Infrastructure.Services
 {
@@ -43,17 +42,16 @@ namespace TimeTracker.Infrastructure.Services
         public async Task<LoginResponseDto> AuthenticateAsync(LoginRequestDto request)
         {
             if (string.IsNullOrWhiteSpace(request.Username))
-                throw new ArgumentException("Le nom d’utilisateur est requis.", nameof(request.Username));
+                throw new ArgumentException(_localizer["UsernameRequired"], nameof(request.Username));
 
             var user = await _userManager.FindByNameAsync(request.Username);
             if (user == null)
-                throw new UnauthorizedAccessException("Identifiants invalides.");
+                throw new UnauthorizedAccessException(_localizer["InvalidCredentials"]);
 
-            var signInResult = await _signInManager
-                .CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: false);
+            var signInResult = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: false);
 
             if (!signInResult.Succeeded)
-                throw new UnauthorizedAccessException("Identifiants invalides.");
+                throw new UnauthorizedAccessException(_localizer["InvalidCredentials"]);
 
             var roles = await _userManager.GetRolesAsync(user);
             var token = GenerateJwtToken(user, roles);
@@ -61,7 +59,7 @@ namespace TimeTracker.Infrastructure.Services
 
             return new LoginResponseDto
             {
-                EmployeeId = user.Id,
+                ApplicationUserId = user.Id,
                 Username = user.UserName!,
                 Role = Enum.Parse<UserRole>(roles.First()),
                 Token = token,
@@ -73,10 +71,10 @@ namespace TimeTracker.Infrastructure.Services
         public async Task<bool> RegisterAsync(RegisterRequestDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Password))
-                throw new ArgumentException("Le mot de passe est requis.", nameof(model.Password));
+                throw new ArgumentException(_localizer["PasswordRequired"], nameof(model.Password));
 
             if (model.Role == null)
-                throw new ArgumentException("Le rôle est requis.", nameof(model.Role));
+                throw new ArgumentException(_localizer["RoleRequired"], nameof(model.Role));
 
             var user = new ApplicationUser
             {
@@ -91,7 +89,7 @@ namespace TimeTracker.Infrastructure.Services
 
             var createResult = await _userManager.CreateAsync(user, model.Password);
             if (!createResult.Succeeded)
-                return false;
+                throw new InvalidOperationException(_localizer["UserCreationFailed"]);
 
             await _userManager.AddToRoleAsync(user, model.Role.Value.ToString());
 
@@ -101,7 +99,7 @@ namespace TimeTracker.Infrastructure.Services
         public async Task<bool> Send2FACodeAsync(Send2FACodeRequestDto dto)
         {
             var user = await _userManager.FindByNameAsync(dto.Username);
-            if (user == null) return false;
+            if (user == null) throw new InvalidOperationException(_localizer["UserNotFound"]);
 
             // Générer un code 2FA
             var code = new Random().Next(100000, 999999).ToString();
@@ -112,7 +110,7 @@ namespace TimeTracker.Infrastructure.Services
             await _userManager.UpdateAsync(user);
 
             // TODO: Envoyer le code par email/SMS
-            Console.WriteLine($"Code 2FA pour {user.Email}: {code}");
+            // Console.WriteLine($"Code 2FA pour {user.Email}: {code}");
 
             return true;
         }
@@ -120,12 +118,13 @@ namespace TimeTracker.Infrastructure.Services
         public async Task<bool> Verify2FACodeAsync(Verify2FACodeRequestDto dto)
         {
             var user = await _userManager.FindByNameAsync(dto.Username);
-            if (user == null
-                || string.IsNullOrEmpty(user.TwoFactorCode)
+            if (user == null)
+                throw new InvalidOperationException(_localizer["UserNotFound"]);
+            if (string.IsNullOrEmpty(user.TwoFactorCode)
                 || user.TwoFactorCodeExpiry < DateTime.UtcNow
                 || user.TwoFactorCode != dto.Code)
             {
-                return false;
+                throw new UnauthorizedAccessException(_localizer["Invalid2FACode"]);
             }
 
             // Le code est valide, on peut le consommer
@@ -139,22 +138,26 @@ namespace TimeTracker.Infrastructure.Services
         public async Task<bool> ChangePasswordAsync(ChangePasswordRequestDto dto, string username)
         {
             var user = await _userManager.FindByNameAsync(username);
-            if (user == null) return false;
+            if (user == null)
+                throw new InvalidOperationException(_localizer["UserNotFound"]);
 
             var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
-            return result.Succeeded;
+            if (!result.Succeeded)
+                throw new InvalidOperationException(_localizer["PasswordChangeFailed"]);
+
+            return true;
         }
 
         public async Task<bool> SendForgotPasswordEmailAsync(ForgotPasswordRequestDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
-                return false; // Pour sécurité, ne révèle pas si l'email existe ou non
+                throw new InvalidOperationException(_localizer["UserNotFound"]);
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
             // TODO : Envoyer le token par email (ici on log pour dev)
-            Console.WriteLine($"Token de réinitialisation pour {user.Email}: {token}");
+            // Console.WriteLine($"Token de réinitialisation pour {user.Email}: {token}");
 
             return true;
         }
@@ -163,9 +166,12 @@ namespace TimeTracker.Infrastructure.Services
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
-                return false; // Pour sécurité, ne révèle pas si l'email existe ou non
+                throw new InvalidOperationException(_localizer["UserNotFound"]);
 
             var result = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+            if (!result.Succeeded)
+                throw new InvalidOperationException(_localizer["PasswordResetFailed"]);
+
             return result.Succeeded;
         }
 
@@ -203,7 +209,7 @@ namespace TimeTracker.Infrastructure.Services
                 .FirstOrDefaultAsync(t => t.Token == dto.RefreshToken && !t.Revoked);
 
             if (rt == null || rt.ExpiresAt < DateTime.UtcNow)
-                return null;
+                throw new UnauthorizedAccessException(_localizer["InvalidRefreshToken"]);
 
             rt.Revoked = true;
             await _db.SaveChangesAsync();
@@ -226,7 +232,7 @@ namespace TimeTracker.Infrastructure.Services
         {
             var jwt = _config.GetSection("JwtSettings");
             var secret = jwt["SecretKey"]
-                ?? throw new InvalidOperationException("JwtSettings:SecretKey missing");
+                ?? throw new InvalidOperationException(_localizer["JwtSecretMissing"]);
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

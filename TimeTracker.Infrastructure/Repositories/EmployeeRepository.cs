@@ -19,6 +19,12 @@ namespace TimeTracker.Infrastructure.Repositories
             return entry.Entity;
         }
 
+        public async Task CreateAsync(ApplicationUser user)
+        {
+            await _db.Users.AddAsync(user);
+            await _db.SaveChangesAsync();
+        }
+
         public async Task<bool> DeleteAsync(int id)
         {
             var emp = await _db.Users.FindAsync(id);
@@ -82,6 +88,58 @@ namespace TimeTracker.Infrastructure.Repositories
                 .ToListAsync();
 
             return (results, total);
+        }
+
+        public async Task<ApplicationUser?> FindByUsernameOrEmailAsync(string? identifier)
+        {
+            if (string.IsNullOrWhiteSpace(identifier)) return null;
+            return await _db.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserName == identifier || u.Email == identifier);
+        }
+
+        public async Task<ApplicationUser?> FindByUsernameAsync(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username)) return null;
+            return await _db.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserName == username);
+        }
+
+        public async Task<ApplicationUser?> FindByEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return null;
+            return await _db.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<ApplicationUser?> FindByPasswordResetTokenAsync(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token)) return null;
+            return await _db.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.Token == token));
+        }
+
+        public async Task<bool> ExistsByUsernameOrEmailAsync(string username, string? email)
+        {
+            return await _db.Users
+                .AnyAsync(u => u.UserName == username || (email != null && u.Email == email));
+        }
+
+        public bool VerifyPassword(ApplicationUser user, string password)
+        {
+            // Ici tu dois utiliser le PasswordHasher ou la logique de hash de ton appli
+            // Exemple simple (à remplacer par ta vraie logique de hash) :
+            return user.PasswordHash == HashPassword(password);
+        }
+
+        public string HashPassword(string password)
+        {
+            // À remplacer par ton vrai hash (ex: ASP.NET Core Identity PasswordHasher)
+            // Ici un exemple bidon (NE PAS UTILISER EN PROD !)
+            return password; // Remplace par ton hash
         }
     }
 }

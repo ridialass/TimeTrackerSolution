@@ -1,0 +1,15 @@
+﻿@page  
+@model TimeTracker.AdminUI.Pages._CultureModel  
+@{  
+    ViewData["Title"] = "Changer la langue";  
+}  
+  
+<!-- Ce formulaire peut être inclus dans le layout ou une page dédiée -->  
+<form method="post" asp-page="/_Culture" class="d-inline">  
+    <select name="culture" onchange="this.form.submit()">  
+        <option value="fr" selected="@("fr" == System.Globalization.CultureInfo.CurrentUICulture.Name)">Français</option>  
+        <option value="en" selected="@("en" == System.Globalization.CultureInfo.CurrentUICulture.Name)">English</option>  
+        <option value="it" selected="@("it" == System.Globalization.CultureInfo.CurrentUICulture.Name)">Italiano</option>  
+    </select>  
+    <input type="hidden" name="returnUrl" value="@HttpContext.Request.Path" />  
+</form>
