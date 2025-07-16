@@ -1,10 +1,10 @@
 ﻿@page
 @model TimeTracker.AdminUI.Pages.Admin.CreateTimeEntryModel
+@using Microsoft.Extensions.Localization
+
 @using TimeTracker.Core.DTOs
 @using TimeTracker.Core.Enums
-@using Microsoft.Extensions.Localization
-@using TimeTracker.AdminUI.Resources
-@inject IStringLocalizer<PagesTexts> Localizer
+
 @{
     ViewData["Title"] = Localizer["CreateTimeEntryTitle"];
 }

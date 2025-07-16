@@ -1,25 +1,25 @@
 ﻿@page
 @model TimeTracker.AdminUI.Pages.Admin.IndexModel
+@using Microsoft.Extensions.Localization
+
 @using TimeTracker.Core.DTOs
 @using TimeTracker.Core.Enums
-@using Microsoft.Extensions.Localization
-@using TimeTracker.AdminUI.Resources
-@inject IStringLocalizer<TimeTracker.AdminUI.Resources.PagesTexts> Localizer
+
 @{
     ViewData["Title"] = Localizer["AdminDashboardTitle"];
 }
-@if (!User.Identity.IsAuthenticated)
+@if (!(User?.Identity?.IsAuthenticated ?? false))
 {
     <div class="alert alert-warning">
-        <p>Veuillez vous connecter.</p>
-        <a href="/Account/Login" class="btn btn-primary">Se connecter</a>
+        <p>@Localizer["LoginRequiredMessage"]</p>
+        <a href="/Account/Login" class="btn btn-primary">@Localizer["LoginButton"]</a>
     </div>
 }
 else if (!User.IsInRole("Admin"))
 {
     <div class="alert alert-danger">
-        <p>Accès refusé : vous n’êtes pas administrateur.</p>
-        <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
+        <p>@Localizer["AccessDeniedMessage"]</p>
+        <a href="/" class="btn btn-secondary">@Localizer["BackToHomeButton"]</a>
     </div>
 }
 else

@@ -2,9 +2,10 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Localization;
+using Microsoft.IdentityModel.Tokens;
 using System.Globalization;
 using System.Text;
 using TimeTracker.Core.Entities;
@@ -103,15 +104,8 @@ builder.Services
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-builder.Services.Configure<RequestLocalizationOptions>(options =>
-{
-    var supportedCultures = new[] { new CultureInfo("fr"), new CultureInfo("it"), new CultureInfo("en") };
-    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("fr");
-    options.SupportedCultures = supportedCultures;
-    options.SupportedUICultures = supportedCultures;
-    // Détecte la culture via le header Accept-Language
-    options.RequestCultureProviders.Insert(0, new Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider());
-});
+// Enregistrer le service dans le conteneur de dépendances
+builder.Services.AddTransient<LocalizationService>();
 
 // 5) Ajouter les contrôleurs (API)
 builder.Services.AddControllers();
@@ -121,6 +115,15 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Localisation midleware
+var supportedCultures = new[] { "en", "fr", "it" }; // Ajouter ici les langues supportées
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("it"),
+    SupportedCultures = supportedCultures.Select(c => new CultureInfo(c)).ToList(),
+    SupportedUICultures = supportedCultures.Select(c => new CultureInfo(c)).ToList()
+});
 
 // ─── Seeder ────────────────────────────────────────────────────────────────────
 using (var scope = app.Services.CreateScope())

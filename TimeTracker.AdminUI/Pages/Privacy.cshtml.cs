@@ -9,7 +9,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using TimeTracker.AdminUI.Resources;
+
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
@@ -21,7 +21,7 @@ namespace TimeTracker.AdminUI.Pages
     public class PrivacyModel : PageModel
     {
         [Inject]
-        private IStringLocalizer<PagesTexts> Localizer { get; set; }
+        
         public List<EmployeeDto> AllEmployees { get; set; } = new();
         [BindProperty] public int SelectedEmployeeId { get; set; }
         public List<TimeEntryDto> FilteredEntries { get; set; } = new();

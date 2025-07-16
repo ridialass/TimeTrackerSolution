@@ -8,7 +8,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using TimeTracker.AdminUI.Resources;
+using TimeTracker.Core.Resources;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
@@ -19,7 +19,7 @@ namespace TimeTracker.AdminUI.Pages.Admin
     public class IndexModel : PageModel
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IStringLocalizer<PagesTexts> _localizer;
+        private readonly IStringLocalizer<Errors> _localizer;
 
         public List<EmployeeDto> AllEmployees { get; set; } = new();
         [BindProperty] public int SelectedEmployeeId { get; set; }
@@ -36,10 +36,9 @@ namespace TimeTracker.AdminUI.Pages.Admin
         public string? CreateSuccess { get; set; }
         public List<TimeEntryDto> Sessions { get; set; } = new();
 
-        public IndexModel(IHttpClientFactory httpClientFactory, IStringLocalizer<TimeTracker.AdminUI.Resources.PagesTexts> localizer)
+        public IndexModel(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
-            _localizer = localizer;
         }
 
         public async Task<IActionResult> OnGetAsync()

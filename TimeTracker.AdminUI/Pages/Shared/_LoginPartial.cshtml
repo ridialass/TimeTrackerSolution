@@ -1,8 +1,7 @@
-﻿@using Microsoft.AspNetCore.Authentication.Cookies
-@using Microsoft.AspNetCore.Authentication
+﻿@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
 @using Microsoft.Extensions.Localization
-@using TimeTracker.AdminUI.Resources
-@inject IStringLocalizer<PagesTexts> Localizer
+
 
 <ul class="navbar-nav ms-auto">
     @if (User.Identity?.IsAuthenticated ?? false)

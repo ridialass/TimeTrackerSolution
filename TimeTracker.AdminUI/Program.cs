@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Net.Http.Headers;
@@ -55,19 +57,10 @@ namespace TimeTracker.AdminUI
                 options.AccessDeniedPath = "/Account/AccessDenied";
             });
 
-            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-            builder.Services.Configure<RequestLocalizationOptions>(options =>
-            {
-                var supportedCultures = new[] { new CultureInfo("fr"), new CultureInfo("it"), new CultureInfo("en") };
-                options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("it");
-                options.SupportedCultures = supportedCultures;
-                options.SupportedUICultures = supportedCultures;
-                // 1. Cookie provider (user selection) - priorité la plus haute
-                options.RequestCultureProviders.Insert(0, new Microsoft.AspNetCore.Localization.CookieRequestCultureProvider());
-                // 2. Accept-Language header provider (navigateur)
-                options.RequestCultureProviders.Insert(1, new Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider());
-            });
+            
+
+
             // ─── 4) Ajouter l’autorisation (si vous avez des policies selon les rôles) ────
             builder.Services.AddAuthorization(options =>
             {
@@ -75,8 +68,6 @@ namespace TimeTracker.AdminUI
                     policy.RequireRole("Admin"));
             });
 
-            // ─── 5) Enregistrer Razor Pages ────────────────────────────────────────────────
-            builder.Services.AddRazorPages();
 
             // ─── 6) Configurer IHttpClientFactory pour appeler l’API ───────────────────────
             // Dans appsettings.json, assurez‐vous d’avoir une section ApiSettings:BaseUrl,
@@ -101,7 +92,32 @@ namespace TimeTracker.AdminUI
                     }
             );
 
+            // ─── 5) Ajouter les services Razor Pages ────────────────────────────────────────
+            builder.Services.AddRazorPages()
+
+            // ─── 6.1) Configurer Razor Pages pour utiliser les ressources localisées ─────────
+                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+                .AddDataAnnotationsLocalization();
+
+            // Dossier des ressources
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+
             var app = builder.Build();
+
+            // ─── 6.2) Configurer la localisation ────────────────────────────────────────────
+            var supportedCultures = new[] { "it", "fr", "en" }; // Ajouter ici les langues supportées
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("it"),
+                SupportedCultures = supportedCultures.Select(c => new CultureInfo(c)).ToList(),
+                SupportedUICultures = supportedCultures.Select(c => new CultureInfo(c)).ToList(),
+                RequestCultureProviders = new List<IRequestCultureProvider>
+                {
+                    new CookieRequestCultureProvider(), // Prend en compte le cookie
+                    new AcceptLanguageHeaderRequestCultureProvider() // Priorité secondaire
+                }
+            });
 
             // ─── 7) Pipeline HTTP ───────────────────────────────────────────────────────────
             if (app.Environment.IsDevelopment())
@@ -117,8 +133,7 @@ namespace TimeTracker.AdminUI
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
-            app.UseRequestLocalization();
-
+            
             // IMPORTANT : Authentication puis Authorization
             app.UseAuthentication();
             app.UseAuthorization();
