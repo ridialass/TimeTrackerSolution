@@ -18,3 +18,4 @@ namespace TimeTracker.Core.Interfaces
         Task<bool> Verify2FACodeAsync(Verify2FACodeRequestDto dto);
     }
 }
+

@@ -1,16 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:TimeTracker.Mobile.Converters"
              xmlns:resx="clr-namespace:TimeTracker.Mobile.Resources.Strings"
              x:Class="TimeTracker.Mobile.Views.TimeEntriesPage">
-
-    <!--<ContentPage.ToolbarItems>
-        <ToolbarItem
-            Text="{x:Static resx:AppResources.Logout}"
-            Order="Primary"
-            Priority="0"
-            Clicked="OnLogoutClicked"/>
-    </ContentPage.ToolbarItems>-->
 
     <ContentPage.Content>
         <Grid RowDefinitions="Auto,*">
@@ -36,18 +29,30 @@
                                     <Label Text="{Binding StartTime, StringFormat='🕒 {0}'}" TextColor="DarkBlue" />
                                     <Label Text="{Binding EndTime, StringFormat='🏁 {0}'}" TextColor="DarkBlue" />
                                     <Label Text="{Binding WorkDuration, StringFormat='{x:Static resx:AppResources.TimeEntries_TotalDuration}'}"
-                                      IsVisible="{Binding WorkDuration, Converter={StaticResource NullToBoolConverter}}" TextColor="DarkBlue" />
+                                        IsVisible="{Binding WorkDuration, Converter={StaticResource NullToBoolConverter}}" TextColor="DarkBlue" />
+                                    <!-- ✅ Ligne ajoutée -->
+                                    <Label Text="{Binding TotalPauseDuration, StringFormat='{x:Static resx:AppResources.TimeEntries_TotalPause}'}"
+                                       IsVisible="{Binding TotalPauseDuration, Converter={StaticResource NullToBoolConverter}}" 
+                                       TextColor="DarkRed" />
                                     <Label Text="{Binding IncludesTravelTime, StringFormat='{x:Static resx:AppResources.TimeEntries_TravelIncluded}'}" TextColor="DarkBlue" />
                                     <Label Text="{Binding TravelTimeEstimate, StringFormat='{x:Static resx:AppResources.TimeEntries_TravelTime}'}"
-                                    IsVisible="{Binding IncludesTravelTime}" TextColor="DarkBlue" />
+                                        IsVisible="{Binding IncludesTravelTime}" TextColor="DarkBlue" />
                                     <Label Text="{Binding StartAddress, StringFormat='{x:Static resx:AppResources.TimeEntries_StartAddress}'}" TextColor="DarkBlue" />
                                     <Label Text="{Binding EndAddress, StringFormat='{x:Static resx:AppResources.TimeEntries_EndAddress}'}" TextColor="DarkBlue" />
                                     <Label Text="{Binding DinnerPaid, StringFormat='{x:Static resx:AppResources.TimeEntries_DinnerPaid}'}" TextColor="DarkBlue" />
                                 </VerticalStackLayout>
+
                             </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
+                <Label Text="Aucune session terminée à afficher"
+                   FontAttributes="Italic"
+                   TextColor="Gray"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   IsVisible="{Binding IsEmpty}" />
+
             </StackLayout>
         </Grid>
     </ContentPage.Content>

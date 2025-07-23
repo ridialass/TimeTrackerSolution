@@ -139,13 +139,13 @@
     <value>Autre</value>
   </data>
   <data name="DinnerPaidBy_None" xml:space="preserve">
-    <value>Senza</value>
+    <value>Pas de repas</value>
   </data>
   <data name="DinnerPaidBy_Employee" xml:space="preserve">
     <value>Employé</value>
   </data>
   <data name="DinnerPaidBy_Client" xml:space="preserve">
-    <value>Par le Client</value>
+    <value>Entreprise</value>
   </data>
   <data name="UserRole_Technician" xml:space="preserve">
     <value>Technicien</value>

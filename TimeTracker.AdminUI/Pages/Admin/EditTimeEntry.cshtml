@@ -1,8 +1,6 @@
 ﻿@page "{id:int}"
 @model TimeTracker.AdminUI.Pages.Admin.EditTimeEntryModel
 @using Microsoft.Extensions.Localization
-
-@using TimeTracker.Core.DTOs
 @using TimeTracker.Core.Enums
 
 @{
@@ -12,26 +10,202 @@
 <h2>@ViewData["Title"]</h2>
 
 <form method="post">
+    <span asp-validation-summary="All" class="text-danger"></span>
+    <!-- Id (hidden field) -->
+    <input type="hidden" asp-for="TimeEntry.Id" />
+    <!-- UserId (hidden field) -->
+    <input type="hidden" asp-for="TimeEntry.UserId" />
+    <span asp-validation-for="TimeEntry.UserId" class="text-danger"></span>
+
+    <!-- Username (hidden field) -->
+    <input type="hidden" asp-for="TimeEntry.Username" />
+    <span asp-validation-for="TimeEntry.Username" class="text-danger"></span>
+
+    <!-- Start Time -->
     <div class="mb-3">
-        <label asp-for="TimeEntry.StartTime" class="form-label">@Localizer["StartTimeLabel"]</label>
-        <input asp-for="TimeEntry.StartTime" type="datetime-local" class="form-control" />
+        <label class="form-label" for="startTimePicker">@Localizer["StartTimeLabel"]</label>
+        <input id="startTimePicker"
+               name="TimeEntry.StartTime"
+               type="datetime-local"
+               class="form-control"
+               step="60"
+               data-utc-value="@Model.TimeEntry.StartTime.ToString("o")"
+               value=""
+               autocomplete="off" />
+        <span asp-validation-for="TimeEntry.StartTime" class="text-danger"></span>
     </div>
+
+    <!-- End Time -->
     <div class="mb-3">
-        <label asp-for="TimeEntry.EndTime" class="form-label">@Localizer["EndTimeLabel"]</label>
-        <input asp-for="TimeEntry.EndTime" type="datetime-local" class="form-control" />
+        <label class="form-label" for="endTimePicker">@Localizer["EndTimeLabel"]</label>
+        <input id="endTimePicker"
+               name="TimeEntry.EndTime"
+               type="datetime-local"
+               class="form-control"
+               step="60"
+               data-utc-value="@(Model.TimeEntry.EndTime.HasValue? Model.TimeEntry.EndTime.Value.ToString("o") : "")"
+               value=""
+               autocomplete="off" />
+        <span asp-validation-for="TimeEntry.EndTime" class="text-danger"></span>
     </div>
+
+    <!-- Session Type -->
     <div class="mb-3">
         <label asp-for="TimeEntry.SessionType" class="form-label">@Localizer["SessionTypeLabel"]</label>
         <select asp-for="TimeEntry.SessionType" class="form-select">
             @foreach (WorkSessionType t in Enum.GetValues(typeof(WorkSessionType)))
             {
-                <option value="@t">@Localizer[$"SessionType_{t}"]</option>
+                <option value="@((int)t)">@Localizer[$"SessionType_{t}"]</option>
             }
         </select>
+        <span asp-validation-for="TimeEntry.SessionType" class="text-danger"></span>
     </div>
-    <!-- Ajoute ici les autres champs nécessaires, en localisant les labels comme ci-dessus -->
-    <input type="hidden" asp-for="TimeEntry.Id" />
-    <input type="hidden" asp-for="TimeEntry.UserId" />
-    <button type="submit" class="btn btn-warning">@Localizer["SaveButton"]</button>
-    <a asp-page="/Admin/Index" class="btn btn-secondary">@Localizer["CancelButton"]</a>
+
+    <!-- Start Address -->
+    <div class="mb-3">
+        <label asp-for="TimeEntry.StartAddress" class="form-label">@Localizer["StartAddressLabel"]</label>
+        <input asp-for="TimeEntry.StartAddress" type="text" class="form-control" />
+        <span asp-validation-for="TimeEntry.StartAddress" class="text-danger"></span>
+    </div>
+
+    <!-- End Address -->
+    <div class="mb-3">
+        <label asp-for="TimeEntry.EndAddress" class="form-label">@Localizer["EndAddressLabel"]</label>
+        <input asp-for="TimeEntry.EndAddress" type="text" class="form-control" />
+        <span asp-validation-for="TimeEntry.EndAddress" class="text-danger"></span>
+    </div>
+
+    <!-- Includes Travel Time -->
+    <div class="mb-3 form-check">
+        <input asp-for="TimeEntry.IncludesTravelTime" type="checkbox" class="form-check-input" />
+        <label asp-for="TimeEntry.IncludesTravelTime" class="form-check-label">@Localizer["IncludesTravelTimeLabel"]</label>
+        <span asp-validation-for="TimeEntry.IncludesTravelTime" class="text-danger"></span>
+    </div>
+
+    <!-- Travel Duration Hours -->
+    <div class="mb-3">
+        <label asp-for="TimeEntry.TravelDurationHours" class="form-label">@Localizer["TravelTimeEstimateLabel"]</label>
+        <input asp-for="TimeEntry.TravelDurationHours" type="number" step="0.01" class="form-control" />
+        <span asp-validation-for="TimeEntry.TravelDurationHours" class="text-danger"></span>
+    </div>
+
+    <!-- Dinner Paid By -->
+    <div class="mb-3">
+        <label asp-for="TimeEntry.DinnerPaid" class="form-label">@Localizer["DinnerPaidLabel"]</label>
+        <select asp-for="TimeEntry.DinnerPaid" class="form-select">
+            @foreach (DinnerPaidBy d in Enum.GetValues(typeof(DinnerPaidBy)))
+            {
+                <option value="@((int)d)">@Localizer[$"DinnerPaidBy_{d}"]</option>
+            }
+        </select>
+        <span asp-validation-for="TimeEntry.DinnerPaid" class="text-danger"></span>
+    </div>
+
+    <!-- Save and Cancel Buttons -->
+    <button type="submit" class="btn btn-primary">@Localizer["SaveButton"]</button>
+    <a asp-page="/Admin/Index"
+       asp-route-SelectedEmployeeId="@Model.EmployeeId"
+       asp-route-SelectedPeriod="@Model.Period"
+       @* asp-route-CustomStartDate="@Model.CustomStartDate"
+       asp-route-CustomEndDate="@Model.CustomEndDate"
+       asp-route-WeekOffset="@Model.WeekOffset" *@
+       class="btn btn-secondary">@Localizer["CancelButton"]</a>
+
+    <!-- Bouton supprimer l'entrée, affiché uniquement si TimeEntry existe et Id > 0 -->
+    @if (Model.TimeEntry != null && Model.TimeEntry.Id > 0)
+    {
+        <button type="button" class="btn btn-danger" id="deleteEntryBtn">
+            @Localizer["DeleteButton"]
+        </button>
+    }
 </form>
+
+<!-- Formulaire dédié à la suppression (caché), affiché uniquement si TimeEntry existe et Id > 0 -->
+@if (Model.TimeEntry != null && Model.TimeEntry.Id > 0)
+{
+    <form id="deleteEntryForm" method="post" asp-page-handler="Delete" style="display:none;">
+        <input type="hidden" name="TimeEntry.Id" value="@Model.TimeEntry.Id" />
+    </form>
+}
+
+@section Scripts {
+    <script>
+        // Formatte une date en yyyy-MM-ddTHH:mm
+        function formatForDatetimeLocalInput(date) {
+            const pad = n => n.toString().padStart(2, "0");
+            return date.getFullYear() + "-" +
+                pad(date.getMonth() + 1) + "-" +
+                pad(date.getDate()) + "T" +
+                pad(date.getHours()) + ":" +
+                pad(date.getMinutes());
+        }
+
+        // Remplit le champ à partir de l'attribut data-utc-value
+        function setLocalDateTimeFromUtc(inputId) {
+            var input = document.getElementById(inputId);
+            if (input) {
+                var utcValue = input.getAttribute("data-utc-value");
+                if (utcValue) {
+                    var date = new Date(utcValue);
+                    if (!isNaN(date)) {
+                        input.value = formatForDatetimeLocalInput(date);
+                    }
+                }
+            }
+        }
+
+        // Auto-fermeture du datepicker à la sélection des minutes
+        function attachDatePickerAutoClose(pickerId) {
+            const picker = document.getElementById(pickerId);
+            if (picker) {
+                let previousValue = picker.value;
+                picker.addEventListener('input', function () {
+                    const currentValue = this.value;
+                    if (previousValue && currentValue) {
+                        const previousMinutes = previousValue.split(':')[1];
+                        const currentMinutes = currentValue.split(':')[1];
+                        if (previousMinutes !== currentMinutes) {
+                            this.blur();
+                        }
+                    }
+                    previousValue = currentValue;
+                });
+            }
+        }
+
+                document.addEventListener('DOMContentLoaded', function () {
+            setLocalDateTimeFromUtc('startTimePicker');
+            setLocalDateTimeFromUtc('endTimePicker');
+            attachDatePickerAutoClose('startTimePicker');
+            attachDatePickerAutoClose('endTimePicker');
+
+            // LOG: Affiche la value JS au chargement
+            var startValSpan = document.getElementById('startTimePickerValue');
+            var endValSpan = document.getElementById('endTimePickerValue');
+            var startInput = document.getElementById('startTimePicker');
+            var endInput = document.getElementById('endTimePicker');
+            if (startValSpan && startInput) {
+                startValSpan.innerText = startInput.value;
+            }
+            if (endValSpan && endInput) {
+                endValSpan.innerText = endInput.value;
+            }
+
+            // LOG: Affiche la value JS avant le submit
+            document.querySelector('form').addEventListener('submit', function(e) {
+                console.log('[Submit] startTimePicker value:', startInput ? startInput.value : "(absent)");
+                console.log('[Submit] endTimePicker value:', endInput ? endInput.value : "(absent)");
+            });
+
+            // Confirmation suppression
+            const deleteBtn = document.getElementById('deleteEntryBtn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', function () {
+                    if (confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) {
+                        document.getElementById('deleteEntryForm').submit();
+                    }
+                });
+            }
+        });
+    </script>
+}

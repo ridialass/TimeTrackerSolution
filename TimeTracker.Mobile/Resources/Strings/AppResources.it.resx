@@ -354,4 +354,7 @@
   <data name="Login_Error_Locked" xml:space="preserve">
     <value />
   </data>
+  <data name="TimeEntries_TotalPause" xml:space="preserve">
+    <value>Durata pausa : {0}</value>
+  </data>
 </root>

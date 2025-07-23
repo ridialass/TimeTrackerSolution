@@ -89,12 +89,16 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("Admin"));
 });
 
+Console.WriteLine("JWT Issuer: " + jwtIssuer);
+Console.WriteLine("JWT Audience: " + jwtAudience);
+Console.WriteLine("JWT SecretKey: " + jwtSecretKey);
+
 // Enregistrement des repositories
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
 
 builder.Services
-    .AddAutoMapper(typeof(ApplicationMappingProfile).Assembly)
+    .AddAutoMapper(typeof(MappingProfile).Assembly)
     .AddScoped<IEmployeeService, EmployeeService>()
     .AddScoped<IAuthService, AuthService>()
     .AddScoped<IEmailService, EmailService>()
@@ -190,3 +194,4 @@ app.MapControllers();
 app.Run();
 
 public partial class Program { }
+

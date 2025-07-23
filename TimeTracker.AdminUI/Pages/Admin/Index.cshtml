@@ -24,184 +24,225 @@ else if (!User.IsInRole("Admin"))
 }
 else
 {
-<div class="row g-4">
-    <!-- 2. Filter Sessions by User and Date -->
-    <div class="col-lg-12">
-            <p>Culture serveur : @System.Globalization.CultureInfo.CurrentUICulture.Name</p>
-            <p>@Localizer["SubmitButton"]</p>
-        <div class="card shadow-sm">
-            <form method="post" asp-page-handler="LoadSessions" class="row row-cols-lg-auto g-3 align-items-center">
-                <div class="12">
-                    <strong>@Localizer["FilterLabel"]</strong>
-                </div>
-                <div class="12">
-                    @Localizer["EmployeeLabel"] :
-                </div>
-                <div class="col-12">
-                    <label class="visually-hidden" for="inlineFormSelectPref">@Localizer["EmployeeLabel"]</label>
-                    <select asp-for="SelectedEmployeeId" class="form-select">
-                        <option value="0">-- @Localizer["SelectLabel"] --</option>
-                        @foreach (var emp in Model.AllEmployees)
-                        {
-                            <option value="@emp.Id">@emp.Username</option>
-                        }
-                    </select>
-                </div>
-                <div class="12">
-                    @Localizer["PeriodLabel"] :
-                </div>
-                <div class="col-12">
-                    <select asp-for="SelectedPeriod" class="form-select" id="periodSelect" onchange="toggleCustomDates(this.value)">
-                        <option value="all">@Localizer["AllPeriodsOption"]</option>
-                        <option value="week">@Localizer["ThisWeekOption"]</option>
-                        <option value="month">@Localizer["ThisMonthOption"]</option>
-                        <option value="custom">@Localizer["CustomOption"]</option>
-                    </select>
-                </div>
-                <div class="col-12" id="customDates" style="display:none;">
-                    <div class="col">
-                        <label asp-for="CustomStartDate" class="form-label">@Localizer["FromLabel"]</label>
+    <div class="row g-4">
+        <!-- 2. Filter Sessions by User and Date -->
+        <div class="col-lg-12">
+            <div class="card shadow-sm">
+                <form method="post" asp-page-handler="LoadSessions" class="row row-cols-lg-auto g-3 align-items-center">
+                    <div class="12">
+                        <strong>@Localizer["FilterLabel"]</strong>
                     </div>
-                    <div class="col">
-                        <input asp-for="CustomStartDate" type="date" class="form-control" />
+                    <div class="12">
+                        @Localizer["EmployeeLabel"] :
                     </div>
-                    <div class="col">
-                        <label asp-for="CustomEndDate" class="form-label">@Localizer["ToLabel"]</label>
+                    <div class="col-12">
+                        <label class="visually-hidden" for="inlineFormSelectPref">@Localizer["EmployeeLabel"]</label>
+                        <select asp-for="SelectedEmployeeId" class="form-select">
+                            <option value="0">-- @Localizer["SelectLabel"] --</option>
+                            @foreach (var emp in Model.AllEmployees)
+                            {
+                                <option value="@emp.Id">@emp.Username</option>
+                            }
+                        </select>
                     </div>
-                    <div class="col">
-                        <input asp-for="CustomEndDate" type="date" class="form-control" />
+                    <div class="12">
+                        @Localizer["PeriodLabel"] :
                     </div>
+                    <div class="col-12">
+                        <select asp-for="SelectedPeriod" class="form-select" id="periodSelect" onchange="toggleCustomDates(this.value)">
+                            <option value="all">@Localizer["AllPeriodsOption"]</option>
+                            <option value="week">@Localizer["ThisWeekOption"]</option>
+                            <option value="month">@Localizer["ThisMonthOption"]</option>
+                            <option value="custom">@Localizer["CustomOption"]</option>
+                        </select>
+                    </div>
+                    <div class="col-12" id="customDates" style="display:none;">
+                        <div class="col">
+                            <label asp-for="CustomStartDate" class="form-label">@Localizer["FromLabel"]</label>
+                        </div>
+                        <div class="col">
+                            <input asp-for="CustomStartDate" type="date" class="form-control" />
+                        </div>
+                        <div class="col">
+                            <label asp-for="CustomEndDate" class="form-label">@Localizer["ToLabel"]</label>
+                        </div>
+                        <div class="col">
+                            <input asp-for="CustomEndDate" type="date" class="form-control" />
+                        </div>
+                    </div>
+                    <input type="hidden" asp-for="WeekOffset" />
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">@Localizer["SubmitButton"]</button>
+                    </div>
+                </form>
+                <!-- Nouveau bouton Créer un utilisateur, aligné à droite du filtre -->
+                <div class="position-absolute top-0 end-0">
+                    <a asp-page="/Account/Register" class="btn btn-success">
+                        <i class="bi bi-person-plus-fill me-2"></i>@Localizer["CreateEmployeeButton"]
+                    </a>
                 </div>
-                <input type="hidden" asp-for="WeekOffset" />
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">@Localizer["SubmitButton"]</button>
-                </div>
-            </form>
-            <!-- Nouveau bouton Créer un utilisateur, aligné à droite du filtre -->
-            <div class="position-absolute top-0 end-0">
-                <a asp-page="/Account/Register" class="btn btn-success">
-                    <i class="bi bi-person-plus-fill me-2"></i>@Localizer["CreateEmployeeButton"]
-                </a>
             </div>
         </div>
-    </div>
 
-    <!-- 3. Sessions for Selected User -->
-    <div class="col-lg-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    @Localizer["SessionsForLabel"]&nbsp;
-                    @Model.AllEmployees.FirstOrDefault(e => e.Id == Model.SelectedEmployeeId)?.Username
-                </h5>
-            </div>
-            <div class="card-body">
-                @if (Model.SelectedEmployeeId != 0)
-                {
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <form method="post" asp-page-handler="LoadSessions" style="display:inline;">
-                            <input type="hidden" name="SelectedEmployeeId" value="@Model.SelectedEmployeeId" />
-                            <input type="hidden" name="SelectedPeriod" value="@Model.SelectedPeriod" />
-                            <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
-                            <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
-                            <input type="hidden" name="WeekOffset" value="@(Model.WeekOffset - 1)" />
-                            <button type="submit" class="btn btn-link">&laquo; @Localizer["PreviousWeekButton"]</button>
-                        </form>
-                        <span>
-                            @Model.CurrentWeekStart.ToString("dd/MM/yyyy") - @Model.CurrentWeekEnd.ToString("dd/MM/yyyy")
-                        </span>
-                        @if (Model.WeekOffset < 0)
-                        {
+        <!-- 3. Sessions for Selected User -->
+        <div class="col-lg-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        @Localizer["SessionsForLabel"]&nbsp;
+                        @Model.AllEmployees.FirstOrDefault(e => e.Id == Model.SelectedEmployeeId)?.Username
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.SelectedEmployeeId != 0)
+                    {
+                        <!-- Bouton Ajouter TimeEntry -->
+                        <div class="d-flex justify-content-end mb-3">
+                            <a asp-page="/Admin/CreateTimeEntry"
+                               asp-route-employeeId="@Model.SelectedEmployeeId"
+                               asp-route-employeeUsername="@Model.AllEmployees.FirstOrDefault(e => e.Id == Model.SelectedEmployeeId)?.Username"
+                               class="btn btn-success">
+                                <i class="bi bi-plus-circle me-2"></i>@Localizer["AddTimeEntryButton"]
+                            </a>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
                             <form method="post" asp-page-handler="LoadSessions" style="display:inline;">
                                 <input type="hidden" name="SelectedEmployeeId" value="@Model.SelectedEmployeeId" />
                                 <input type="hidden" name="SelectedPeriod" value="@Model.SelectedPeriod" />
                                 <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
                                 <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
-                                <input type="hidden" name="WeekOffset" value="@(Model.WeekOffset + 1)" />
-                                <button type="submit" class="btn btn-link">@Localizer["NextWeekButton"] &raquo;</button>
+                                <input type="hidden" name="WeekOffset" value="@(Model.WeekOffset - 1)" />
+                                <button type="submit" class="btn btn-link">&laquo; @Localizer["PreviousWeekButton"]</button>
                             </form>
-                        }
-                        else
-                        {
-                            <button type="button" class="btn btn-link text-muted" disabled>@Localizer["NextWeekButton"] &raquo;</button>
-                        }
-                    </div>
-                }
-                @if (Model.FilteredEntries != null && Model.FilteredEntries.Any())
-                {
-                    <div class="table-responsive">
-                        <!-- EXPORT BUTTON posts ALL filter info -->
-                        <form method="post" asp-page-handler="ExportCsv" class="mt-3 text-end">
-                            <input type="hidden" name="SelectedEmployeeId" value="@Model.SelectedEmployeeId" />
-                            <input type="hidden" name="SelectedPeriod" value="@Model.SelectedPeriod" />
-                            <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
-                            <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
-                            <button type="submit" class="btn btn-info">
-                                <i class="bi bi-download me-1"></i>@Localizer["ExportCsvButton"]
-                            </button>
-                        </form>
-                        <table class="table table-striped align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>@Localizer["SessionTypeLabel"]</th>
-                                    <th>@Localizer["StartTimeLabel"]</th>
-                                    <th>@Localizer["EndTimeLabel"]</th>
-                                    <th>@Localizer["DurationLabel"]</th>
-                                    <th>@Localizer["IncludesTravelTimeLabel"]</th>
-                                    <th>@Localizer["TravelTimeEstimateLabel"]</th>
-                                    <th>@Localizer["StartAddressLabel"]</th>
-                                    <th>@Localizer["EndAddressLabel"]</th>
-                                    <th>@Localizer["DinnerPaidLabel"]</th>
-                                    <th>@Localizer["ActionsLabel"]</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var s in Model.FilteredEntries)
-                                {
+                            <span>
+                                @Model.CurrentWeekStart.ToString("dd/MM/yyyy") - @Model.CurrentWeekEnd.ToString("dd/MM/yyyy")
+                            </span>
+                            @if (Model.WeekOffset < 0)
+                            {
+                                <form method="post" asp-page-handler="LoadSessions" style="display:inline;">
+                                    <input type="hidden" name="SelectedEmployeeId" value="@Model.SelectedEmployeeId" />
+                                    <input type="hidden" name="SelectedPeriod" value="@Model.SelectedPeriod" />
+                                    <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
+                                    <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
+                                    <input type="hidden" name="WeekOffset" value="@(Model.WeekOffset + 1)" />
+                                    <button type="submit" class="btn btn-link">@Localizer["NextWeekButton"] &raquo;</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-link text-muted" disabled>@Localizer["NextWeekButton"] &raquo;</button>
+                            }
+                        </div>
+                    }
+                    @if (Model.FilteredEntries != null && Model.FilteredEntries.Any())
+                    {
+                        <div class="table-responsive">
+                            <!-- EXPORT BUTTON posts ALL filter info -->
+                            <form method="post" asp-page-handler="ExportCsv" class="mt-3 text-end">
+                                <input type="hidden" name="SelectedEmployeeId" value="@Model.SelectedEmployeeId" />
+                                <input type="hidden" name="SelectedPeriod" value="@Model.SelectedPeriod" />
+                                <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
+                                <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
+                                <button type="submit" class="btn btn-info">
+                                    <i class="bi bi-download me-1"></i>@Localizer["ExportCsvButton"]
+                                </button>
+                            </form>
+                            <table class="table table-striped align-middle">
+                                <thead class="table-light">
                                     <tr>
-                                        <td>@Localizer[$"SessionType_{s.SessionType}"]</td>
-                                        <td>@s.StartTime.ToLocalTime().ToString("g")</td>
-                                        <td>@(s.EndTime.HasValue? s.EndTime.Value.ToLocalTime().ToString("g") : "—")</td>
-                                        <td>@(s.WorkDuration.HasValue ? $"{(int)s.WorkDuration.Value.TotalHours}h{s.WorkDuration.Value.Minutes}m" : "—")</td>
-                                        <td>@Localizer[s.IncludesTravelTime ? "YesLabel" : "NoLabel"]</td>
-                                        <td>@(s.TravelTimeEstimate.HasValue? s.TravelTimeEstimate.Value.ToString(@"hh\:mm") : "—")</td>
-                                        <td>@s.StartAddress</td>
-                                        <td>@s.EndAddress</td>
-                                        <td>@Localizer[$"DinnerPaidBy_{s.DinnerPaid}"]</td>
-                                        <td>
-                                            <a asp-page="/Admin/DetailsTimeEntry"
-                                               asp-route-id="@s.Id"
-                                               class="btn btn-sm btn-info"
-                                               title="@Localizer["DetailsButton"]">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <a asp-page="/Admin/DetailsTimeEntry" asp-route-id="@s.Id" class="btn btn-info">
-                                                <i class="bi bi-person-plus-fill me-2"></i>@Localizer["DetailsButton"]
-                                            </a>
-                                        </td>
+                                        <th>@Localizer["SessionTypeLabel"]</th>
+                                        <th>@Localizer["StartTimeLabel"]</th>
+                                        <th>@Localizer["EndTimeLabel"]</th>
+                                        <th>@Localizer["DurationLabel"]</th>
+                                        <th>@Localizer["IncludesTravelTimeLabel"]</th>
+                                        <th>@Localizer["TravelTimeEstimateLabel"]</th>
+                                        <th>@Localizer["StartAddressLabel"]</th>
+                                        <th>@Localizer["EndAddressLabel"]</th>
+                                        <th>@Localizer["DinnerPaidLabel"]</th>
+                                        <th>@Localizer["ActionsLabel"]</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
-                else
-                {
-                    <p class="text-muted mb-0">@Localizer["NoSessionsMessage"]</p>
-                }
+                                </thead>
+                                <tbody>
+                                    @foreach (var s in Model.FilteredEntries)
+                                    {
+                                        <tr>
+                                            <td>@Localizer[$"SessionType_{s.SessionType}"]</td>
+                                            <td>
+                                                <span class="dt-local" data-dt="@s.StartTime.ToString("o")"></span>
+                                            </td>
+                                            <td>
+                                                @if (s.EndTime.HasValue)
+                                                {
+                                                    <span class="dt-local" data-dt="@s.EndTime.Value.ToString("o")"></span>
+                                                }
+                                                else
+                                                {
+                                                    <span>—</span>
+                                                }
+                                            </td>
+                                            <td>@(s.WorkDuration.HasValue ? $"{(int)s.WorkDuration.Value.TotalHours}h{s.WorkDuration.Value.Minutes}m" : "—")</td>
+                                            <td>@Localizer[s.IncludesTravelTime ? "YesLabel" : "NoLabel"]</td>
+                                            <td>@(s.TravelTimeEstimate.HasValue? s.TravelTimeEstimate.Value.ToString(@"hh\:mm") : "—")</td>
+                                            <td>@s.StartAddress</td>
+                                            <td>@s.EndAddress</td>
+                                            <td>@Localizer[$"DinnerPaidBy_{s.DinnerPaid}"]</td>
+                                            <td>
+                                                <a asp-page="/Admin/DetailsTimeEntry"
+                                                   asp-route-id="@s.Id"
+                                                   asp-route-employeeId="@Model.SelectedEmployeeId"
+                                                   asp-route-period="@Model.SelectedPeriod"
+                                                   asp-route-customStartDate="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")"
+                                                   asp-route-customEndDate="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")"
+                                                   asp-route-weekOffset="@Model.WeekOffset"
+                                                   class="btn btn-sm btn-info"
+                                                   title="@Localizer["DetailsButton"]">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <a asp-page="/Admin/EditTimeEntry"
+                                                   asp-route-id="@s.Id"
+                                                   asp-route-employeeId="@Model.SelectedEmployeeId"
+                                                   asp-route-period="@Model.SelectedPeriod"
+                                                   asp-route-customStartDate="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")"
+                                                   asp-route-customEndDate="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")"
+                                                   asp-route-weekOffset="@Model.WeekOffset"
+                                                   class="btn btn-sm btn-warning"
+                                                   title="@Localizer["EditButton"]">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">@Localizer["NoSessionsMessage"]</p>
+                    }
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-@section Scripts {
-    <script>
-        function toggleCustomDates(val) {
-            document.getElementById('customDates').style.display = val === 'custom' ? 'flex' : 'none';
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            toggleCustomDates(document.getElementById('periodSelect').value);
-        });
-    </script>
-}
+    @section Scripts {
+        <script>
+            function toggleCustomDates(val) {
+                document.getElementById('customDates').style.display = val === 'custom' ? 'flex' : 'none';
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+                toggleCustomDates(document.getElementById('periodSelect').value);
+                // Affichage des dates/horaires en heure locale du navigateur
+                document.querySelectorAll('.dt-local').forEach(function (el) {
+                    const raw = el.getAttribute('data-dt');
+                    if (raw) {
+                        const date = new Date(raw);
+                        el.textContent = date.toLocaleString();
+                    }
+                });
+            });
+        </script>
+    }
 }

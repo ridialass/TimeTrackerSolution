@@ -1,8 +1,6 @@
 ﻿@page "{id:int}"
 @model TimeTracker.AdminUI.Pages.Admin.DetailsTimeEntryModel
 @using Microsoft.Extensions.Localization
-
-@using TimeTracker.Core.DTOs
 @using TimeTracker.Core.Enums
 
 @{
@@ -17,53 +15,90 @@
     <div class="card mb-4">
         <div class="card-body">
             <dl class="row">
+                <!-- UserId (hidden in CreatePage, shown for info here) -->
+                <dt class="col-sm-3">ID Employé</dt>
+                <dd class="col-sm-9">@entry.UserId</dd>
+
+                <!-- Username -->
                 <dt class="col-sm-3">Employé</dt>
                 <dd class="col-sm-9">@entry.Username</dd>
 
-                <dt class="col-sm-3">Type</dt>
-                <dd class="col-sm-9">@entry.SessionType</dd>
-
+                <!-- Start Time -->
                 <dt class="col-sm-3">Début</dt>
-                <dd class="col-sm-9">@entry.StartTime.ToLocalTime().ToString("g")</dd>
+                <dd class="col-sm-9">
+                    <span class="dt-local" data-dt="@entry.StartTime.ToString("o")"></span>
+                </dd>
 
+                <!-- End Time -->
                 <dt class="col-sm-3">Fin</dt>
                 <dd class="col-sm-9">
-                    @(entry.EndTime.HasValue? entry.EndTime.Value.ToLocalTime().ToString("g") : "—")
+                    @if (entry.EndTime != null)
+                    {
+                        <span class="dt-local" data-dt="@entry.EndTime?.ToString("o")"></span>
+                    }
                 </dd>
 
-                <dt class="col-sm-3">Durée</dt>
-                <dd class="col-sm-9">
-                    @(entry.WorkDuration.HasValue ? $"{(int)entry.WorkDuration.Value.TotalHours}h{entry.WorkDuration.Value.Minutes}m" : "—")
-                </dd>
+                <!-- Session Type -->
+                <dt class="col-sm-3">Type de session</dt>
+                <dd class="col-sm-9">@Localizer[$"SessionType_{entry.SessionType}"]</dd>
 
-                <dt class="col-sm-3">Déplacement</dt>
-                <dd class="col-sm-9">@((entry.IncludesTravelTime) ? "Oui" : "Non")</dd>
-
-                <dt class="col-sm-3">Temps déplacement</dt>
-                <dd class="col-sm-9">
-                    @(entry.TravelTimeEstimate.HasValue? entry.TravelTimeEstimate.Value.ToString(@"hh\:mm") : "—")
-                </dd>
-
+                <!-- Start Address -->
                 <dt class="col-sm-3">Adresse début</dt>
                 <dd class="col-sm-9">@entry.StartAddress</dd>
 
+                <!-- End Address -->
                 <dt class="col-sm-3">Adresse fin</dt>
                 <dd class="col-sm-9">@entry.EndAddress</dd>
 
-                <dt class="col-sm-3">Dîner payé</dt>
-                <dd class="col-sm-9">@entry.DinnerPaid</dd>
-
-                <dt class="col-sm-3">Modifié par admin</dt>
+                <!-- Includes Travel Time -->
+                <dt class="col-sm-3">Inclut le temps de déplacement</dt>
                 <dd class="col-sm-9">
-                    @(entry.IsAdminModified ? "<span class='badge bg-warning'>Oui</span>" : "<span class='badge bg-success'>Non</span>")
+                    @(entry.IncludesTravelTime? Localizer["YesLabel"] : Localizer["NoLabel"])
                 </dd>
+
+                <!-- Travel Duration Hours -->
+                <dt class="col-sm-3">Durée déplacement (heures)</dt>
+                <dd class="col-sm-9">@entry.TravelDurationHours</dd>
+
+                <!-- Dinner Paid By -->
+                <dt class="col-sm-3">Repas payé par</dt>
+                <dd class="col-sm-9">@Localizer[$"DinnerPaidBy_{entry.DinnerPaid}"]</dd>
             </dl>
-            <a asp-page="/Admin/EditTimeEntry" asp-route-id="@entry.Id" class="btn btn-warning">Modifier</a>
-            <a asp-page="/Admin/Index" class="btn btn-secondary">Retour</a>
+            <a asp-page="/Admin/EditTimeEntry"
+               asp-route-id="@entry.Id"
+               asp-route-employeeId="@Model.EmployeeId"
+               asp-route-period="@Model.Period"
+               asp-route-customStartDate="@Model.CustomStartDate"
+               asp-route-customEndDate="@Model.CustomEndDate"
+               asp-route-weekOffset="@Model.WeekOffset"
+               class="btn btn-warning">Modifier</a>
+            <a asp-page="/Admin/Index"
+               asp-route-SelectedEmployeeId="@Model.EmployeeId"
+               asp-route-SelectedPeriod="@Model.Period"
+               asp-route-CustomStartDate="@Model.CustomStartDate"
+               asp-route-CustomEndDate="@Model.CustomEndDate"
+               asp-route-WeekOffset="@Model.WeekOffset"
+               class="btn btn-secondary">Retour</a>
         </div>
     </div>
 }
 else
 {
     <div class="alert alert-danger">Aucune donnée trouvée pour ce pointage.</div>
+}
+
+@section Scripts {
+    <script>
+        // Convert all .dt-local elements from UTC ISO to browser local date string
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.dt-local').forEach(function (el) {
+                const raw = el.getAttribute('data-dt');
+                if (raw) {
+                    // Parse as UTC and display as local string
+                    const date = new Date(raw);
+                    el.textContent = date.toLocaleString();
+                }
+            });
+        });
+    </script>
 }

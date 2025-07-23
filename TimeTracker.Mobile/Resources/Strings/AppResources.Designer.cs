@@ -754,6 +754,15 @@ namespace TimeTracker.Mobile.Resources.Strings {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à Temps de pause : {0}.
+        /// </summary>
+        internal static string TimeEntries_TotalPause {
+            get {
+                return ResourceManager.GetString("TimeEntries_TotalPause", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à 🚗 Trajet inclus : {0}.
         /// </summary>
         internal static string TimeEntries_TravelIncluded {

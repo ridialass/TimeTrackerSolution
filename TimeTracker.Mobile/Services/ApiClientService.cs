@@ -76,12 +76,23 @@ public class ApiClientService : IApiClientService
     {
         try
         {
-            var entries = await _http.GetFromJsonAsync<IEnumerable<TimeEntryDto>>($"api/timeentries?userId={userId}");
+            Console.WriteLine($"[DEBUG] Requête GET envoyée vers : api/timeentries?userId={userId}");
+
+            var response = await _http.GetAsync($"api/timeentries?userId={userId}");
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur HTTP {response.StatusCode}: {errorContent}");
+                return Result<IEnumerable<TimeEntryDto>>.Fail($"Erreur HTTP {response.StatusCode}: {errorContent}");
+            }
+
+            var entries = await response.Content.ReadFromJsonAsync<IEnumerable<TimeEntryDto>>();
             return Result<IEnumerable<TimeEntryDto>>.Success(entries ?? new List<TimeEntryDto>());
         }
-        catch (System.Exception)
+        catch (Exception ex)
         {
-            return Result<IEnumerable<TimeEntryDto>>.Fail("Erreur lors du chargement des pointages.");
+            Console.WriteLine($"Exception lors de l'appel API : {ex.Message}");
+            return Result<IEnumerable<TimeEntryDto>>.Fail($"Erreur lors du chargement des pointages : {ex.Message}");
         }
     }
 
@@ -100,3 +111,4 @@ public class ApiClientService : IApiClientService
         }
     }
 }
+

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using System.Security.Claims;
+using System.Text.Json;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Enums;
 using TimeTracker.Core.Helpers;
@@ -21,18 +22,22 @@ namespace TimeTracker.API.Controllers
         private readonly IMapper _mapper;
         private readonly ITimeEntryService _timeEntryService;
         private readonly LocalizationService _localizer;
+        private readonly IStringLocalizer<EnumLabels> _enumLocalizer;
 
         public TimeEntriesController(
             ApplicationDbContext db,
             IMapper mapper,
             ITimeEntryService timeEntryService,
-            LocalizationService localizer
+            LocalizationService localizer,
+            IStringLocalizer<EnumLabels> enumLocalizer
+
         )
         {
             _db = db;
             _mapper = mapper;
             _timeEntryService = timeEntryService;
             _localizer = localizer;
+            _enumLocalizer = enumLocalizer;
         }
 
         // GET: api/TimeEntries?userId=xx
@@ -70,16 +75,16 @@ namespace TimeTracker.API.Controllers
                 te.UserId,
                 te.Username,
                 te.SessionType,
-               
+                SessionTypeLabel = EnumLocalizationHelper.GetEnumLabel(te.SessionType, _enumLocalizer),
                 te.IsAdminModified,
                 te.IncludesTravelTime,
                 te.DinnerPaid,
-                
+                DinnerPaidByLabel = EnumLocalizationHelper.GetEnumLabel(te.DinnerPaid, _enumLocalizer),
                 te.Location,
                 // autres propriétés...
             });
 
-            return Ok(result);
+            return Ok(list);
         }
 
         // GET: api/TimeEntries/{id}
@@ -112,9 +117,11 @@ namespace TimeTracker.API.Controllers
                 te.UserId,
                 te.Username,
                 te.SessionType,
+                SessionTypeLabel = EnumLocalizationHelper.GetEnumLabel(te.SessionType, _enumLocalizer),
                 te.IsAdminModified,
                 te.IncludesTravelTime,
                 te.DinnerPaid,
+                DinnerPaidByLabel = EnumLocalizationHelper.GetEnumLabel(te.DinnerPaid, _enumLocalizer),
                 te.Location,
                 // autres propriétés...
             };
@@ -130,22 +137,22 @@ namespace TimeTracker.API.Controllers
             var workSessionTypeLabels = Enum.GetValues(typeof(WorkSessionType))
                 .Cast<WorkSessionType>()
                 .ToDictionary(
-                    e => (int)e
-                    
+                    e => (int)e,
+                    e => EnumLocalizationHelper.GetEnumLabel(e, _enumLocalizer)
                 );
 
             var dinnerPaidByLabels = Enum.GetValues(typeof(DinnerPaidBy))
                 .Cast<DinnerPaidBy>()
                 .ToDictionary(
-                    e => (int)e
-                    
+                    e => (int)e,
+                    e => EnumLocalizationHelper.GetEnumLabel(e, _enumLocalizer)
                 );
 
             var userRoleLabels = Enum.GetValues(typeof(UserRole))
                 .Cast<UserRole>()
                 .ToDictionary(
-                    e => (int)e
-                    
+                    e => (int)e,
+                    e => EnumLocalizationHelper.GetEnumLabel(e, _enumLocalizer)
                 );
 
             return Ok(new
@@ -161,17 +168,31 @@ namespace TimeTracker.API.Controllers
         public async Task<IActionResult> Create([FromBody] TimeEntryDto dto)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(new ErrorResponseDto
                 {
                     Code = "InvalidModel",
-                    Message = _localizer.GetLocalizedMessage("InvalidModel")
+                    Message = "Les données fournies sont invalides."
                 });
+            }
 
-            var created = await _timeEntryService.AddTimeEntryAsync(dto);
+            try
+            {
+                Console.WriteLine($"Données reçues : {JsonSerializer.Serialize(dto)}");
+                var created = await _timeEntryService.AddTimeEntryAsync(dto);
 
-            return CreatedAtAction(nameof(GetById),
-                                   new { id = created.Id },
-                                   created);
+                Console.WriteLine($"Entrée créée avec ID : {created.Id}");
+                return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de la création : {ex.Message}");
+                return StatusCode(500, new ErrorResponseDto
+                {
+                    Code = "ServerError",
+                    Message = "Une erreur interne s'est produite."
+                });
+            }
         }
 
         // PUT: api/TimeEntries/{id}
@@ -233,3 +254,4 @@ namespace TimeTracker.API.Controllers
         }
     }
 }
+

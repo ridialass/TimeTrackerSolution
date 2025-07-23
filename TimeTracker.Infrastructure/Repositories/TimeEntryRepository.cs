@@ -30,14 +30,14 @@ namespace TimeTracker.Infrastructure.Repositories
         public async Task<IEnumerable<TimeEntry>> GetAllAsync() =>
             await _db.TimeEntries
                 .Include(te => te.User)
-                .Where(te => te.EndTime != null) // <--- filtre ajouté
+                .Where(te => te.EndTime != null)
                 .OrderByDescending(te => te.StartTime)
                 .AsNoTracking()
                 .ToListAsync();
 
         public async Task<IEnumerable<TimeEntry>> GetByEmployeeAsync(int employeeId) =>
             await _db.TimeEntries
-                .Where(te => te.UserId == employeeId && te.EndTime != null) // <--- filtre ajouté
+                .Where(te => te.UserId == employeeId && te.EndTime != null)
                 .Include(te => te.User)
                 .OrderByDescending(te => te.StartTime)
                 .AsNoTracking()
@@ -51,8 +51,8 @@ namespace TimeTracker.Infrastructure.Repositories
 
         public async Task<bool> UpdateAsync(TimeEntry entity)
         {
-            if (!_db.TimeEntries.Local.Any(e => e.Id == entity.Id))
-                _db.TimeEntries.Attach(entity);
+            // Entity is not tracked (because of AsNoTracking), so attach and mark as Modified
+            _db.TimeEntries.Attach(entity);
             _db.Entry(entity).State = EntityState.Modified;
             await _db.SaveChangesAsync();
             return true;

@@ -401,6 +401,27 @@ namespace TimeTracker.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.OwnsMany("TimeTracker.Core.Entities.PausePeriod", "Pauses", b1 =>
+                        {
+                            b1.Property<int>("TimeEntryId")
+                                .HasColumnType("int");
+
+                            b1.Property<DateTime>("Start")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<DateTime?>("End")
+                                .HasColumnType("datetime2");
+
+                            b1.HasKey("TimeEntryId", "Start");
+
+                            b1.ToTable("PausePeriods", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("TimeEntryId");
+                        });
+
+                    b.Navigation("Pauses");
+
                     b.Navigation("User");
                 });
 

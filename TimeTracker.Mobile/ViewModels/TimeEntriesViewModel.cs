@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Mobile.Services;
@@ -43,20 +42,33 @@ public partial class TimeEntriesViewModel : BaseViewModel
             }
 
             var result = await _apiClient.GetTimeEntriesAsync(user.Id);
+            Console.WriteLine($"[DEBUG] Nb résultats : {result.Value?.Count() ?? -1}");
             if (result.IsSuccess && result.Value is not null)
             {
                 timeEntries.Clear();
-                foreach (var entry in result.Value.Where(e => e.EndTime != null))
+
+                // ✅ ICI : on retire le Where(e => e.EndTime != null)
+                foreach (var entry in result.Value)
                     timeEntries.Add(entry);
+
+                IsEmpty = timeEntries.Count == 0;
             }
             else
             {
                 ErrorMessage = result.Error ?? AppResources.TimeEntries_FailedToLoad;
+                IsEmpty = true;
             }
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    private bool isEmpty;
+    public bool IsEmpty
+    {
+        get => isEmpty;
+        set => SetProperty(ref isEmpty, value);
     }
 }

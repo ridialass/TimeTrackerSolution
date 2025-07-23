@@ -16,7 +16,7 @@ namespace TimeTracker.Infrastructure.Tests.Mapping
         {
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.AddProfile<ApplicationMappingProfile>();
+                cfg.AddProfile<MappingProfile>();
             });
             _mapper = config.CreateMapper();
         }

@@ -51,7 +51,6 @@ namespace TimeTracker.AdminUI.Pages.Account
             var json = JsonSerializer.Serialize(loginDto);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            // IMPORTANT : URL absolue !
             var response = await client.PostAsync("api/auth/login", content);
             if (!response.IsSuccessStatusCode)
             {
@@ -67,19 +66,20 @@ namespace TimeTracker.AdminUI.Pages.Account
 
             if (loginResponse == null
                 || string.IsNullOrWhiteSpace(loginResponse.Token)
-                || string.IsNullOrWhiteSpace(loginResponse.Username) // on s'assure qu'il n'est pas null/empty
-                )
+                || string.IsNullOrWhiteSpace(loginResponse.Username)
+            )
             {
                 ErrorMessage = "Réponse invalide du serveur.";
                 return Page();
             }
 
-            // Maintenant on peut utiliser l'opérateur ! en toute sécurité
+            // Add UserId claim
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, loginResponse.Username!),
-        new Claim(ClaimTypes.Role, loginResponse.Role.ToString()!)  // idem pour Role
-    };
+            {
+                new Claim(ClaimTypes.Name, loginResponse.Username!),
+                new Claim(ClaimTypes.Role, loginResponse.Role.ToString()!),
+                new Claim(ClaimTypes.NameIdentifier, loginResponse.ApplicationUserId.ToString())
+            };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);

@@ -20,8 +20,11 @@ namespace TimeTracker.Mobile.Services
             _secureStorage = secureStorage;
         }
 
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
+            Debug.WriteLine("[AuthHeaderHandler] Appelé pour : " + request.RequestUri);
+
             try
             {
                 var token = await _secureStorage.GetAsync("jwt_token");

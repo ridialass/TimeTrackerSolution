@@ -47,5 +47,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             .WithMany(u => u.RefreshTokens)
             .HasForeignKey(rt => rt.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Configuration des pauses (owned collection)
+        builder.Entity<TimeEntry>()
+            .OwnsMany(te => te.Pauses, nav =>
+            {
+                nav.WithOwner().HasForeignKey("TimeEntryId");
+                nav.Property(p => p.Start).IsRequired();
+                nav.Property(p => p.End);
+                nav.ToTable("PausePeriods"); // Nom explicite
+                nav.HasKey("TimeEntryId", "Start"); // Clé composite
+            });
     }
 }

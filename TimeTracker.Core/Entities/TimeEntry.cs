@@ -20,6 +20,7 @@ namespace TimeTracker.Core.Entities
         public double? EndLatitude { get; set; }
         public double? EndLongitude { get; set; }
         public string? EndAddress { get; set; }
+
         public bool IsAdminModified { get; set; }
         public WorkSessionType SessionType { get; set; }
         public bool IncludesTravelTime { get; set; }
@@ -28,16 +29,31 @@ namespace TimeTracker.Core.Entities
         public DinnerPaidBy DinnerPaid { get; set; }
         public string? Location { get; set; }
 
-        // FK to Employee
+        // ✅ Liste des pauses individuelles
+        public List<PausePeriod> Pauses { get; set; } = new();
+
+        // FK vers l’utilisateur concerné
         public int UserId { get; set; }
         public ApplicationUser User { get; set; } = default!;
 
+        // Durée brute de la session
         public TimeSpan? WorkDuration =>
             EndTime.HasValue ? EndTime.Value - StartTime : null;
 
+        // Estimation durée déplacement
         public TimeSpan? TravelTimeEstimate =>
             (IncludesTravelTime && TravelDurationHours.HasValue)
                 ? TimeSpan.FromHours(TravelDurationHours.Value)
                 : null;
+
+        // ✅ Durée cumulée des pauses
+        public TimeSpan TotalPauseDuration =>
+            TimeSpan.FromSeconds(
+                Pauses
+                    .Where(p => p.End.HasValue)
+                    .Sum(p => (p.End.Value - p.Start).TotalSeconds)
+            );
     }
 }
+
+

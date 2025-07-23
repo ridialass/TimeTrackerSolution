@@ -22,23 +22,24 @@ namespace TimeTracker.AdminUI.Pages.Admin
         private readonly IStringLocalizer<Errors> _localizer;
 
         public List<EmployeeDto> AllEmployees { get; set; } = new();
-        [BindProperty] public int SelectedEmployeeId { get; set; }
+        [BindProperty(SupportsGet = true)] public int SelectedEmployeeId { get; set; }
         public List<TimeEntryDto> FilteredEntries { get; set; } = new();
         [BindProperty] public EmployeeDto NewUser { get; set; } = new();
         [BindProperty] public string NewUserPassword { get; set; } = "";
-        [BindProperty] public string SelectedPeriod { get; set; } = "all";
-        [BindProperty] public DateTime? CustomStartDate { get; set; }
-        [BindProperty] public DateTime? CustomEndDate { get; set; }
-        [BindProperty] public int WeekOffset { get; set; } = 0;
+        [BindProperty(SupportsGet = true)] public string SelectedPeriod { get; set; } = "all";
+        [BindProperty(SupportsGet = true)] public DateTime? CustomStartDate { get; set; }
+        [BindProperty(SupportsGet = true)] public DateTime? CustomEndDate { get; set; }
+        [BindProperty(SupportsGet = true)] public int WeekOffset { get; set; } = 0;
         public DateTime CurrentWeekStart { get; set; }
         public DateTime CurrentWeekEnd { get; set; }
         public string? CreateError { get; set; }
         public string? CreateSuccess { get; set; }
         public List<TimeEntryDto> Sessions { get; set; } = new();
 
-        public IndexModel(IHttpClientFactory httpClientFactory)
+        public IndexModel(IHttpClientFactory httpClientFactory, IStringLocalizer<Errors> localizer)
         {
             _httpClientFactory = httpClientFactory;
+            _localizer = localizer;
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -50,8 +51,8 @@ namespace TimeTracker.AdminUI.Pages.Admin
                 return RedirectToPage("/Account/AccessDenied");
 
             await LoadEmployeesAsync();
+            await LoadSessionsAsync();
             return Page();
-        
         }
 
         private async Task LoadEmployeesAsync()
@@ -63,12 +64,70 @@ namespace TimeTracker.AdminUI.Pages.Admin
             if (!response.IsSuccessStatusCode)
             {
                 ViewData["ApiError"] = "Connexion expirée ou non autorisée. Veuillez vous reconnecter.";
-        return;
+                return;
             }
 
             AllEmployees = JsonSerializer.Deserialize<List<EmployeeDto>>(body,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                 ?? new List<EmployeeDto>();
+        }
+
+        private async Task LoadSessionsAsync()
+        {
+            if (SelectedEmployeeId == 0)
+            {
+                FilteredEntries = new List<TimeEntryDto>();
+                return;
+            }
+
+            var client = CreateAuthenticatedClient();
+            var response = await client.GetAsync($"api/timeentries?userId={SelectedEmployeeId}");
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                FilteredEntries = new List<TimeEntryDto>();
+                return;
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var allEntries = JsonSerializer.Deserialize<List<TimeEntryDto>>(
+                json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            ) ?? new List<TimeEntryDto>();
+
+            DateTime today = DateTime.Today;
+            var diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var baseWeekStart = today.AddDays(-1 * diff);
+            var weekStart = baseWeekStart.AddDays(7 * WeekOffset);
+            var weekEnd = weekStart.AddDays(6);
+
+            CurrentWeekStart = weekStart;
+            CurrentWeekEnd = weekEnd;
+
+            IEnumerable<TimeEntryDto> filtered = allEntries;
+
+            if (SelectedPeriod == "month")
+            {
+                var monthStart = new DateTime(today.Year, today.Month, 1);
+                filtered = filtered.Where(e => e.StartTime.Date >= monthStart && e.StartTime.Date <= today);
+            }
+            else if (SelectedPeriod == "custom" && CustomStartDate.HasValue && CustomEndDate.HasValue)
+            {
+                filtered = filtered.Where(e => e.StartTime.Date >= CustomStartDate.Value && e.StartTime.Date <= CustomEndDate.Value);
+            }
+
+            filtered = filtered.Where(e => e.StartTime.Date >= weekStart && e.StartTime.Date <= weekEnd);
+
+            FilteredEntries = filtered
+                .GroupBy(e => new { e.StartTime, e.Username, e.StartAddress })
+                .Select(g =>
+                    g.OrderByDescending(s => s.EndTime.HasValue)
+                     .ThenByDescending(s => s.EndTime)
+                     .First()
+                )
+                .ToList();
         }
 
         public async Task<IActionResult> OnPostCreateUserAsync()
@@ -106,65 +165,8 @@ namespace TimeTracker.AdminUI.Pages.Admin
 
         public async Task<IActionResult> OnPostLoadSessionsAsync()
         {
-            if (SelectedEmployeeId == 0)
-            {
-                FilteredEntries = new List<TimeEntryDto>();
-                await LoadEmployeesAsync();
-                return Page();
-            }
-
-            var client = CreateAuthenticatedClient();
-            var response = await client.GetAsync($"api/timeentries?userId={SelectedEmployeeId}");
-
-            if (response.StatusCode == HttpStatusCode.NotFound)
-            {
-                FilteredEntries = new List<TimeEntryDto>();
-                await LoadEmployeesAsync();
-                return Page();
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            var allEntries = JsonSerializer.Deserialize<List<TimeEntryDto>>(
-                json,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-            ) ?? new List<TimeEntryDto>();
-
-            DateTime today = DateTime.Today;
-            var diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
-            var baseWeekStart = today.AddDays(-1 * diff);
-            var weekStart = baseWeekStart.AddDays(7 * WeekOffset);
-            var weekEnd = weekStart.AddDays(6);
-
-            CurrentWeekStart = weekStart;
-            CurrentWeekEnd = weekEnd;
-
-            IEnumerable<TimeEntryDto> filtered = allEntries;
-
-            if (SelectedPeriod == "month")
-            {
-                var monthStart = new DateTime(today.Year, today.Month, 1);
-                filtered = filtered.Where(e => e.StartTime.Date >= monthStart && e.StartTime.Date <= today);
-            }
-            else if (SelectedPeriod == "custom" && CustomStartDate.HasValue && CustomEndDate.HasValue)
-            {
-                filtered = filtered.Where(e => e.StartTime.Date >= CustomStartDate.Value && e.StartTime.Date <= CustomEndDate.Value);
-            }
-            // else if week: already handled by week window
-
-            filtered = filtered.Where(e => e.StartTime.Date >= weekStart && e.StartTime.Date <= weekEnd);
-
-            FilteredEntries = filtered
-                .GroupBy(e => new { e.StartTime, e.Username, e.StartAddress })
-                .Select(g =>
-                    g.OrderByDescending(s => s.EndTime.HasValue)
-                     .ThenByDescending(s => s.EndTime)
-                     .First()
-                )
-                .ToList();
-
             await LoadEmployeesAsync();
+            await LoadSessionsAsync();
             return Page();
         }
 
@@ -214,7 +216,6 @@ namespace TimeTracker.AdminUI.Pages.Admin
             {
                 filtered = filtered.Where(e => e.StartTime.Date >= CustomStartDate.Value && e.StartTime.Date <= CustomEndDate.Value);
             }
-            // else: all
 
             var exportEntries = filtered
                 .GroupBy(e => new { e.StartTime, e.Username, e.StartAddress })

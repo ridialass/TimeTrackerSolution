@@ -61,7 +61,7 @@ namespace TimeTracker.Core.Resources {
         }
         
         /// <summary>
-        ///   Recherche une chaîne localisée semblable à Par le Client.
+        ///   Recherche une chaîne localisée semblable à Entreprise.
         /// </summary>
         public static string DinnerPaidBy_Client {
             get {
@@ -79,7 +79,7 @@ namespace TimeTracker.Core.Resources {
         }
         
         /// <summary>
-        ///   Recherche une chaîne localisée semblable à Senza.
+        ///   Recherche une chaîne localisée semblable à Pas de repas.
         /// </summary>
         public static string DinnerPaidBy_None {
             get {
