@@ -101,7 +101,6 @@ builder.Services
     .AddAutoMapper(typeof(MappingProfile).Assembly)
     .AddScoped<IEmployeeService, EmployeeService>()
     .AddScoped<IAuthService, AuthService>()
-    .AddScoped<IEmailService, EmailService>()
     .AddScoped<ITokenService, TokenService>();
 builder.Services
     .AddScoped<ITimeEntryService, TimeEntryService>();
@@ -110,6 +109,7 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 
 // Enregistrer le service dans le conteneur de dépendances
 builder.Services.AddTransient<LocalizationService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // 5) Ajouter les contrôleurs (API)
 builder.Services.AddControllers();

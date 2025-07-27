@@ -21,9 +21,6 @@ namespace TimeTracker.AdminUI.Pages.Admin
         // Filter/navigation context properties for page return
         [BindProperty(SupportsGet = true)] public int EmployeeId { get; set; }
         [BindProperty(SupportsGet = true)] public string Period { get; set; } = "all";
-        //[BindProperty(SupportsGet = true)] public string CustomStartDate { get; set; } = string.Empty;
-        //[BindProperty(SupportsGet = true)] public string CustomEndDate { get; set; } = string.Empty;
-        //[BindProperty(SupportsGet = true)] public int WeekOffset { get; set; } = 0;
 
         private readonly IHttpClientFactory _httpClientFactory;
 
@@ -133,9 +130,6 @@ namespace TimeTracker.AdminUI.Pages.Admin
                     {
                         SelectedEmployeeId = EmployeeId,
                         SelectedPeriod = Period
-                        //CustomStartDate,
-                        //CustomEndDate,
-                        //WeekOffset
                     });
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -181,9 +175,6 @@ namespace TimeTracker.AdminUI.Pages.Admin
                 {
                     SelectedEmployeeId = EmployeeId,
                     SelectedPeriod = Period
-                //    CustomStartDate,
-                //    CustomEndDate,
-                //    WeekOffset
                 });
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)

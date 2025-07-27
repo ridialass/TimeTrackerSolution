@@ -100,7 +100,9 @@
 
     <!-- Submit and Cancel Buttons -->
     <button type="submit" class="btn btn-success">@Localizer["CreateButton"]</button>
-    <a asp-page="/Admin/Index" class="btn btn-secondary">@Localizer["CancelButton"]</a>
+    <a asp-page="/Admin/Index"
+       asp-route-employeeId="@Model.SelectedEmployeeId"
+       class="btn btn-secondary">@Localizer["CancelButton"]</a>
 </form>
 
 @section Scripts {
@@ -156,3 +158,4 @@
         });
     </script>
 }
+

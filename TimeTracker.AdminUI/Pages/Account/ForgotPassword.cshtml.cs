@@ -1,19 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Json;
 using TimeTracker.Core.DTOs;
+using TimeTracker.Core.Resources; // Pour la localisation des erreurs
 
 namespace TimeTracker.AdminUI.Pages.Account
 {
     public class ForgotPasswordModel : PageModel
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IStringLocalizer<Errors> _localizer;
 
-        public ForgotPasswordModel(IHttpClientFactory httpClientFactory)
+        public ForgotPasswordModel(IHttpClientFactory httpClientFactory, IStringLocalizer<Errors> localizer)
         {
             _httpClientFactory = httpClientFactory;
+            _localizer = localizer;
         }
 
         [BindProperty, Required, EmailAddress]
@@ -30,7 +34,6 @@ namespace TimeTracker.AdminUI.Pages.Account
             if (!ModelState.IsValid)
                 return Page();
 
-            // Exemple d’appel à l’API pour demander un reset
             var client = _httpClientFactory.CreateClient("TimeTrackerAPI");
             var payload = new { email = Email.Trim() };
             var content = new StringContent(
@@ -42,11 +45,12 @@ namespace TimeTracker.AdminUI.Pages.Account
             var resp = await client.PostAsync("api/auth/forgot-password", content);
             if (resp.IsSuccessStatusCode)
             {
-                Message = "Si cette adresse existe, un mail vous sera envoyé.";
+                // Message localisé
+                Message = _localizer["ForgotPasswordSuccess"];
             }
             else
             {
-                Message = "Une erreur est survenue, réessayez plus tard.";
+                Message = _localizer["ForgotPasswordError"];
             }
 
             return Page();

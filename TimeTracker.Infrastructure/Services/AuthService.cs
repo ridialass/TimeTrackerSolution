@@ -22,6 +22,7 @@ namespace TimeTracker.Infrastructure.Services
         private readonly IConfiguration _config;
         private readonly ApplicationDbContext _db;
         private readonly IStringLocalizer<Errors> _localizer;
+        private readonly IEmailService _emailService;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
@@ -29,7 +30,8 @@ namespace TimeTracker.Infrastructure.Services
             SignInManager<ApplicationUser> signInManager,
             IConfiguration config,
             ApplicationDbContext db,
-            IStringLocalizer<Errors> localizer)
+            IStringLocalizer<Errors> localizer,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -37,6 +39,7 @@ namespace TimeTracker.Infrastructure.Services
             _config = config;
             _db = db;
             _localizer = localizer;
+            _emailService = emailService;
         }
 
         public async Task<LoginResponseDto> AuthenticateAsync(LoginRequestDto request)
@@ -156,8 +159,11 @@ namespace TimeTracker.Infrastructure.Services
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-            // TODO : Envoyer le token par email (ici on log pour dev)
-            // Console.WriteLine($"Token de réinitialisation pour {user.Email}: {token}");
+            // Génère le lien de reset
+            var resetLink = $"{_config["FrontendUrls:ResetPassword"]}?email={Uri.EscapeDataString(dto.Email)}&token={Uri.EscapeDataString(token)}";
+
+            // Envoie l'email
+            await _emailService.SendPasswordResetEmailAsync(dto.Email, resetLink);
 
             return true;
         }

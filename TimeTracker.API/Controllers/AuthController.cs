@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using TimeTracker.Core.DTOs;
+using TimeTracker.Core.Entities;
 using TimeTracker.Core.Interfaces;
 using TimeTracker.Core.Resources;
 
@@ -12,11 +14,15 @@ namespace TimeTracker.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IStringLocalizer<Errors> _localizer;
 
-        public AuthController(IAuthService authService, IStringLocalizer<Errors> localizer)
+        public AuthController(IAuthService authService,
+            IStringLocalizer<Errors> localizer,
+            UserManager<ApplicationUser> userManager)
         {
             _authService = authService;
+            _userManager = userManager;
             _localizer = localizer;
         }
 
@@ -210,4 +216,3 @@ namespace TimeTracker.API.Controllers
         }
     }
 }
-

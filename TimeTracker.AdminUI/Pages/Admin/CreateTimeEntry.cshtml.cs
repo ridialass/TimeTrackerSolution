@@ -17,6 +17,8 @@ namespace TimeTracker.AdminUI.Pages.Admin
     {
         [BindProperty]
         public TimeEntryDto TimeEntry { get; set; } = new();
+        // Filter/navigation context properties for page return
+        [BindProperty(SupportsGet = true)] public int SelectedEmployeeId { get; set; }
 
         private readonly IHttpClientFactory _httpClientFactory;
 
