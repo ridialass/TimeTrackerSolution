@@ -1,0 +1,15 @@
+﻿@model TimeTracker.Infrastructure.Services.Send2FAEmailModel
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Code d’authentification</title>
+</head>
+<body style="font-family: Arial, sans-serif;">
+    <h2>Votre code d’authentification</h2>
+    <p>Bonjour,</p>
+    <p>Voici votre code pour valider votre connexion&nbsp;:</p>
+    <div style="font-size:2em;font-weight:bold;background:#f0f0f0;padding:10px 0;margin:20px 0;">@Model.Code</div>
+    <p>Ce code est valable quelques minutes.</p>
+</body>
+</html>

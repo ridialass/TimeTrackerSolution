@@ -49,6 +49,7 @@
             <input type="hidden" name="SelectedPeriod" value="week" />
             <input type="hidden" name="WeekOffset" value="@(Model.WeekOffset + 1)" />
             <button type="submit" class="btn btn-link">@Localizer["NextWeekButton"] &raquo;</button>
+
         </form>
     </div>
 }
@@ -58,7 +59,7 @@ else if (period == "month")
         <form method="get" style="display:inline;">
             <input type="hidden" name="SelectedPeriod" value="month" />
             <input type="hidden" name="MonthOffset" value="@(Model.MonthOffset - 1)" />
-            <button type="button" class="btn btn-primary btn-sm">&laquo; @Localizer["PreviousMonthButton"]</button>
+            <button type="submit" class="btn btn-link">&laquo; @Localizer["PreviousMonthButton"]</button>
         </form>
         <span>
             @Model.CurrentMonthStart.ToString("MMMM yyyy")
@@ -66,7 +67,7 @@ else if (period == "month")
         <form method="get" style="display:inline;">
             <input type="hidden" name="SelectedPeriod" value="month" />
             <input type="hidden" name="MonthOffset" value="@(Model.MonthOffset + 1)" />
-            <button type="button" class="btn btn-primary btn-sm">@Localizer["NextMonthButton"] &raquo;</button>
+            <button type="submit" class="btn btn-link">@Localizer["NextMonthButton"] &raquo;</button>
         </form>
     </div>
 }
