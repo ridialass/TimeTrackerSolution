@@ -127,6 +127,51 @@ namespace TimeTracker.Infrastructure.Services
             return await _repo.UpdateAsync(existing);
         }
 
+        public async Task<bool> UpdateMyProfileAsync(int userId, UpdateProfileDto dto)
+        {
+            var user = await _repo.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            // On ne laisse l'utilisateur modifier QUE ses infos "personnelles" (jamais le rôle, le username, etc)
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+                user.Email = dto.Email;
+
+            if (!string.IsNullOrWhiteSpace(dto.FirstName))
+                user.FirstName = dto.FirstName;
+
+            if (!string.IsNullOrWhiteSpace(dto.LastName))
+                user.LastName = dto.LastName;
+
+            if (!string.IsNullOrWhiteSpace(dto.Town))
+                user.Town = dto.Town;
+
+            if (!string.IsNullOrWhiteSpace(dto.Country))
+                user.Country = dto.Country;
+
+            if (!string.IsNullOrWhiteSpace(dto.ProfilePictureUrl))
+                user.ProfilePictureUrl = dto.ProfilePictureUrl;
+
+            return await _repo.UpdateAsync(user);
+        }
+
+        public async Task<UserProfileDto?> GetMyProfileAsync(int userId)
+        {
+            var user = await _repo.GetByIdAsync(userId);
+            if (user == null)
+                return null;
+            // Pour exposer les champs, tu peux utiliser AutoMapper, sinon manuellement :
+            return new UserProfileDto
+            {
+                Email = user.Email ?? "",
+                FirstName = user.FirstName ?? "",
+                LastName = user.LastName ?? "",
+                Town = user.Town ?? "",
+                Country = user.Country ?? "",
+                ProfilePictureUrl = user.ProfilePictureUrl ?? ""
+            };
+        }
+
         public async Task<(IEnumerable<EmployeeDto> Items, int TotalCount)> GetEmployeesPagedAsync(EmployeeQueryParameters query)
         {
             var (results, total) = await _repo.GetPagedAsync(query);

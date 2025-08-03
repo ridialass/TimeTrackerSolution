@@ -1,5 +1,3 @@
-// TimeTracker.API/Program.cs
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -7,26 +5,25 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using System.Globalization;
+using System.Security.Claims;
 using System.Text;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
 using TimeTracker.Core.Interfaces;
 using TimeTracker.Infrastructure.Mapping;
 using TimeTracker.Infrastructure.Repositories;
-using TimeTracker.Infrastructure.Services; // <-- vérifiez le bon namespace
+using TimeTracker.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Enregistrer le DbContext qui doit hériter de IdentityDbContext<…>
+// ─────── BDD & Identity ──────────────────────────────
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString)
-    .LogTo(Console.WriteLine, LogLevel.Information)
+        .LogTo(Console.WriteLine, LogLevel.Information)
         .EnableSensitiveDataLogging()
 );
 
-// Enregistrer Identity COMPLET : UserManager, RoleManager, SignInManager, etc.
-//    + Ajouter le store EF Core basé sur ApplicationDbContext
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
 {
     options.Password.RequireDigit = true;
@@ -35,21 +32,23 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
 })
-.AddEntityFrameworkStores<ApplicationDbContext>() // ← impératif : ApplicationDbContext hérite de IdentityDbContext
+.AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Configurer JWT Bearer (schéma “Bearer”)
-var jwtIssuer = builder.Configuration["JwtSettings:Issuer"]!;
-var jwtAudience = builder.Configuration["JwtSettings:Audience"]!;
-var jwtSecretKey = builder.Configuration["JwtSettings:SecretKey"]!;
+// ─────── JWT Bearer Authentication ───────────────────
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var jwtIssuer = jwtSettings["Issuer"];
+var jwtAudience = jwtSettings["Audience"];
+var jwtSecretKey = jwtSettings["SecretKey"];
 
-// Vous pouvez valider qu’aucune n’est vide ou nulle
 if (string.IsNullOrWhiteSpace(jwtIssuer) ||
     string.IsNullOrWhiteSpace(jwtAudience) ||
     string.IsNullOrWhiteSpace(jwtSecretKey))
 {
     throw new InvalidOperationException("Vérifiez la configuration Jwt (Issuer, Audience, SecretKey).");
 }
+
+// Seul JwtBearer doit être le schéma par défaut pour l’API REST
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -61,67 +60,100 @@ builder.Services.AddAuthentication(options =>
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
+        NameClaimType = ClaimTypes.NameIdentifier,
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-        ValidAudience = builder.Configuration["JwtSettings:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]!)
-        )
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
+    };
+
+    // ────── Ajout du filtrage des claims NameIdentifier ──────
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = context =>
+        {
+            var identity = context.Principal?.Identity as ClaimsIdentity;
+            if (identity != null)
+            {
+                // Filtre tous les claims NameIdentifier : on garde celui qui ressemble à un id numérique
+                var nameIdClaims = identity.FindAll(ClaimTypes.NameIdentifier).ToList();
+
+                if (nameIdClaims.Count > 1)
+                {
+                    foreach (var claim in nameIdClaims)
+                    {
+                        if (!int.TryParse(claim.Value, out _))
+                        {
+                            // Supprime ceux qui ne sont pas numériques (ex : le username)
+                            identity.RemoveClaim(claim);
+                        }
+                    }
+                }
+            }
+            return Task.CompletedTask;
+        }
     };
 });
 
-builder.Services
-  .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-  .AddCookie(options =>
-  {
-      options.LoginPath = "/Account/Login";
-      options.LogoutPath = "/Account/Logout";
-      // options.ExpireTimeSpan, etc. selon vos besoins
-  });
-
-// Ajouter l’autorisation (politiques basées sur les rôles)
+// ─────── Authorization policies (optionnel) ──────────
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireAdminRole", policy =>
         policy.RequireRole("Admin"));
 });
 
-Console.WriteLine("JWT Issuer: " + jwtIssuer);
-Console.WriteLine("JWT Audience: " + jwtAudience);
-Console.WriteLine("JWT SecretKey: " + jwtSecretKey);
-
-// Enregistrement des repositories
+// ─────── Services et DI ──────────────────────────────
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
-
 builder.Services
     .AddAutoMapper(typeof(MappingProfile).Assembly)
     .AddScoped<IEmployeeService, EmployeeService>()
     .AddScoped<IAuthService, AuthService>()
-    .AddScoped<ITokenService, TokenService>();
-builder.Services
+    .AddScoped<ITokenService, TokenService>()
     .AddScoped<ITimeEntryService, TimeEntryService>();
-
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-
-// Enregistrer le service dans le conteneur de dépendances
 builder.Services.AddTransient<LocalizationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-// 5) Ajouter les contrôleurs (API)
+// ─────── MVC / Controllers ───────────────────────────
 builder.Services.AddControllers();
 
-// (Optionnel) : Swagger/OpenAPI
+// ─────── Swagger/OpenAPI ─────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "TimeTracker API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer"
+    });
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 var app = builder.Build();
 
-// Localisation midleware
-var supportedCultures = new[] { "en", "fr", "it" }; // Ajouter ici les langues supportées
+// ─────── Localisation middleware ─────────────────────
+var supportedCultures = new[] { "en", "fr", "it" };
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
     DefaultRequestCulture = new RequestCulture("it"),
@@ -129,12 +161,10 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedUICultures = supportedCultures.Select(c => new CultureInfo(c)).ToList()
 });
 
-// ─── Seeder ────────────────────────────────────────────────────────────────────
+// ─────── Seeder rôles/admin au démarrage ─────────────
 using (var scope = app.Services.CreateScope())
 {
     var sp = scope.ServiceProvider;
-
-    // Attention aux bons génériques ici !
     var roleManager = sp.GetRequiredService<RoleManager<IdentityRole<int>>>();
     var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
 
@@ -175,8 +205,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
-//  Pipeline HTTP : swagger si dev, HTTPS, authentification/autorisation, map controllers
+// ─────── Pipeline HTTP ───────────────────────────────
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -185,13 +214,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRequestLocalization();
-// **L’ordre ici est fondamental :**
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
 
 public partial class Program { }
-

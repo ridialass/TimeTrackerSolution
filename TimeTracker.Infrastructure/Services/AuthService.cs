@@ -138,9 +138,9 @@ namespace TimeTracker.Infrastructure.Services
             return true;
         }
 
-        public async Task<bool> ChangePasswordAsync(ChangePasswordRequestDto dto, string username)
+        public async Task<bool> ChangePasswordAsync(ChangePasswordRequestDto dto, string userId)
         {
-            var user = await _userManager.FindByNameAsync(username);
+            var user = await _userManager.FindByIdAsync(userId); // cherche par l'id
             if (user == null)
                 throw new InvalidOperationException(_localizer["UserNotFound"]);
 
@@ -247,9 +247,12 @@ namespace TimeTracker.Infrastructure.Services
                 expiresIn = 60;
             var expires = DateTime.UtcNow.AddMinutes(expiresIn);
 
-            var claims = new List<Claim> {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName!),
-                new Claim("id", user.Id.ToString())
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName!), // tu peux garder le username ici
+                new Claim("id", user.Id.ToString()),                    // optionnel
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // <--- C'EST CETTE LIGNE QUI RÈGLE LE BUG !
+                new Claim(ClaimTypes.Name, user.UserName!)                 // optionnel, utile pour User.Identity.Name
             };
             claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
 

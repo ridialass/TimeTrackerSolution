@@ -1,11 +1,13 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using TimeTracker.API.Controllers;
-using TimeTracker.Core.Resources;
 using TimeTracker.Core.DTOs;
+using TimeTracker.Core.Entities;
 using TimeTracker.Core.Interfaces;
+using TimeTracker.Core.Resources;
 using Xunit;
 
 namespace TimeTracker.Infrastructure.Tests
@@ -14,6 +16,7 @@ namespace TimeTracker.Infrastructure.Tests
     {
         private readonly Mock<IAuthService> _authServiceMock;
         private readonly Mock<IStringLocalizer<Errors>> _localizerMock;
+        private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
         private readonly AuthController _controller;
 
         public AuthControllerTests()
@@ -23,7 +26,17 @@ namespace TimeTracker.Infrastructure.Tests
             _localizerMock.Setup(l => l[It.IsAny<string>()])
                 .Returns((string key) => new LocalizedString(key, key));
 
-            _controller = new AuthController(_authServiceMock.Object, _localizerMock.Object);
+            // Mock UserManager
+            var store = new Mock<IUserStore<ApplicationUser>>();
+            _userManagerMock = new Mock<UserManager<ApplicationUser>>(
+                store.Object, null, null, null, null, null, null, null, null
+            );
+
+            _controller = new AuthController(
+                _authServiceMock.Object,
+                _localizerMock.Object,
+                _userManagerMock.Object // <-- Ajouté ici
+            );
         }
 
         [Fact]

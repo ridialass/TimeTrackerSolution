@@ -537,4 +537,13 @@
   <data name="FilterLabel" xml:space="preserve">
     <value>Filtro</value>
   </data>
+  <data name="BonjourUser" xml:space="preserve">
+    <value>Ciao</value>
+  </data>
+  <data name="MonPlanning" xml:space="preserve">
+    <value>Mio Planning</value>
+  </data>
+  <data name="BienvenueSur" xml:space="preserve">
+    <value>Sei sulla tua applicazione</value>
+  </data>
 </root>

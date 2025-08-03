@@ -7,7 +7,7 @@
     ViewData["Title"] = Localizer["Accueil"];
 }
 
-<h2>@Localizer["BienvenueSurTimeTracker"]</h2>
+
 
 @if (Model.IsAdmin)
 {
@@ -16,11 +16,58 @@
 else
 {
     <div class="user-home">
-        <p>@Localizer["Bonjour"], <b>@User.Identity.Name</b>!</p>
-        <ul>
-            <li><a href="/Sessions">@Localizer["MesSessions"]</a></li>
-            <li><a href="/Account/Profile">@Localizer["MonProfil"]</a></li>
-            <li><a href="/Privacy">@Localizer["Confidentialite"]</a></li>
-        </ul>
+        <div class="container overflow-hidden text-center">
+            <div class="row">
+                <div class="col-sm-9 "><h2>@Localizer["BienvenueSur"] TimeTracker</h2></div>
+                <div class="align-middle col-sm-3">
+                    <p>
+                        <img src="@Model.UserImg" class="object-fit-sm-contain border rounded-pill w-25" alt="...">
+                        @Localizer["BonjourUser"] <b>@Model.FirstName</b>!
+                        
+                    </p>
+                </div>
+            </div>
+            <div class="row gx-5">
+                <div class="col">
+                    <div class="p-3">
+                        <div class="card">
+                            <img src="~/images/ProfileImage.png" class="card-img-top" alt="...">
+                            <div class="card-body">
+                                <h5 class="card-title">@Localizer["MonProfil"]</h5>
+                                <p class="card-text">@Localizer["MonProfilDescription"]</p>
+                                <a href="/Account/Profile">@Localizer["MonProfilAction"]</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="p-3">
+                        <div class="card">
+                            <img src="~/images/SessionImage.png" class="card-img-top" alt="...">
+                            <div class="card-body">
+                                <h5 class="card-title">@Localizer["MesSessions"]</h5>
+                                <p class="card-text">@Localizer["MesSessionsDescription"]</p>
+                                <a href="/Account/Session">@Localizer["MesSessionsAction"]</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="p-3">
+                        <div class="card">
+                            <img src="~/images/PlanningImage.png" class="card-img-top" alt="...">
+                            <div class="card-body">
+                                <h5 class="card-title">@Localizer["MonPlanning"]</h5>
+                                <p class="card-text">@Localizer["MonPlanningDescription"]</p>
+                                <a href="https://fastlinecappelli-my.sharepoint.com/:x:/g/personal/office_fastlinecappelli_onmicrosoft_com/EZwC1mIuM-ZOj2xAN_Q87PIBZ3N7crEoEnoTKh-fKnbpmw?rtime=nMBgEfTR3Ug"
+                                   target="_blank">@Localizer["MonPlanningAction"]</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    
 }

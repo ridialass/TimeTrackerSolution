@@ -129,4 +129,10 @@
   <data name="EmployeePatched" xml:space="preserve">
     <value>Employé mis à jour partiellement avec succès</value>
   </data>
+  <data name="RequiredEmail" xml:space="preserve">
+    <value>Email requis</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>Email invalide</value>
+  </data>
 </root>

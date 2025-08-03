@@ -33,6 +33,30 @@ namespace TimeTracker.Infrastructure.Mapping
                 .ForMember(d => d.PasswordHash, opt => opt.Ignore())
                 .ForMember(d => d.SecurityStamp, opt => opt.Ignore());
 
+            // ---- PROFILE ----
+            CreateMap<ApplicationUser, UserProfileDto>()
+                .ForMember(d => d.Email, opt => opt.MapFrom(src => src.Email ?? string.Empty))
+                .ForMember(d => d.FirstName, opt => opt.MapFrom(src => src.FirstName ?? string.Empty))
+                .ForMember(d => d.LastName, opt => opt.MapFrom(src => src.LastName ?? string.Empty))
+                .ForMember(d => d.Town, opt => opt.MapFrom(src => src.Town ?? string.Empty))
+                .ForMember(d => d.Country, opt => opt.MapFrom(src => src.Country ?? string.Empty))
+                .ForMember(d => d.ProfilePictureUrl, opt => opt.MapFrom(src => src.ProfilePictureUrl ?? string.Empty));
+
+            CreateMap<UpdateProfileDto, ApplicationUser>()
+                .ForMember(d => d.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(d => d.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(d => d.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(d => d.Town, opt => opt.MapFrom(src => src.Town))
+                .ForMember(d => d.Country, opt => opt.MapFrom(src => src.Country))
+                .ForMember(d => d.ProfilePictureUrl, opt => opt.MapFrom(src => src.ProfilePictureUrl));
+
+            // ---- CHANGE PASSWORD ----
+            // (Généralement, le ChangePassword ne mappe que des champs "CurrentPassword/NewPassword", 
+            // donc pas de mapping entité <-> DTO ici, car la logique se fait dans le service, 
+            // pas dans AutoMapper. Mais tu peux ajouter si besoin)
+            // Exemple si tu as un ChangePasswordDto :
+            // CreateMap<ChangePasswordDto, ApplicationUser>().ForAllMembers(opt => opt.Ignore());
+
             // ---- PAUSES ----
             CreateMap<PausePeriod, PausePeriod>()
                 .ForMember(d => d.Start, opt => opt.MapFrom(src => src.Start))

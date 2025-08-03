@@ -11,6 +11,7 @@ namespace TimeTracker.Core.Entities
     // On choisit int comme clé primaire pour coller à votre modèle actuel
     public class ApplicationUser : IdentityUser<int>
     {
+        public string? ProfilePictureUrl { get; set; }
         public UserRole Role { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }

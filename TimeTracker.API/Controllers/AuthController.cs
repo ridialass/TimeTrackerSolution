@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using System.Security.Claims;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 using TimeTracker.Core.Interfaces;
@@ -137,33 +138,29 @@ namespace TimeTracker.API.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(new ErrorResponseDto
-                {
-                    Code = "InvalidModel",
-                    Message = _localizer["InvalidModel"]
-                });
-
-            var username = User.Identity?.Name;
-            if (string.IsNullOrEmpty(username))
-                return Unauthorized(new ErrorResponseDto
-                {
-                    Code = "UserNotFound",
-                    Message = _localizer["UserNotFound"]
-                });
-
-            var result = await _authService.ChangePasswordAsync(dto, username);
-            if (!result)
+            foreach (var claim in User.Claims)
             {
-                return BadRequest(new ErrorResponseDto
-                {
-                    Code = "ChangePasswordFailed",
-                    Message = _localizer["ChangePasswordFailed"]
-                });
+                Console.WriteLine($"{claim.Type}: {claim.Value}");
             }
-            return Ok(new { message = _localizer["ChangePasswordSuccess"] });
-        }
 
+            // Récupère l'ID de l'utilisateur depuis le token JWT (claim NameIdentifier)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine("UserId (NameIdentifier): " + userId);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new ErrorResponseDto { Code = "UserNotFound", Message = "Utilisateur non trouvé dans le token." });
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound(new ErrorResponseDto { Code = "UserNotFound", Message = "Utilisateur introuvable." });
+
+            var result = await _authService.ChangePasswordAsync(dto, user.Id.ToString());
+
+            if (!result)
+                return BadRequest(new ErrorResponseDto { Code = "ChangePasswordFailed", Message = "Echec changement de mot de passe." });
+
+            return Ok(new { message = "Mot de passe changé avec succès !" });
+        }
         [HttpPost("send-2fa-code")]
         [AllowAnonymous]
         public async Task<IActionResult> Send2FACode([FromBody] Send2FACodeRequestDto dto)

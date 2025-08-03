@@ -79,6 +79,15 @@ namespace TimeTracker.Core.Resources {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à Email invalide.
+        /// </summary>
+        public static string InvalidEmail {
+            get {
+                return ResourceManager.GetString("InvalidEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à Modèle de données invalide.
         /// </summary>
         public static string InvalidModel {
@@ -93,6 +102,15 @@ namespace TimeTracker.Core.Resources {
         public static string PasswordResetEmailSent {
             get {
                 return ResourceManager.GetString("PasswordResetEmailSent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Email requis.
+        /// </summary>
+        public static string RequiredEmail {
+            get {
+                return ResourceManager.GetString("RequiredEmail", resourceCulture);
             }
         }
     }

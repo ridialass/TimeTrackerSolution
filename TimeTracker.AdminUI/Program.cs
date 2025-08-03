@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Net.Http.Headers;
-using System.Text;
 using TimeTracker.Core.Entities;
 
 namespace TimeTracker.AdminUI
@@ -16,29 +15,24 @@ namespace TimeTracker.AdminUI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // ─── 1) Enregistrer ApplicationDbContext pour Identity ────────────────────────
-            // Veillez à utiliser la même chaîne de connexion que celle de votre API si vous partagez la même base.
+            // 1) DbContext pour Identity (partagez la même base que l’API si besoin)
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            // ─── 2) Configurer ASP.NET Core Identity (cookie-based) ───────────────────────
+            // 2) Identity avec règles identiques à l’API
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
             {
-                // Si vous souhaitez conserver les mêmes règles qu’à l’API, reproduisez-les ici :
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequiredLength = 6;
-
-                // Vous pouvez également personnaliser Lockout, User, SignIn, etc., si besoin.
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-            // ─── 3) Configurer l’authentification par cookie ───────────────────────────────
-            // On ne configure pas JWT Bearer dans l’UI, car l’UI se base sur un cookie pour la session.
+            // 3) Authentification par cookie (pas de JWT côté UI)
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -46,67 +40,56 @@ namespace TimeTracker.AdminUI
             })
             .AddCookie(options =>
             {
-                // Url de la page de login Razor
                 options.LoginPath = "/Account/Login";
                 options.LogoutPath = "/Account/Logout";
-                // Optionnel : durée de vie du cookie (48h par exemple)
                 options.ExpireTimeSpan = TimeSpan.FromHours(48);
                 options.SlidingExpiration = true;
-
-                // Vous pouvez définir une AccessDeniedPath si vous avez des pages spéciales
                 options.AccessDeniedPath = "/Account/AccessDenied";
             });
 
-
-            
-
-
-            // ─── 4) Ajouter l’autorisation (si vous avez des policies selon les rôles) ────
+            // 4) Autorisation par rôles (exemple policy admin)
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("RequireAdminRole", policy =>
                     policy.RequireRole("Admin"));
             });
 
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
-            // ─── 6) Configurer IHttpClientFactory pour appeler l’API ───────────────────────
-            // Dans appsettings.json, assurez‐vous d’avoir une section ApiSettings:BaseUrl,
-            // par exemple : "ApiSettings": { "BaseUrl": "https://localhost:5001/" }
+            // 5) Razor Pages + localisation
+            builder.Services.AddRazorPages()
+                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+                .AddDataAnnotationsLocalization();
+
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+            // 6) HttpClient pour appeler l’API distante sécurisée par JWT
             var baseUrl = builder.Configuration["ApiSettings:BaseUrl"];
             if (string.IsNullOrWhiteSpace(baseUrl))
-            {
                 throw new InvalidOperationException("La clé 'ApiSettings:BaseUrl' est manquante ou vide dans appsettings.json.");
-            }
 
             builder.Services.AddHttpClient("TimeTrackerAPI", client =>
             {
                 client.BaseAddress = new Uri(baseUrl);
                 client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
-                .ConfigurePrimaryHttpMessageHandler(() =>
-                    new HttpClientHandler
-                    {
-                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                    }
-            );
-
-            // ─── 5) Ajouter les services Razor Pages ────────────────────────────────────────
-            builder.Services.AddRazorPages()
-
-            // ─── 6.1) Configurer Razor Pages pour utiliser les ressources localisées ─────────
-                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-                .AddDataAnnotationsLocalization();
-
-            // Dossier des ressources
-            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler
+                {
+                    // Pour dev uniquement : accepte les certificats autosignés
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                });
 
             var app = builder.Build();
 
-            // ─── 6.2) Configurer la localisation ────────────────────────────────────────────
-            var supportedCultures = new[] { "it", "fr", "en" }; // Ajouter ici les langues supportées
+            // 7) Localisation
+            var supportedCultures = new[] { "it", "fr", "en" };
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 DefaultRequestCulture = new RequestCulture("it"),
@@ -114,12 +97,12 @@ namespace TimeTracker.AdminUI
                 SupportedUICultures = supportedCultures.Select(c => new CultureInfo(c)).ToList(),
                 RequestCultureProviders = new List<IRequestCultureProvider>
                 {
-                    new CookieRequestCultureProvider(), // Prend en compte le cookie
-                    new AcceptLanguageHeaderRequestCultureProvider() // Priorité secondaire
+                    new CookieRequestCultureProvider(),
+                    new AcceptLanguageHeaderRequestCultureProvider()
                 }
             });
 
-            // ─── 7) Pipeline HTTP ───────────────────────────────────────────────────────────
+            // 8) Pipeline HTTP
             if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -133,12 +116,12 @@ namespace TimeTracker.AdminUI
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
-            
-            // IMPORTANT : Authentication puis Authorization
+
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Mappez Razor Pages (pour les pages Login, Register, Index, etc.)
+            app.UseSession();
+
             app.MapRazorPages();
 
             app.Run();

@@ -13,5 +13,7 @@ namespace TimeTracker.Core.Interfaces
         Task<EmployeeDto> CreateEmployeeAsync(RegisterRequestDto dto);
         Task<bool> UpdateEmployeeAsync(UpdateEmployeeDto dto);
         Task<bool> PatchEmployeeAsync(int id, PatchEmployeeDto dto);
+        Task<bool> UpdateMyProfileAsync(int userId, UpdateProfileDto dto);
+        Task<UserProfileDto?> GetMyProfileAsync(int userId);
     }
 }

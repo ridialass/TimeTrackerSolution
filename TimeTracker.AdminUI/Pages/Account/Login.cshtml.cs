@@ -34,8 +34,6 @@ namespace TimeTracker.AdminUI.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
         {
-            returnUrl ??= Url.Content("~/Admin/Index");
-
             if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
             {
                 ErrorMessage = "Veuillez saisir votre nom d’utilisateur et votre mot de passe.";
@@ -105,8 +103,16 @@ namespace TimeTracker.AdminUI.Pages.Account
                 Expires = DateTimeOffset.UtcNow.AddHours(1)
             });
 
+            // Détermine la page d'accueil selon le rôle
+            string homePage = (loginResponse.Role.ToString() == "Admin")
+                ? Url.Content("~/Admin/Index")
+                : Url.Content("~/Index"); // ou "~/Sessions/Index" si tu préfères
+
+            // Si returnUrl est null ou vide, utilise la page d'accueil adaptée
+            if (string.IsNullOrWhiteSpace(returnUrl))
+                returnUrl = homePage;
+
             return LocalRedirect(returnUrl);
         }
-
     }
 }
