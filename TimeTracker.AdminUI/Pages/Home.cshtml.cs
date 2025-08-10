@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace TimeTracker.AdminUI.Pages
 {
-    public class Index1Model : PageModel
+    public class HomeModel : PageModel
     {
 
 

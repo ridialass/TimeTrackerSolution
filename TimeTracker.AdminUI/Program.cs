@@ -50,9 +50,22 @@ builder.Services.AddRazorPages()
     .AddDataAnnotationsLocalization()
     .AddRazorPagesOptions(options =>
     {
-        options.Conventions.AddPageRoute("/Home", "");                  // "/" -> Home
+        options.Conventions.AddPageRoute("/Home", "");     // "/" -> Home
         options.Conventions.AddPageRoute("/Admin/AdminDashboard", "admin");
         options.Conventions.AddPageRoute("/UserPage", "user");
+
+        // Sécurisation
+        options.Conventions.AuthorizePage("/UserPage");
+        options.Conventions.AuthorizePage("/Account/Profile");
+        options.Conventions.AuthorizePage("/Account/Session");
+        options.Conventions.AuthorizeFolder("/Admin", "RequireAdminRole");
+
+        // Laisse anonymes :
+        options.Conventions.AllowAnonymousToPage("/Account/Login");
+        options.Conventions.AllowAnonymousToPage("/Account/ForgotPassword");
+        options.Conventions.AllowAnonymousToPage("/Account/ResetPasswordByToken");
+        options.Conventions.AllowAnonymousToPage("/Home"); // si ta home est publique
+        options.Conventions.AllowAnonymousToPage("/Home"); // si ta home est publique
     });
 
 // Cultures supportées

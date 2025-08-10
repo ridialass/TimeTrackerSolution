@@ -8,7 +8,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - TimeTracker</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <!-- _Layout.cshtml : <head> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Login.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TimeTracker.AdminUI.styles.css" asp-append-version="true" />
@@ -16,59 +19,91 @@
 <body>
     <header>
         @{
-            var pagesSansMenu = new[] { "/Account/Login", "/Account/Logout", "/Account/ForgotPassword", "/Account/ResetPasswordByToken", "/" };
-            var pageActuelle = Context.Request.Path.Value;
-            var cacherMenu = pagesSansMenu.Any(p => pageActuelle.StartsWith(p, StringComparison.OrdinalIgnoreCase));
+            // Normalise le path pour des comparaisons robustes
+            var current = (Context.Request.Path.Value ?? string.Empty).TrimEnd('/').ToLowerInvariant();
+
+            // Pages où l’on cache le menu
+            // "" = racine "/" après TrimEnd('/')
+            var pagesSansMenu = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                "",                         // "/"
+                "/account/login",
+                "/account/logout",
+                "/account/forgotpassword",
+                "/account/resetpasswordbytoken"
+                };
+
+            bool cacherMenu = pagesSansMenu.Contains(current);
         }
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
                 @if (!cacherMenu)
                 {
-                    @if (User.IsInRole("Admin"))
+                    if (User?.Identity?.IsAuthenticated == true)
                     {
-                        <a class="navbar-brand" asp-area="" asp-page="/AdminDashboard">@SharedLocalizer["AdminDashboard"]</a>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                                aria-expanded="false" aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                            <ul class="navbar-nav flex-grow-1">
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Admin/AdminDashboard">@SharedLocalizer["Home"]</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">@SharedLocalizer["Privacy"]</a>
-                                </li>
-                            </ul>
-                            <partial name="_LoginPartial" />
-                        </div>
+                        if (User.IsInRole("Admin"))
+                        {
+                            <a class="navbar-brand" asp-area="" asp-page="/Admin/AdminDashboard">@SharedLocalizer["AdminDashboard"]</a>
+                            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                                    aria-expanded="false" aria-label="Toggle navigation">
+                                <span class="navbar-toggler-icon"></span>
+                            </button>
+                            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                                <ul class="navbar-nav flex-grow-1">
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/Home">@SharedLocalizer["Home"]</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">@SharedLocalizer["Privacy"]</a>
+                                    </li>
+                                </ul>
+                                <partial name="_LoginPartial" />
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="navbar-brand" asp-area="" asp-page="/UserPage">@SharedLocalizer["MyAccueil"]</a>
+                            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                                    aria-expanded="false" aria-label="Toggle navigation">
+                                <span class="navbar-toggler-icon"></span>
+                            </button>
+                            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                                <ul class="navbar-nav flex-grow-1">
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/Home">@SharedLocalizer["Home"]</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/Account/Profile">@SharedLocalizer["MonProfil"]</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/Account/Session">@SharedLocalizer["MesSessions"]</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" href="https://fastlinecappelli-my.sharepoint.com/:x:/g/personal/office_fastlinecappelli_onmicrosoft_com/EZwC1mIuM-ZOj2xAN_Q87PIBZ3N7crEoEnoTKh-fKnbpmw?rtime=nMBgEfTR3Ug" target="_blank">
+                                            @SharedLocalizer["MonPlanning"]
+                                        </a>
+                                    </li>
+                                </ul>
+                                <partial name="_LoginPartial" />
+                            </div>
+                        }
                     }
                     else
                     {
-                        <a class="navbar-brand" asp-area="" asp-page="/UserPage">@SharedLocalizer["MyAccueil"]</a>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                                aria-expanded="false" aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                            <ul class="navbar-nav flex-grow-1">
+                        <!-- Non authentifié : pas de menu privé -->
+                        <a class="navbar-brand" asp-area="" asp-page="/Home">@SharedLocalizer["MyAccueil"]</a>
+                        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
+                            <ul class="navbar-nav">
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Account/Profile">@SharedLocalizer["MonProfil"]</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Account/Session">@SharedLocalizer["MesSessions"]</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" href="https://fastlinecappelli-my.sharepoint.com/:x:/g/personal/office_fastlinecappelli_onmicrosoft_com/EZwC1mIuM-ZOj2xAN_Q87PIBZ3N7crEoEnoTKh-fKnbpmw?rtime=nMBgEfTR3Ug"
-                                       target="_blank">@SharedLocalizer["MonPlanning"]
-                                    </a>
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Account/Login">Login</a>
                                 </li>
                             </ul>
-                            <partial name="_LoginPartial" />
                         </div>
                     }
                 }
             </div>
+
+            <!-- Sélecteur langue toujours visible -->
             <ul class="navbar-nav">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -95,8 +130,25 @@
         </div>
     </footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+    <!-- _Layout.cshtml : juste avant </body> -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/it.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/de.js"></script>
+    <script>
+        // Déduit la locale depuis ton pipeline .NET (SharedResource reste inchangé)
+        window.appCulture = "@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName";
+    </script>
+    <style>
+        /* Optionnel: barre de filtres sticky agréable sur desktop */
+        .filters-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            background: #fff;
+        }
+    </style>
+
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

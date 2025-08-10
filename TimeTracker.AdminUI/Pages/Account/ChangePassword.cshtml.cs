@@ -1,85 +1,75 @@
+// TimeTracker.AdminUI/Pages/Account/ChangePassword.cshtml.cs
+#nullable enable
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.Json;
+using System.Net.Http.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using TimeTracker.AdminUI.Serialization;     // JsonDefaults.Options
 using TimeTracker.Core.DTOs;
-using TimeTracker.Core.Resources; // Pour la localisation des erreurs
+using TimeTracker.Core.Resources;
 
-namespace TimeTracker.AdminUI.Pages.Account
+namespace TimeTracker.AdminUI.Pages.Account;
+
+[Authorize] // ← cookie Identity.Application requis (Option B)
+public class ChangePasswordModel(IHttpClientFactory http, IStringLocalizer<Errors> L) : PageModel
 {
-    public class ChangePasswordModel : PageModel
+    public string? Message { get; set; }
+    public string? SuccessMessage { get; set; }
+
+    public class InputModel
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IStringLocalizer<Errors> _localizer;
+        [Required(ErrorMessage = "Le mot de passe actuel est requis")]
+        [DataType(DataType.Password)]
+        public string CurrentPassword { get; set; } = string.Empty;
 
-        public ChangePasswordModel(IHttpClientFactory httpClientFactory, IStringLocalizer<Errors> localizer)
-        {
-            _httpClientFactory = httpClientFactory;
-            _localizer = localizer;
-        }
+        [Required(ErrorMessage = "Le nouveau mot de passe est requis")]
+        [DataType(DataType.Password)]
+        public string NewPassword { get; set; } = string.Empty;
 
-        public string? Message { get; set; }
-        public string? SuccessMessage { get; set; }
+        [Required(ErrorMessage = "La confirmation du mot de passe est requise")]
+        [DataType(DataType.Password)]
+        [Compare(nameof(NewPassword), ErrorMessage = "Les mots de passe ne correspondent pas")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
 
-        public class InputModel
-        {
-            [Required(ErrorMessage = "Le mot de passe actuel est requis")]
-            [DataType(DataType.Password)]
-            public string CurrentPassword { get; set; } = "";
+    [BindProperty] public InputModel Input { get; set; } = new();
 
-            [Required(ErrorMessage = "Le nouveau mot de passe est requis")]
-            [DataType(DataType.Password)]
-            public string NewPassword { get; set; } = "";
+    public void OnGet() { }
 
-            [Required(ErrorMessage = "La confirmation du mot de passe est requise")]
-            [DataType(DataType.Password)]
-            [Compare("NewPassword", ErrorMessage = "Les mots de passe ne correspondent pas")]
-            public string ConfirmPassword { get; set; } = "";
-        }
-
-        [BindProperty]
-        public InputModel Input { get; set; } = new();
-
-        public void OnGet() { }
-
-        public async Task<IActionResult> OnPostAsync()
-        {
-            if (!ModelState.IsValid)
-                return Page();
-
-            var client = _httpClientFactory.CreateClient("TimeTrackerAPI");
-
-            // AJOUTER L'AUTHENTIFICATION ICI
-            var jwt = Request.Cookies["jwt_token"];
-            if (!string.IsNullOrEmpty(jwt))
-                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
-
-            var dto = new ChangePasswordRequestDto
-            {
-                CurrentPassword = Input.CurrentPassword,
-                NewPassword = Input.NewPassword
-            };
-            var content = new StringContent(
-                JsonSerializer.Serialize(dto),
-                Encoding.UTF8,
-                "application/json"
-            );
-
-            var resp = await client.PostAsync("api/auth/change-password", content);
-            if (resp.IsSuccessStatusCode)
-            {
-                SuccessMessage = _localizer["ChangePasswordSuccess"];
-                ModelState.Clear();
-                Input = new();
-            }
-            else
-            {
-                Message = _localizer["ChangePasswordError"];
-            }
-
+    public async Task<IActionResult> OnPostAsync(CancellationToken ct)
+    {
+        if (!ModelState.IsValid)
             return Page();
+
+        // HttpClient configuré dans Program.cs avec JwtCookieAuthHandler :
+        // le Bearer est pris du cookie "jwt_token" automatiquement.
+        var client = http.CreateClient("TimeTrackerAPI");
+
+        var dto = new ChangePasswordRequestDto
+        {
+            CurrentPassword = Input.CurrentPassword,
+            NewPassword = Input.NewPassword
+        };
+
+        using var resp = await client.PostAsJsonAsync("api/auth/change-password", dto, JsonDefaults.Options, ct);
+
+        if (resp.IsSuccessStatusCode)
+        {
+            SuccessMessage = L["ChangePasswordSuccess"];
+            ModelState.Clear();
+            Input = new();
         }
+        else
+        {
+            // (Optionnel) Tu peux lire le corps pour log DEV, mais ne l’affiche pas brut à l’UI
+            // var err = await resp.Content.ReadAsStringAsync(ct);
+            Message = L["ChangePasswordError"];
+        }
+
+        return Page();
     }
 }

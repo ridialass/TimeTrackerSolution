@@ -546,4 +546,73 @@
   <data name="BienvenueSur" xml:space="preserve">
     <value>You are on your application</value>
   </data>
+  <data name="AddTimeEntryButton" xml:space="preserve">
+    <value>Add a new session</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Remember me</value>
+  </data>
+  <data name="MonProfilDescription" xml:space="preserve">
+    <value>Update my profile's information</value>
+  </data>
+  <data name="MesSessionsDescription" xml:space="preserve">
+    <value>Display my entry history</value>
+  </data>
+  <data name="MonPlanningDescription" xml:space="preserve">
+    <value>Check the work planning</value>
+  </data>
+  <data name="LinkAction" xml:space="preserve">
+    <value>Go to page</value>
+  </data>
+  <data name="ProfileTitle" xml:space="preserve">
+    <value>Edit my profile</value>
+  </data>
+  <data name="ChangePasswordButton" xml:space="preserve">
+    <value>Change my password</value>
+  </data>
+  <data name="MesSessionsTitle" xml:space="preserve">
+    <value>See my history</value>
+  </data>
+  <data name="SessionsForYou" xml:space="preserve">
+    <value>My selectionned period</value>
+  </data>
+  <data name="CurrentPasswordLabel" xml:space="preserve">
+    <value>Current password</value>
+  </data>
+  <data name="NewPasswordLabel" xml:space="preserve">
+    <value>New password</value>
+  </data>
+  <data name="ConfirmPasswordLabel" xml:space="preserve">
+    <value>Confirm new password</value>
+  </data>
+  <data name="BackToProfileButton" xml:space="preserve">
+    <value>Back to my profile</value>
+  </data>
+  <data name="ChangePasswordTitle" xml:space="preserve">
+    <value>Password Change</value>
+  </data>
+  <data name="ItCultureDropList" xml:space="preserve">
+    <value>Italian</value>
+  </data>
+  <data name="FrCultureDropList" xml:space="preserve">
+    <value>French</value>
+  </data>
+  <data name="EnCultureDropList" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="DeleteButton" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="WelcomeUser" xml:space="preserve">
+    <value>Glad to see you </value>
+  </data>
+  <data name="NotAuthenticatedMessage" xml:space="preserve">
+    <value>No user connected</value>
+  </data>
+  <data name="SignedInAs" xml:space="preserve">
+    <value>Connected as: </value>
+  </data>
+  <data name="MyAccueil" xml:space="preserve">
+    <value>My personnal area</value>
+  </data>
 </root>

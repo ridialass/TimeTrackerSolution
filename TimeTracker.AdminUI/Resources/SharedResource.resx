@@ -553,7 +553,7 @@
     <value>Se souvenir de moi</value>
   </data>
   <data name="MonProfilDescription" xml:space="preserve">
-    <value>Mettre à jour votre profil ici</value>
+    <value>Mettre à jour les informations du profil</value>
   </data>
   <data name="MesSessionsDescription" xml:space="preserve">
     <value>Visualiser l'historique de vos sessions</value>
@@ -562,7 +562,7 @@
     <value>Vérifier le planning des travaux </value>
   </data>
   <data name="LinkAction" xml:space="preserve">
-    <value>J'y vais....</value>
+    <value>Voir la page</value>
   </data>
   <data name="ProfileTitle" xml:space="preserve">
     <value>Edition de mon profil</value>
@@ -571,7 +571,7 @@
     <value>Changer mon mot de passe</value>
   </data>
   <data name="MesSessionsTitle" xml:space="preserve">
-    <value>Historique de mes sessions de travail</value>
+    <value>Historique de mes sessions </value>
   </data>
   <data name="SessionsForYou" xml:space="preserve">
     <value>Ma période de sélection</value>
@@ -602,5 +602,17 @@
   </data>
   <data name="DeleteButton" xml:space="preserve">
     <value>Supprimer</value>
+  </data>
+  <data name="WelcomeUser" xml:space="preserve">
+    <value>Heureux de te revoir </value>
+  </data>
+  <data name="NotAuthenticatedMessage" xml:space="preserve">
+    <value>Pas d'utilisateur connecté.</value>
+  </data>
+  <data name="SignedInAs" xml:space="preserve">
+    <value>Connecté en tant que: </value>
+  </data>
+  <data name="MyAccueil" xml:space="preserve">
+    <value>Mon coin perso</value>
   </data>
 </root>

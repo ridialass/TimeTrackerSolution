@@ -154,7 +154,7 @@ namespace TimeTracker.AdminUI.Pages.Admin
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToPage("/Admin/Index", new
+                    return RedirectToPage("/Admin/AdminDashboard", new
                     {
                         SelectedEmployeeId = EmployeeId,
                         SelectedPeriod = Period
@@ -198,7 +198,7 @@ namespace TimeTracker.AdminUI.Pages.Admin
 
             if (response.IsSuccessStatusCode)
             {
-                return RedirectToPage("/Admin/Index", new
+                return RedirectToPage("/Admin/AdminDashboard", new
                 {
                     SelectedEmployeeId = EmployeeId,
                     SelectedPeriod = Period

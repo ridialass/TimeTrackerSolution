@@ -553,16 +553,16 @@
     <value>Ricordati di me</value>
   </data>
   <data name="MonProfilDescription" xml:space="preserve">
-    <value>Aggiorna il tuo profilo qui</value>
+    <value>Aggiorna il tuoi informazioni di profilo</value>
   </data>
   <data name="MesSessionsDescription" xml:space="preserve">
-    <value>Visualizza la cronologia delle tue sessioni</value>
+    <value>Visualizza la cronologia di sessioni</value>
   </data>
   <data name="MonPlanningDescription" xml:space="preserve">
     <value>Controlla il planning di lavoro</value>
   </data>
   <data name="LinkAction" xml:space="preserve">
-    <value>Ci vado ....</value>
+    <value>Vedere pagina</value>
   </data>
   <data name="ProfileTitle" xml:space="preserve">
     <value>Modificare il mio profilo</value>
@@ -571,7 +571,7 @@
     <value>Cambia la mia password</value>
   </data>
   <data name="MesSessionsTitle" xml:space="preserve">
-    <value>Cronologia delle mie sessioni di lavoro</value>
+    <value>Cronologia delle mie sessioni </value>
   </data>
   <data name="SessionsForYou" xml:space="preserve">
     <value>Il mio periodo di selezione</value>
@@ -602,5 +602,17 @@
   </data>
   <data name="DeleteButton" xml:space="preserve">
     <value>Eliminare</value>
+  </data>
+  <data name="WelcomeUser" xml:space="preserve">
+    <value>Lieto di rivederti </value>
+  </data>
+  <data name="NotAuthenticatedMessage" xml:space="preserve">
+    <value>Nessun utente registrato</value>
+  </data>
+  <data name="SignedInAs" xml:space="preserve">
+    <value>Autenticazione di: </value>
+  </data>
+  <data name="MyAccueil" xml:space="preserve">
+    <value>Area personale</value>
   </data>
 </root>

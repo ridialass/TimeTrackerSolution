@@ -1,4 +1,5 @@
 // TimeTracker.AdminUI/Pages/Admin/AdminDashboard.cshtml.cs
+#nullable enable
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -6,95 +7,43 @@ using Microsoft.Extensions.Localization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
-using TimeTracker.AdminUI.Serialization; // JsonDefaults.Options
 using TimeTracker.Core.DTOs;
-using TimeTracker.Core.Enums;
 using TimeTracker.Core.Resources;
 
 namespace TimeTracker.AdminUI.Pages.Admin;
 
 [Authorize(Roles = "Admin")]
-public class AdminDashboardModel(IHttpClientFactory http, IStringLocalizer<Errors> localizer) : PageModel
+public class AdminDashboardModel : PageModel
 {
-    public List<EmployeeDto> AllEmployees { get; set; } = [];
+    private readonly IHttpClientFactory _http;
+    private readonly IStringLocalizer<Errors> _L;
+
+    public AdminDashboardModel(IHttpClientFactory http, IStringLocalizer<Errors> localizer)
+    {
+        _http = http;
+        _L = localizer;
+    }
+
+    // État / filtres
+    public List<EmployeeDto> AllEmployees { get; private set; } = new();
+    public List<TimeEntryDto> FilteredEntries { get; private set; } = new();
+
     [BindProperty(SupportsGet = true)] public int SelectedEmployeeId { get; set; }
-    public List<TimeEntryDto> FilteredEntries { get; set; } = [];
-    [BindProperty] public EmployeeDto NewUser { get; set; } = new() { Role = UserRole.Technician };
-    [BindProperty] public string NewUserPassword { get; set; } = string.Empty;
-    [BindProperty(SupportsGet = true)] public string SelectedPeriod { get; set; } = "all";
+    [BindProperty(SupportsGet = true)] public string SelectedPeriod { get; set; } = "week"; // all | week | month | custom
     [BindProperty(SupportsGet = true)] public DateTime? CustomStartDate { get; set; }
     [BindProperty(SupportsGet = true)] public DateTime? CustomEndDate { get; set; }
     [BindProperty(SupportsGet = true)] public int WeekOffset { get; set; } = 0;
+    [BindProperty(SupportsGet = true)] public int MonthOffset { get; set; } = 0;
 
-    public DateTime CurrentWeekStart { get; set; }
-    public DateTime CurrentWeekEnd { get; set; }
-    public string? CreateError { get; set; }
-    public string? CreateSuccess { get; set; }
+    public DateTime CurrentWeekStart { get; private set; }
+    public DateTime CurrentWeekEnd { get; private set; }
+    public DateTime CurrentMonthStart { get; private set; }
+    public DateTime CurrentMonthEnd { get; private set; }
 
     public async Task<IActionResult> OnGetAsync()
     {
-        if (!User.Identity!.IsAuthenticated) return RedirectToPage("/Account/Login");
-        if (!User.IsInRole("Admin")) return RedirectToPage("/Account/AccessDenied");
-
         await LoadEmployeesAsync();
         await LoadSessionsAsync();
-        return Page();
-    }
-
-    private async Task LoadEmployeesAsync()
-    {
-        var client = CreateAuthenticatedClient();
-        var response = await client.GetAsync("api/employees");
-
-        if (!response.IsSuccessStatusCode)
-        {
-            ViewData["ApiError"] = "Connexion expir�e ou non autoris�e. Veuillez vous reconnecter.";
-            return;
-        }
-
-        AllEmployees = await response.Content.ReadFromJsonAsync<List<EmployeeDto>>(JsonDefaults.Options) ?? [];
-    }
-
-    private async Task LoadSessionsAsync()
-    {
-        if (SelectedEmployeeId == 0) { FilteredEntries = []; return; }
-
-        var client = http.CreateClient("TimeTrackerAPI");
-        var resp = await client.GetAsync($"api/timeentries?userId={SelectedEmployeeId}");
-        if (resp.StatusCode == HttpStatusCode.NotFound) { FilteredEntries = []; return; }
-        resp.EnsureSuccessStatusCode();
-
-        // Lecture JSON avec options mises en cache (pas de source-gen ici)
-        var entries = await resp.Content.ReadFromJsonAsync<List<TimeEntryDto>>(JsonDefaults.Options);
-        FilteredEntries = entries ?? [];
-    }
-
-    public async Task<IActionResult> OnPostCreateUserAsync()
-    {
-        CreateError = CreateSuccess = null;
-
-        if (string.IsNullOrWhiteSpace(NewUser.Username) || string.IsNullOrWhiteSpace(NewUserPassword))
-        {
-            CreateError = localizer["CreateUserEmptyError"];
-            await LoadEmployeesAsync();
-            return Page();
-        }
-
-        var client = CreateAuthenticatedClient();
-        using var content = JsonContent.Create(NewUser, options: JsonDefaults.Options);
-        var response = await client.PostAsync($"api/auth/register?password={Uri.EscapeDataString(NewUserPassword)}", content);
-
-        if (response.IsSuccessStatusCode)
-            CreateSuccess = localizer["CreateUserSuccess", NewUser.Username];
-        else if (response.StatusCode == HttpStatusCode.Conflict)
-            CreateError = localizer["CreateUserConflictError", NewUser.Username];
-        else
-            CreateError = localizer["CreateUserGenericError"];
-
-        NewUser = new EmployeeDto { Role = UserRole.Technician };
-        NewUserPassword = string.Empty;
-        await LoadEmployeesAsync();
         return Page();
     }
 
@@ -105,119 +54,149 @@ public class AdminDashboardModel(IHttpClientFactory http, IStringLocalizer<Error
         return Page();
     }
 
+    private async Task LoadEmployeesAsync()
+    {
+        var client = CreateAuthenticatedClient();
+        using var resp = await client.GetAsync("api/employees");
+        if (!resp.IsSuccessStatusCode) { AllEmployees = new(); return; }
+        AllEmployees = await resp.Content.ReadFromJsonAsync<List<EmployeeDto>>() ?? new();
+    }
+
+    private async Task LoadSessionsAsync()
+    {
+        // Pose les bornes semaine & mois pour l’UI AVANT filtrage
+        var today = DateTime.Today;
+        (CurrentWeekStart, CurrentWeekEnd) = GetWeekRange(today, WeekOffset);
+        (CurrentMonthStart, CurrentMonthEnd) = GetMonthRange(today, MonthOffset);
+
+        if (SelectedEmployeeId == 0) { FilteredEntries = new(); return; }
+
+        var client = CreateAuthenticatedClient();
+        using var resp = await client.GetAsync($"api/timeentries?userId={SelectedEmployeeId}");
+        if (resp.StatusCode == HttpStatusCode.NotFound) { FilteredEntries = new(); return; }
+        resp.EnsureSuccessStatusCode();
+
+        var all = await resp.Content.ReadFromJsonAsync<List<TimeEntryDto>>() ?? new();
+
+        // ✅ Normalise et applique UN SEUL filtre
+        var period = (SelectedPeriod ?? "week").Trim().ToLowerInvariant();
+
+        IEnumerable<TimeEntryDto> filtered = period switch
+        {
+            "all" => all,
+            "month" => all.Where(e => e.StartTime.Date >= CurrentMonthStart &&
+                                      e.StartTime.Date <= CurrentMonthEnd),
+            "custom" when CustomStartDate.HasValue && CustomEndDate.HasValue =>
+                       all.Where(e => e.StartTime.Date >= CustomStartDate.Value.Date &&
+                                      e.StartTime.Date <= CustomEndDate.Value.Date),
+            _ => all.Where(e => e.StartTime.Date >= CurrentWeekStart &&
+                                      e.StartTime.Date <= CurrentWeekEnd) // week par défaut
+        };
+
+        // Déduplication : conserve la ligne la plus “complète”
+        FilteredEntries = filtered
+            .GroupBy(e => new { e.StartTime, e.Username, e.StartAddress })
+            .Select(g => g.OrderByDescending(s => s.EndTime.HasValue).ThenByDescending(s => s.EndTime).First())
+            .ToList();
+    }
+
     public async Task<IActionResult> OnPostExportCsvAsync(
-        int SelectedEmployeeId,
-        string SelectedPeriod,
-        DateTime? CustomStartDate,
-        DateTime? CustomEndDate)
+        int SelectedEmployeeId, string SelectedPeriod, DateTime? CustomStartDate, DateTime? CustomEndDate)
     {
         if (SelectedEmployeeId == 0)
         {
-            ModelState.AddModelError(string.Empty, localizer["ExportNoEmployeeError"]);
+            ModelState.AddModelError("", _L["ExportNoEmployeeError"]);
             await LoadEmployeesAsync();
             return Page();
         }
 
         var client = CreateAuthenticatedClient();
-        var response = await client.GetAsync($"api/timeentries?userId={SelectedEmployeeId}");
-
-        if (!response.IsSuccessStatusCode)
+        using var resp = await client.GetAsync($"api/timeentries?userId={SelectedEmployeeId}");
+        if (!resp.IsSuccessStatusCode)
         {
-            ModelState.AddModelError(string.Empty, localizer["ExportSessionApiError"]);
+            ModelState.AddModelError("", _L["ExportSessionApiError"]);
             await LoadEmployeesAsync();
             return Page();
         }
 
-        var allEntries = await response.Content.ReadFromJsonAsync<List<TimeEntryDto>>(JsonDefaults.Options) ?? [];
+        var all = await resp.Content.ReadFromJsonAsync<List<TimeEntryDto>>() ?? new();
 
         var today = DateTime.Today;
-        IEnumerable<TimeEntryDto> filtered = allEntries;
+        var (wStart, wEnd) = GetWeekRange(today, WeekOffset);
+        var (mStart, mEnd) = GetMonthRange(today, MonthOffset);
 
-        if (SelectedPeriod == "month")
+        var period = (SelectedPeriod ?? "week").Trim().ToLowerInvariant();
+        IEnumerable<TimeEntryDto> filtered = period switch
         {
-            var monthStart = new DateTime(today.Year, today.Month, 1);
-            filtered = filtered.Where(e => e.StartTime.Date >= monthStart && e.StartTime.Date <= today);
-        }
-        else if (SelectedPeriod == "week")
-        {
-            var diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
-            var weekStart = today.AddDays(-diff);
-            var weekEnd = weekStart.AddDays(6);
-            filtered = filtered.Where(e => e.StartTime.Date >= weekStart && e.StartTime.Date <= weekEnd);
-        }
-        else if (SelectedPeriod == "custom" && CustomStartDate.HasValue && CustomEndDate.HasValue)
-        {
-            filtered = filtered.Where(e => e.StartTime.Date >= CustomStartDate.Value && e.StartTime.Date <= CustomEndDate.Value);
-        }
+            "month" => all.Where(e => e.StartTime.Date >= mStart && e.StartTime.Date <= mEnd),
+            "week" => all.Where(e => e.StartTime.Date >= wStart && e.StartTime.Date <= wEnd),
+            "custom" when CustomStartDate.HasValue && CustomEndDate.HasValue =>
+                       all.Where(e => e.StartTime.Date >= CustomStartDate.Value.Date &&
+                                      e.StartTime.Date <= CustomEndDate.Value.Date),
+            _ => all
+        };
 
-        var exportEntries = filtered
+        var export = filtered
             .GroupBy(e => new { e.StartTime, e.Username, e.StartAddress })
-            .Select(g => g
-                .OrderByDescending(s => s.EndTime.HasValue)
-                .ThenByDescending(s => s.EndTime)
-                .First())
+            .Select(g => g.OrderByDescending(s => s.EndTime.HasValue).ThenByDescending(s => s.EndTime).First())
             .ToList();
 
-        var sb = new StringBuilder();
+        var sb = new System.Text.StringBuilder();
         sb.AppendLine(string.Join(",",
-            localizer["CsvId"],
-            localizer["CsvUsername"],
-            localizer["CsvSessionType"],
-            localizer["CsvStartTime"],
-            localizer["CsvEndTime"],
-            localizer["CsvWorkDuration"],
-            localizer["CsvIncludesTravel"],
-            localizer["CsvTravelTime"],
-            localizer["CsvStartAddress"],
-            localizer["CsvEndAddress"],
-            localizer["CsvDinnerPaid"]
-        ));
+            _L["CsvId"], _L["CsvUsername"], _L["CsvSessionType"], _L["CsvStartTime"], _L["CsvEndTime"],
+            _L["CsvWorkDuration"], _L["CsvIncludesTravel"], _L["CsvTravelTime"],
+            _L["CsvStartAddress"], _L["CsvEndAddress"], _L["CsvDinnerPaid"]));
 
-        static string Escape(string field)
+        foreach (var s in export)
         {
-            if (string.IsNullOrEmpty(field)) return "";
-            var needsQuotes = field.Contains(',') || field.Contains('"'); // char overloads
-            if (!needsQuotes) return field;
-            return "\"" + field.Replace("\"", "\"\"") + "\"";
-        }
+            static string Esc(string? f) =>
+                string.IsNullOrEmpty(f) ? "" : (f.Contains(',') || f.Contains('"')) ? "\"" + f.Replace("\"", "\"\"") + "\"" : f;
 
-        foreach (var s in exportEntries)
-        {
-            var duration = s.WorkDuration != null ? $"{(int)s.WorkDuration.Value.TotalHours}h{s.WorkDuration.Value.Minutes}m" : "";
-            var travel = s.TravelTimeEstimate != null ? $"{s.TravelTimeEstimate.Value:hh\\:mm}" : "";
+            var duration = s.WorkDuration is not null ? $"{(int)s.WorkDuration.Value.TotalHours}h{s.WorkDuration.Value.Minutes}m" : "";
+            var travel = s.TravelTimeEstimate is not null ? $"{s.TravelTimeEstimate.Value:hh\\:mm}" : "";
             var endTime = s.EndTime.HasValue ? s.EndTime.Value.ToString("O") : "";
             var endAddr = string.IsNullOrWhiteSpace(s.EndAddress) ? "" : s.EndAddress;
 
-            var sessionTypeValue = localizer[$"SessionType_{s.SessionType}"];
-            var includesTravelValue = localizer[s.IncludesTravelTime ? "YesLabel" : "NoLabel"];
-            var dinnerPaidValue = localizer[$"DinnerPaidBy_{s.DinnerPaid}"];
-
             sb.AppendLine(string.Join(",",
                 s.Id,
-                Escape(s.Username),
-                Escape(sessionTypeValue),
+                Esc(s.Username),
+                Esc(_L[$"SessionType_{s.SessionType}"]),
                 s.StartTime.ToString("O"),
                 endTime,
-                Escape(duration),
-                includesTravelValue,
-                Escape(travel),
-                Escape(s.StartAddress ?? ""),
-                Escape(endAddr),
-                dinnerPaidValue
-            ));
+                Esc(duration),
+                _L[s.IncludesTravelTime ? "YesLabel" : "NoLabel"],
+                Esc(travel),
+                Esc(s.StartAddress ?? ""),
+                Esc(endAddr),
+                _L[$"DinnerPaidBy_{s.DinnerPaid}"]));
         }
 
         var username = AllEmployees.FirstOrDefault(e => e.Id == SelectedEmployeeId)?.Username ?? "Unknown";
-        var bytes = Encoding.UTF8.GetBytes(sb.ToString());
-        var fileName = $"sessions_{username}_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-        return File(bytes, "text/csv", fileName);
+        var bytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
+        return File(bytes, "text/csv", $"sessions_{username}_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
     }
 
+    // Helpers
     private HttpClient CreateAuthenticatedClient()
     {
-        var client = http.CreateClient("TimeTrackerAPI");
-        if (Request.Cookies.TryGetValue("jwt_token", out var jwt) && !string.IsNullOrEmpty(jwt))
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
-        return client;
+        var c = _http.CreateClient("TimeTrackerAPI");
+        var jwt = Request.Cookies["jwt_token"];
+        if (!string.IsNullOrWhiteSpace(jwt))
+            c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+        return c;
+    }
+
+    private static (DateTime start, DateTime end) GetWeekRange(DateTime today, int offsetWeeks)
+    {
+        var diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+        var start = today.AddDays(-diff).AddDays(7 * offsetWeeks);
+        return (start, start.AddDays(6));
+    }
+
+    private static (DateTime start, DateTime end) GetMonthRange(DateTime today, int offsetMonths)
+    {
+        var d = today.AddMonths(offsetMonths);
+        var start = new DateTime(d.Year, d.Month, 1);
+        return (start, start.AddMonths(1).AddDays(-1));
     }
 }

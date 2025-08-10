@@ -1,73 +1,74 @@
+// TimeTracker.AdminUI/Pages/Account/ResetPasswordByToken.cshtml.cs
+#nullable enable
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.Json;
+using System.Net;
+using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using TimeTracker.AdminUI.Serialization;   // JsonDefaults.Options
+using TimeTracker.Core.Resources;          // Errors.resx
 
-namespace TimeTracker.AdminUI.Pages.Account
+namespace TimeTracker.AdminUI.Pages.Account;
+
+public class ResetPasswordByTokenModel(IHttpClientFactory http, IStringLocalizer<Errors>
+    L) : PageModel
 {
-    public class ResetPasswordByTokenModel : PageModel
+    [BindProperty, Required]
+    public string Token { get; set; } = string.Empty;
+
+    [BindProperty, Required, EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [BindProperty, Required, DataType(DataType.Password), MinLength(6, ErrorMessage = "Le mot de passe doit contenir au moins 6 caractères")]
+    public string NewPassword { get; set; } = string.Empty;
+
+    [BindProperty, Required, DataType(DataType.Password), Compare(nameof(NewPassword), ErrorMessage = "Les mots de passe ne correspondent pas")]
+    public string ConfirmPassword { get; set; } = string.Empty;
+
+    public string? Message { get; set; }
+
+    // GET /Account/ResetPasswordByToken?token=...&email=...
+    public IActionResult OnGet(string? token, string? email)
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-
-        public ResetPasswordByTokenModel(IHttpClientFactory httpClientFactory)
+        if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(email))
         {
-            _httpClientFactory = httpClientFactory;
-        }
-
-        [BindProperty(SupportsGet = true)]
-        [Required]
-        public string Token { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        [Required]
-        public string Email { get; set; }
-
-        [BindProperty, Required, MinLength(6)]
-        public string NewPassword { get; set; }
-
-        [BindProperty, Required, Compare(nameof(NewPassword), ErrorMessage = "Les mots de passe ne correspondent pas")]
-        public string ConfirmPassword { get; set; }
-
-        public string Message { get; set; }
-
-        public void OnGet()
-        {
-            // Les propriétés Email et Token sont automatiquement renseignées depuis la query string
-        }
-
-        public async Task<IActionResult> OnPostAsync()
-        {
-            if (!ModelState.IsValid)
-                return Page();
-
-            var client = _httpClientFactory.CreateClient("TimeTrackerAPI");
-            var payload = new
-            {
-                email = Email?.Trim(),
-                token = Token,
-                newPassword = NewPassword
-            };
-
-            var content = new StringContent(
-                JsonSerializer.Serialize(payload),
-                Encoding.UTF8,
-                "application/json"
-            );
-
-            var resp = await client.PostAsync("api/auth/reset-password", content);
-            if (resp.IsSuccessStatusCode)
-            {
-                Message = "Votre mot de passe a été réinitialisé avec succès.";
-            }
-            else
-            {
-                // Tu peux lire le body pour un message d'erreur plus précis si besoin
-                Message = "Erreur lors de la réinitialisation, le lien a peut-être expiré.";
-            }
-
+            Message = L["ResetPassword_InvalidLink"]; // ajoute la clé dans Errors.resx
             return Page();
         }
+
+        Token = WebUtility.UrlDecode(token);
+        Email = email.Trim();
+        return Page();
+    }
+
+    public async Task<IActionResult>
+        OnPostAsync(CancellationToken ct)
+    {
+        if (!ModelState.IsValid)
+            return Page();
+
+        var client = http.CreateClient("TimeTrackerAPI");
+
+        // Adapte l’endpoint si ton backend utilise un autre chemin (ex: "api/auth/reset-password-by-token")
+        var payload = new { email = Email.Trim(), token = Token, newPassword = NewPassword };
+
+        using var resp = await client.PostAsJsonAsync("api/auth/reset-password", payload, JsonDefaults.Options, ct);
+
+        if (resp.IsSuccessStatusCode)
+        {
+            Message = L["ResetPassword_Success"]; // ex: "Votre mot de passe a été réinitialisé. Vous pouvez vous connecter."
+            ModelState.Clear();
+            Token = Email = NewPassword = ConfirmPassword = string.Empty;
+        }
+        else
+        {
+            // (Optionnel) logger le détail serveur côté dev : var err = await resp.Content.ReadAsStringAsync(ct);
+            Message = L["ResetPassword_Error"]; // ex: "Lien invalide ou expiré."
+        }
+
+        return Page();
     }
 }
