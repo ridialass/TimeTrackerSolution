@@ -40,7 +40,7 @@
 
                 <!-- Session Type -->
                 <dt class="col-sm-3">Type de session</dt>
-                <dd class="col-sm-9">@Localizer[$"SessionType_{entry.SessionType}"]</dd>
+                <dd class="col-sm-9">@SharedLocalizer[$"SessionType_{entry.SessionType}"]</dd>
 
                 <!-- Start Address -->
                 <dt class="col-sm-3">Adresse début</dt>
@@ -53,7 +53,7 @@
                 <!-- Includes Travel Time -->
                 <dt class="col-sm-3">Inclut le temps de déplacement</dt>
                 <dd class="col-sm-9">
-                    @(entry.IncludesTravelTime? Localizer["YesLabel"] : Localizer["NoLabel"])
+                    @(entry.IncludesTravelTime? SharedLocalizer["YesLabel"] : SharedLocalizer["NoLabel"])
                 </dd>
 
                 <!-- Travel Duration Hours -->
@@ -62,7 +62,7 @@
 
                 <!-- Dinner Paid By -->
                 <dt class="col-sm-3">Repas payé par</dt>
-                <dd class="col-sm-9">@Localizer[$"DinnerPaidBy_{entry.DinnerPaid}"]</dd>
+                <dd class="col-sm-9">@SharedLocalizer[$"DinnerPaidBy_{entry.DinnerPaid}"]</dd>
             </dl>
             <a asp-page="/Admin/EditTimeEntry"
                asp-route-id="@entry.Id"
@@ -72,7 +72,7 @@
                asp-route-customEndDate="@Model.CustomEndDate"
                asp-route-weekOffset="@Model.WeekOffset"
                class="btn btn-warning">Modifier</a>
-            <a asp-page="/Admin/Index"
+            <a asp-page="/Admin/AdminDashboard"
                asp-route-SelectedEmployeeId="@Model.EmployeeId"
                asp-route-SelectedPeriod="@Model.Period"
                asp-route-CustomStartDate="@Model.CustomStartDate"

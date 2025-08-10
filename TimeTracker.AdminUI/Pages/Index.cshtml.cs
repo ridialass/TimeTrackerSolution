@@ -1,41 +1,27 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text.Json;
 
-namespace TimeTracker.AdminUI.Pages;
-public class IndexModel : PageModel
+namespace TimeTracker.AdminUI.Pages
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    public IndexModel(IHttpClientFactory httpClientFactory) => _httpClientFactory = httpClientFactory;
-
-    public string FirstName { get; set; } = "";
-    public string? LastName { get; set; } = "";
-    public string? UserImg { get; set; } = null;
-    public bool IsAdmin { get; set; }
-
-
-    public async Task OnGetAsync()
+    public class Index1Model : PageModel
     {
-        var client = _httpClientFactory.CreateClient("TimeTrackerAPI");
-        var jwt = Request.Cookies["jwt_token"];
-        if (!string.IsNullOrEmpty(jwt))
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
 
-        var resp = await client.GetAsync("api/employees/me");
-        if (resp.IsSuccessStatusCode)
+
+        // Optionnel : auto-rediriger si déjà connecté (décommente si tu veux ça)
+        /*
+        public IActionResult OnGet()
         {
-            var json = await resp.Content.ReadAsStringAsync();
-            var me = JsonSerializer.Deserialize<EmployeeDto>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            FirstName = me?.FirstName ?? "";
-            LastName = me?.LastName ?? "";
-            UserImg = me?.ProfilePictureUrl;
-            IsAdmin = me?.IsAdmin ?? false;
+            if (User.Identity?.IsAuthenticated == true)
+                return User.IsInRole("Admin")
+                    ? RedirectToPage("/Admin/AdminDashboard")
+                    : RedirectToPage("/UserPage");
+            return Page();
         }
-    }
-    public class EmployeeDto
-    {
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? ProfilePictureUrl { get; set; }
-        public bool IsAdmin { get; set; }
-    }
+        */
+        public void OnGet()
+        {
+
+        }
+    }    
 }

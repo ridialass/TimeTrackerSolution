@@ -1,0 +1,52 @@
+﻿@page
+@model TimeTracker.AdminUI.Pages.UserPageModel
+@using Microsoft.Extensions.Localization
+
+
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@{
+    ViewData["Title"] = SharedLocalizer["UserHomeTitle"];
+}
+<div class="container overflow-hidden text-center">
+    <div class="row">
+        <div class="col-sm-9"><h2>@SharedLocalizer["WelcomeUser"] @Model.FirstName</h2></div>
+        <div class="align-middle col-sm-3">
+            <img src="@Model.UserImg" class="object-fit-sm-contain border rounded-pill w-25" alt="@SharedLocalizer["UserProfilPicture"]">
+        </div>
+    </div>
+
+    <div class="row gx-5 mt-3">
+        <div class="col">
+            <div class="card">
+                <img src="~/images/ProfileImage.png" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">@SharedLocalizer["MonProfil"]</h5>
+                    <p class="card-text">@SharedLocalizer["MonProfilDescription"]</p>
+                    <a asp-page="/Account/Profile">@SharedLocalizer["LinkAction"]</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <img src="~/images/SessionImage.png" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">@SharedLocalizer["MesSessions"]</h5>
+                    <p class="card-text">@SharedLocalizer["MesSessionsDescription"]</p>
+                    <a asp-page="/Account/Session">@SharedLocalizer["LinkAction"]</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <img src="~/images/PlanningImage.png" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">@SharedLocalizer["MonPlanning"]</h5>
+                    <p class="card-text">@SharedLocalizer["MonPlanningDescription"]</p>
+                    <a href="https://fastlinecappelli-my.sharepoint.com/:x:/g/personal/office_fastlinecappelli_onmicrosoft_com/EZwC1mIuM-ZOj2xAN_Q87PIBZ3N7crEoEnoTKh-fKnbpmw?rtime=nMBgEfTR3Ug" target="_blank">
+                        @SharedLocalizer["LinkAction"]
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

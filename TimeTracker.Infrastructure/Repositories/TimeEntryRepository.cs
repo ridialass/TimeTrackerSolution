@@ -30,6 +30,7 @@ namespace TimeTracker.Infrastructure.Repositories
         public async Task<IEnumerable<TimeEntry>> GetAllAsync() =>
             await _db.TimeEntries
                 .Include(te => te.User)
+                .Include(te => te.Pauses)                 // ✅
                 .Where(te => te.EndTime != null)
                 .OrderByDescending(te => te.StartTime)
                 .AsNoTracking()
@@ -39,6 +40,7 @@ namespace TimeTracker.Infrastructure.Repositories
             await _db.TimeEntries
                 .Where(te => te.UserId == employeeId && te.EndTime != null)
                 .Include(te => te.User)
+                .Include(te => te.Pauses)                 // ✅
                 .OrderByDescending(te => te.StartTime)
                 .AsNoTracking()
                 .ToListAsync();
@@ -46,14 +48,35 @@ namespace TimeTracker.Infrastructure.Repositories
         public async Task<TimeEntry?> GetByIdAsync(int id) =>
             await _db.TimeEntries
                 .Include(te => te.User)
+                .Include(te => te.Pauses)                 // ✅
                 .AsNoTracking()
                 .FirstOrDefaultAsync(te => te.Id == id);
 
-        public async Task<bool> UpdateAsync(TimeEntry entity)
+        public async Task<bool> UpdateAsync(TimeEntry detached)
         {
-            // Entity is not tracked (because of AsNoTracking), so attach and mark as Modified
-            _db.TimeEntries.Attach(entity);
-            _db.Entry(entity).State = EntityState.Modified;
+            // ⚠️ Ne pas faire Attach+Modified directement : la collection serait perdue
+            var tracked = await _db.TimeEntries
+                                   .Include(t => t.Pauses)
+                                   .FirstOrDefaultAsync(t => t.Id == detached.Id);
+            if (tracked == null) return false;
+
+            // Scalars
+            _db.Entry(tracked).CurrentValues.SetValues(detached);
+
+            // Sync collection: stratégie simple = reset
+            _db.PausePeriods.RemoveRange(tracked.Pauses);
+            tracked.Pauses.Clear();
+
+            if (detached.Pauses != null && detached.Pauses.Count > 0)
+            {
+                foreach (var p in detached.Pauses)
+                {
+                    p.Id = 0; // force insert propre
+                    p.TimeEntryId = tracked.Id;
+                }
+                await _db.PausePeriods.AddRangeAsync(detached.Pauses);
+            }
+
             await _db.SaveChangesAsync();
             return true;
         }

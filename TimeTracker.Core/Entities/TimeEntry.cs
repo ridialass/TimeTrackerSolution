@@ -49,10 +49,8 @@ namespace TimeTracker.Core.Entities
         // ✅ Durée cumulée des pauses
         public TimeSpan TotalPauseDuration =>
             TimeSpan.FromSeconds(
-                Pauses
-                    .Where(p => p.End.HasValue)
-                    .Sum(p => (p.End.Value - p.Start).TotalSeconds)
-            );
+                Pauses.Where(p => p.End.HasValue)
+                      .Sum(p => (p.End.Value - p.Start).TotalSeconds));
     }
 }
 

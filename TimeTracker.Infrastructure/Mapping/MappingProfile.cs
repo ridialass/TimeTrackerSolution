@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿// TimeTracker.Infrastructure/Mapping/MappingProfile.cs
+using System;
+using AutoMapper;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;
 
@@ -8,7 +10,7 @@ namespace TimeTracker.Infrastructure.Mapping
     {
         public MappingProfile()
         {
-            // ---- UTILISATEURS ----
+            // -------------------- UTILISATEURS --------------------
             CreateMap<ApplicationUser, EmployeeDto>()
                 .ForMember(d => d.Role, opt => opt.MapFrom(src => src.Role))
                 .ForMember(d => d.Username, opt => opt.MapFrom(src => src.UserName));
@@ -33,7 +35,7 @@ namespace TimeTracker.Infrastructure.Mapping
                 .ForMember(d => d.PasswordHash, opt => opt.Ignore())
                 .ForMember(d => d.SecurityStamp, opt => opt.Ignore());
 
-            // ---- PROFILE ----
+            // -------------------- PROFILE --------------------
             CreateMap<ApplicationUser, UserProfileDto>()
                 .ForMember(d => d.Email, opt => opt.MapFrom(src => src.Email ?? string.Empty))
                 .ForMember(d => d.FirstName, opt => opt.MapFrom(src => src.FirstName ?? string.Empty))
@@ -50,35 +52,33 @@ namespace TimeTracker.Infrastructure.Mapping
                 .ForMember(d => d.Country, opt => opt.MapFrom(src => src.Country))
                 .ForMember(d => d.ProfilePictureUrl, opt => opt.MapFrom(src => src.ProfilePictureUrl));
 
-            // ---- CHANGE PASSWORD ----
-            // (Généralement, le ChangePassword ne mappe que des champs "CurrentPassword/NewPassword", 
-            // donc pas de mapping entité <-> DTO ici, car la logique se fait dans le service, 
-            // pas dans AutoMapper. Mais tu peux ajouter si besoin)
-            // Exemple si tu as un ChangePasswordDto :
-            // CreateMap<ChangePasswordDto, ApplicationUser>().ForAllMembers(opt => opt.Ignore());
+            // -------------------- PAUSES --------------------
+            CreateMap<PausePeriodDto, PausePeriod>().ReverseMap();
 
-            // ---- PAUSES ----
-            CreateMap<PausePeriod, PausePeriod>()
-                .ForMember(d => d.Start, opt => opt.MapFrom(src => src.Start))
-                .ForMember(d => d.End, opt => opt.MapFrom(src => src.End));
-
-            // ---- TIME ENTRY ----
+            // -------------------- TIME ENTRY --------------------
+            // DTO -> Entity
             CreateMap<TimeEntryDto, TimeEntry>()
-                .ForMember(d => d.TravelDurationHours,
-                    opt => opt.MapFrom(src =>
-                        src.TravelTimeEstimate.HasValue
-                            ? src.TravelTimeEstimate.Value.TotalHours
-                            : (double?)null))
-                .ForMember(d => d.Pauses, opt => opt.MapFrom(src => src.Pauses));
+                // Si TravelTimeEstimate est fourni, on l'utilise ; sinon on conserve TravelDurationHours éventuel du DTO
+                .ForMember(d => d.TravelDurationHours, opt => opt.MapFrom(src =>
+                    src.TravelTimeEstimate.HasValue
+                        ? (double?)src.TravelTimeEstimate.Value.TotalHours
+                        : src.TravelDurationHours))
+                // Ne pas toucher aux pauses si le client n'a pas envoyé la collection (mise à jour partielle)
+                .ForMember(d => d.Pauses, opt =>
+                {
+                    opt.PreCondition(src => src.Pauses != null);
+                    opt.MapFrom(src => src.Pauses!);
+                })
+                // Évite d'écraser des champs avec null lors d'updates partielles
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
+            // Entity -> DTO
             CreateMap<TimeEntry, TimeEntryDto>()
-                .ForMember(d => d.TravelTimeEstimate,
-                    opt => opt.MapFrom(src =>
-                        src.TravelDurationHours.HasValue
-                            ? TimeSpan.FromHours(src.TravelDurationHours.Value)
-                            : (TimeSpan?)null))
-                .ForMember(d => d.Username,
-                    opt => opt.MapFrom(src => src.User != null ? src.User.UserName : string.Empty))
+                .ForMember(d => d.TravelTimeEstimate, opt => opt.MapFrom(src =>
+                    src.TravelDurationHours.HasValue
+                        ? TimeSpan.FromHours(src.TravelDurationHours.Value)
+                        : (TimeSpan?)null))
+                .ForMember(d => d.Username, opt => opt.MapFrom(src => src.User != null ? src.User.UserName : string.Empty))
                 .ForMember(d => d.Pauses, opt => opt.MapFrom(src => src.Pauses));
         }
     }

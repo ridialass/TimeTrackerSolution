@@ -1,9 +1,19 @@
-﻿using System.Threading.Tasks;
+﻿#nullable enable
+using System.Threading.Tasks;
+using Microsoft.Maui.Devices.Sensors;
 
-namespace TimeTracker.Mobile.Services;
-
-public interface IGeolocationService
+namespace TimeTracker.Mobile.Services
 {
-    Task<Location?> GetCurrentLocationAsync();
-    Task<string> GetAddressFromCoordinatesAsync(double latitude, double longitude);
+    /// <summary>
+    /// Abstraction de la géolocalisation pour l'app mobile (MAUI).
+    /// Implémentation recommandée : <see cref="GeolocationService"/>.
+    /// </summary>
+    public interface IGeolocationService
+    {
+        /// <summary>Retourne la position courante ou <c>null</c> si indisponible.</summary>
+        Task<Location?> GetCurrentLocationAsync();
+
+        /// <summary>Résout des coordonnées en adresse lisible (ou un libellé par défaut).</summary>
+        Task<string> GetAddressFromCoordinatesAsync(double latitude, double longitude);
+    }
 }

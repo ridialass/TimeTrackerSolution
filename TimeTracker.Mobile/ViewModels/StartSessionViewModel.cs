@@ -1,9 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using TimeTracker.Core.DTOs;
-using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Services;
 
@@ -12,9 +13,11 @@ public partial class StartSessionViewModel : BaseViewModel
     private readonly IAuthService _authService;
     private readonly IMobileTimeEntryService _timeEntryService;
     private readonly IGeolocationService _geoService;
+    private readonly INavigationService _nav;
+    private readonly IDialogService _dialogs;
 
-    private PausePeriod? currentPause;
-
+    // DTO côté mobile (pas d’entités)
+    private PausePeriodDto? currentPause;
 
     private bool isPaused;
     public bool IsPaused
@@ -44,30 +47,51 @@ public partial class StartSessionViewModel : BaseViewModel
     public ICommand PauseCommand { get; }
     public ICommand ResumeCommand { get; }
 
-    public StartSessionViewModel(IAuthService authService, 
-        IMobileTimeEntryService timeEntryService, 
-        IGeolocationService geoService)
+    public StartSessionViewModel(
+        IAuthService authService,
+        IMobileTimeEntryService timeEntryService,
+        IGeolocationService geoService,
+        INavigationService navigationService,
+        IDialogService dialogService)
     {
         _authService = authService;
         _timeEntryService = timeEntryService;
         _geoService = geoService;
+        _nav = navigationService;
+        _dialogs = dialogService;
 
-        StartCommand = new Command(async () => await OnStartSessionAsync());
+        // Valeur par défaut raisonnable
+        selectedSessionType = WorkSessionType.Regular;
+
+        StartCommand = new AsyncRelayCommand(OnStartSessionAsync);
         PauseCommand = new AsyncRelayCommand(OnPauseAsync);
         ResumeCommand = new AsyncRelayCommand(OnResumeAsync);
     }
 
     private async Task OnStartSessionAsync()
     {
-        var loc = await _geoService.GetCurrentLocationAsync();
+        if (_timeEntryService.InProgressSession != null)
+        {
+            await _dialogs.ShowAlertAsync("Info", "Une session est déjà en cours.", "OK");
+            await _nav.GoToEndSessionPageAsync();
+            return;
+        }
+
+        var user = _authService.CurrentUser;
+        if (user == null)
+        {
+            await _dialogs.ShowErrorAsync("Aucun utilisateur connecté.");
+            return;
+        }
+
+        // Localisation (best effort)
         string address = "Localisation indisponible";
         double lat = 0, lon = 0;
-
         try
         {
+            var loc = await _geoService.GetCurrentLocationAsync();
             if (loc != null)
             {
-                // Récupération de la localisation
                 lat = loc.Latitude;
                 lon = loc.Longitude;
                 address = await _geoService.GetAddressFromCoordinatesAsync(lat, lon);
@@ -75,74 +99,77 @@ public partial class StartSessionViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erreur lors de la récupération de la localisation : {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[StartSession] Erreur localisation: {ex.Message}");
         }
 
-        // Vérification de l'utilisateur connecté
-        var user = _authService.CurrentUser;
-        if (user == null)
-        {
-            await Shell.Current.DisplayAlert("Erreur", "Aucun utilisateur connecté.", "OK");
-            return;
-        }
-
-        // Création du DTO
         var dto = new TimeEntryDto
         {
             UserId = user.Id,
-            Username = user.UserName!,
+            Username = user.UserName ?? string.Empty,
             SessionType = selectedSessionType,
-            StartTime = DateTime.Now,
+            StartTime = DateTime.Now,           // on reste cohérent avec l’heure UI
             IncludesTravelTime = includesTravelTime,
             StartLatitude = lat,
             StartLongitude = lon,
             StartAddress = address,
             DinnerPaid = DinnerPaidBy.None,
             Location = address,
-            Pauses = new List<PausePeriod>() // toujours initialisé
+            Pauses = new System.Collections.Generic.List<PausePeriodDto>()
         };
 
         try
         {
-            // Appel des services backend
+            // 1) Créer côté API pour obtenir l’Id
             await _timeEntryService.CreateTimeEntryAsync(dto);
+
+            // 2) Démarrer côté client (mémoire + persistance locale)
             await _timeEntryService.StartSessionAsync(dto);
 
-            // Navigation vers la page suivante
-            await Shell.Current.GoToAsync(nameof(TimeTracker.Mobile.Views.EndSessionPage));
+            // 3) Naviguer vers la page de fin
+            await _nav.GoToEndSessionPageAsync();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erreur lors de la création de la session : {ex.Message}");
-            await Shell.Current.DisplayAlert("Erreur", "Impossible de démarrer la session.", "OK");
-            return;
+            System.Diagnostics.Debug.WriteLine($"[StartSession] Erreur création: {ex.Message}");
+            await _dialogs.ShowErrorAsync("Impossible de démarrer la session.");
         }
-        
     }
 
     private async Task OnPauseAsync()
     {
         if (IsPaused || currentPause != null) return;
 
-        currentPause = new PausePeriod { Start = DateTime.UtcNow };
+        currentPause = new PausePeriodDto { Start = DateTime.Now };
         IsPaused = true;
 
-        await Shell.Current.DisplayAlert("Pause", "Pause démarrée", "OK");
+        await _dialogs.ShowSuccessAsync("Pause démarrée", "Pause");
     }
 
     private async Task OnResumeAsync()
     {
         if (!IsPaused || currentPause == null) return;
 
-        currentPause.End = DateTime.UtcNow;
+        currentPause.End = DateTime.Now;
 
-        if (_timeEntryService.InProgressSession?.Pauses == null)
-            _timeEntryService.InProgressSession.Pauses = new List<PausePeriod>();
+        var inProgress = _timeEntryService.InProgressSession;
+        if (inProgress == null)
+        {
+            // Sécurité : pas de session en cours → on reset l’état pause et on informe
+            IsPaused = false;
+            currentPause = null;
+            await _dialogs.ShowAlertAsync("Info", "Aucune session en cours détectée.", "OK");
+            return;
+        }
 
-        _timeEntryService.InProgressSession?.Pauses.Add(currentPause);
+        inProgress.Pauses ??= new System.Collections.Generic.List<PausePeriodDto>();
+        inProgress.Pauses.Add(currentPause);
+
+        // Re-persister localement la session mise à jour (aucun appel réseau)
+        await _timeEntryService.StartSessionAsync(inProgress);
+
         currentPause = null;
         IsPaused = false;
 
-        await Shell.Current.DisplayAlert("Reprise", "Pause terminée", "OK");
+        await _dialogs.ShowSuccessAsync("Pause terminée", "Reprise");
     }
 }

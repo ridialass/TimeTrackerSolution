@@ -3,101 +3,108 @@
 // Toujours transmettre les identifiants via HTTPS et uniquement via POST (jamais URL).
 // Seul le token JWT peut être stocké localement, pas le mot de passe.
 
-using CommunityToolkit.Mvvm.ComponentModel;
-using TimeTracker.Mobile.Resources.Strings; // Ajuste selon ton namespace
-using CommunityToolkit.Mvvm.Input;
+#nullable enable
+using System;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using TimeTracker.Mobile.Resources.Strings; // Ajuste selon ton namespace
 using TimeTracker.Mobile.Services;
 
-namespace TimeTracker.Mobile.ViewModels;
-
-public partial class LoginViewModel : BaseViewModel
+namespace TimeTracker.Mobile.ViewModels
 {
-    private readonly ISessionStateService _sessionService;
-    private readonly INavigationService _navigationService;
-
-    private string username = string.Empty;
-    public string Username
+    public partial class LoginViewModel : BaseViewModel
     {
-        get => username;
-        set
+        private readonly ISessionStateService _sessionService;
+        private readonly INavigationService _navigationService;
+
+        private string username = string.Empty;
+        public string Username
         {
-            if (SetProperty(ref username, value))
+            get => username;
+            set
             {
-                OnPropertyChanged(nameof(CanLogin));
-                // Masque le message d'erreur si l'utilisateur modifie un champ
-                if (!string.IsNullOrEmpty(ErrorMessage))
-                    ErrorMessage = string.Empty;
+                if (SetProperty(ref username, value))
+                {
+                    OnPropertyChanged(nameof(CanLogin));
+                    if (!string.IsNullOrEmpty(ErrorMessage)) ErrorMessage = string.Empty;
+                    LoginCommand.NotifyCanExecuteChanged();
+                }
             }
         }
-    }
 
-    private string password = string.Empty;
-    public string Password
-    {
-        get => password;
-        set
+        private string password = string.Empty;
+        public string Password
         {
-            if (SetProperty(ref password, value))
+            get => password;
+            set
             {
-                OnPropertyChanged(nameof(CanLogin));
-                // Masque le message d'erreur si l'utilisateur modifie un champ
-                if (!string.IsNullOrEmpty(ErrorMessage))
-                    ErrorMessage = string.Empty;
+                if (SetProperty(ref password, value))
+                {
+                    OnPropertyChanged(nameof(CanLogin));
+                    if (!string.IsNullOrEmpty(ErrorMessage)) ErrorMessage = string.Empty;
+                    LoginCommand.NotifyCanExecuteChanged();
+                }
             }
         }
-    }
 
-    public new bool IsBusy
-    {
-        get => base.IsBusy;
-        set
+        public bool CanLogin =>
+            !string.IsNullOrWhiteSpace(Username) &&
+            !string.IsNullOrWhiteSpace(Password) &&
+            !IsBusy;
+
+        public LoginViewModel(ISessionStateService sessionService, INavigationService navigationService)
         {
-            if (base.IsBusy != value)
+            _sessionService = sessionService;
+            _navigationService = navigationService;
+        }
+
+        [RelayCommand(CanExecute = nameof(CanLogin))]
+        public async Task LoginAsync()
+        {
+            // Prépare l’UI
+            ErrorMessage = string.Empty;
+            IsBusy = true;
+            LoginCommand.NotifyCanExecuteChanged();
+
+            try
             {
-                base.IsBusy = value;
-                OnPropertyChanged(nameof(CanLogin));
+                var user = (Username ?? string.Empty).Trim();
+                var pass = Password ?? string.Empty;
+
+                var success = await _sessionService.LoginAsync(user, pass);
+
+                // Toujours nettoyer le champ mot de passe après tentative
+                Password = string.Empty;
+
+                if (!success)
+                {
+                    ErrorMessage = AppResources.Login_Error_Invalid;
+                    return;
+                }
+
+                // Navigation selon le rôle (Admin -> Dashboard, sinon Home)
+                var role = _sessionService.CurrentUserRole;
+                if (!string.IsNullOrWhiteSpace(role) &&
+                    role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    await _navigationService.GoToAdminDashboardPageAsync();
+                }
+                else
+                {
+                    await _navigationService.GoToHomePageAsync();
+                }
             }
-        }
-    }
-
-    public bool CanLogin =>
-        !string.IsNullOrWhiteSpace(Username)
-        && !string.IsNullOrWhiteSpace(Password)
-        && !IsBusy;
-
-    public LoginViewModel(ISessionStateService sessionService, INavigationService navigationService)
-    {
-        _sessionService = sessionService;
-        _navigationService = navigationService;
-    }
-
-    [RelayCommand(CanExecute = nameof(CanLogin))]
-    public async Task LoginAsync()
-    {
-        IsBusy = true;
-        ErrorMessage = string.Empty; // Masquer le message d'erreur pendant la connexion
-
-        try
-        {
-            var success = await _sessionService.LoginAsync(username, password);
-            Password = string.Empty;
-
-            if (!success)
+            catch
             {
-                ErrorMessage = AppResources.Login_Error_Invalid;
-                return;
+                ErrorMessage = AppResources.Login_Error_Exception;
+                Password = string.Empty;
             }
-
-        }
-        catch
-        {
-            ErrorMessage = AppResources.Login_Error_Exception;
-            Password = string.Empty;
-        }
-        finally
-        {
-            IsBusy = false;
+            finally
+            {
+                IsBusy = false;
+                LoginCommand.NotifyCanExecuteChanged();
+            }
         }
     }
 }

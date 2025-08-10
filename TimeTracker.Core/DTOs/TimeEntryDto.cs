@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.Json.Serialization;
-using TimeTracker.Core.Entities;
 using TimeTracker.Core.Enums;
 
 namespace TimeTracker.Core.DTOs
@@ -36,7 +35,7 @@ namespace TimeTracker.Core.DTOs
         public string? Location { get; set; }
 
         // Historique des pauses multiples
-        public List<PausePeriod> Pauses { get; set; } = new();
+        public List<PausePeriodDto> Pauses { get; set; } = new();
 
         [Required(ErrorMessage = "UserId est obligatoire.")]
         [Range(1, int.MaxValue, ErrorMessage = "UserId doit être supérieur à 0.")]
@@ -50,14 +49,12 @@ namespace TimeTracker.Core.DTOs
         /// <summary>
         /// Durée de travail brut : EndTime – StartTime
         /// </summary>
-        [JsonIgnore]
         public TimeSpan? WorkDuration =>
             EndTime.HasValue ? EndTime.Value - StartTime : null;
 
         /// <summary>
         /// Durée cumulée de toutes les pauses
         /// </summary>
-        [JsonIgnore]
         public TimeSpan TotalPauseDuration =>
             TimeSpan.FromSeconds(
                 Pauses
@@ -66,12 +63,23 @@ namespace TimeTracker.Core.DTOs
             );
 
         /// <summary>
+        /// Durée de travail nette (sans les pauses)
+        /// </summary>
+        public TimeSpan? WorkDurationNet { get; set; }
+
+        public string? WorkDurationNetFormatted =>
+            WorkDurationNet.HasValue ? $"{(int)WorkDurationNet.Value.TotalHours}h{WorkDurationNet.Value.Minutes}m" : null;
+
+        /// <summary>
         /// Estimation de temps de déplacement
         /// </summary>
         [JsonIgnore]
         public TimeSpan? TravelTimeEstimate =>
-            IncludesTravelTime && TravelDurationHours.HasValue
-                ? TimeSpan.FromHours(TravelDurationHours.Value)
-                : null;
+                    IncludesTravelTime && TravelDurationHours.HasValue
+                        ? TimeSpan.FromHours(TravelDurationHours.Value)
+                        : null;
     }
 }
+
+
+

@@ -4,7 +4,7 @@
 @inject IStringLocalizer<TimeTracker.Core.Resources.Errors> Localizer
 
 @{
-    ViewData["Title"] = Localizer["ProfileTitle"];
+    ViewData["Title"] = SharedLocalizer["ProfileTitle"];
     // Affichage : image par défaut SI PAS d'image utilisateur
     var photoUrl = !string.IsNullOrEmpty(Model.ProfilePictureUrl)
         ? Model.ProfilePictureUrl
@@ -18,58 +18,79 @@
     <div class="alert alert-success">@Model.ProfileMessage</div>
 }
 
-<div class="container text-center">
-    
+<div class="container text-center d-grid gap-3">
     <div class="row">
         <div class="col-8">
             <form method="post" enctype="multipart/form-data" asp-page-handler="UpdateProfile">
-                <div class="mb-3">
-                    <div class="row">
-                        <div class="col-9">
-                            @* <label class="form-label">@Localizer["ProfilePictureLabel"]</label><br /> *@
-                            <img src="@photoUrl" alt="Avatar" style="width:100px;border-radius:50%;margin-bottom:10px;" />
-                            <input asp-for="ProfilePicture" type="file" accept="image/*" class="form-control" />
-                            <input type="hidden" asp-for="ProfilePictureUrl" />
-                            <span asp-validation-for="ProfilePicture" class="text-danger"></span>
-                        </div>                 
-                        <div class="col-3">
-                            <a asp-page="/Account/ChangePassword" class="btn btn-primary" style="margin-bottom:20px;">
-                                @Localizer["ChangePasswordButton"]
-                            </a>
-                        </div>
-                    </div>
+                <div class="mb-4">
+                    @* <label class="form-label">@SharedLocalizer["ProfilePictureLabel"]</label><br /> *@
+                    <img src="@photoUrl" alt="Avatar" style="width:100px;border-radius:50%;margin-bottom:10px;" />
+                    <input asp-for="ProfilePicture" type="file" accept="image/*" class="form-control" />
+                    <input type="hidden" asp-for="ProfilePictureUrl" />
+                    <span asp-validation-for="ProfilePicture" class="text-danger"></span>
                 </div>
-                <div class="mb-3">
-                    <label asp-for="EditableEmail" class="form-label">@Localizer["EmailLabel"]</label>
+                <div class="mb-2">
+                    <label asp-for="EditableEmail" class="form-label">@SharedLocalizer["EmailLabel"]</label>
                     <input asp-for="EditableEmail" class="form-control" />
                     <span asp-validation-for="EditableEmail" class="text-danger"></span>
                 </div>
-                <div class="mb-3">
-                    <label asp-for="FirstName" class="form-label">@Localizer["FirstNameLabel"]</label>
+                <div class="mb-2">
+                    <label asp-for="FirstName" class="form-label">@SharedLocalizer["FirstNameLabel"]</label>
                     <input asp-for="FirstName" class="form-control" />
                     <span asp-validation-for="FirstName" class="text-danger"></span>
                 </div>
-                <div class="mb-3">
-                    <label asp-for="LastName" class="form-label">@Localizer["LastNameLabel"]</label>
+                <div class="mb-2">
+                    <label asp-for="LastName" class="form-label">@SharedLocalizer["LastNameLabel"]</label>
                     <input asp-for="LastName" class="form-control" />
                     <span asp-validation-for="LastName" class="text-danger"></span>
                 </div>
-                <div class="mb-3">
-                    <label asp-for="Town" class="form-label">@Localizer["TownLabel"]</label>
+                <div class="mb-2">
+                    <label asp-for="Town" class="form-label">@SharedLocalizer["TownLabel"]</label>
                     <input asp-for="Town" class="form-control" />
                     <span asp-validation-for="Town" class="text-danger"></span>
                 </div>
-                <div class="mb-3">
-                    <label asp-for="Country" class="form-label">@Localizer["CountryLabel"]</label>
+                <div class="mb-2">
+                    <label asp-for="Country" class="form-label">@SharedLocalizer["CountryLabel"]</label>
                     <input asp-for="Country" class="form-control" />
                     <span asp-validation-for="Country" class="text-danger"></span>
                 </div>
-                <button type="submit" class="btn btn-success">@Localizer["SaveProfileButton"]</button>
-
+                <button type="submit" class="btn btn-success">@SharedLocalizer["SaveProfileButton"]</button>
             </form>
         </div>
-        <div class="col-4">
-            
+        <div class="col-1"></div>
+        <div class="col-3">
+            <div class="card">
+                <img src="@photoUrl" class="object-fit-sm-contain border rounded " alt="@SharedLocalizer["UserProfilPicture"]">
+                <div class="card-body">
+                    <div class="form-floating ">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <input asp-for="FirstName" readonly class="form-control-plaintext"> 
+                            </li>
+                            <li class="list-group-item">
+                                <input asp-for="LastName" readonly class="form-control-plaintext">
+                            </li>
+                            <li class="list-group-item">
+                                 <input asp-for="EditableEmail" readonly class="form-control-plaintext">
+                            </li>
+                            <li class="list-group-item">
+                                <input asp-for="Town" readonly class="form-control-plaintext">
+                            </li>
+                            <li class="list-group-item">
+                                <input asp-for="Country" readonly class="form-control-plaintext">
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer text-body-secondary">
+                    <a asp-page="/Account/ChangePassword" class="btn btn-primary" style="margin-bottom:20px;">
+                        @SharedLocalizer["ChangePasswordButton"]
+                    </a>
+                </div>
+            </div>   
         </div>
     </div>
 </div>
+
+
+

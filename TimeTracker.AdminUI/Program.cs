@@ -1,130 +1,131 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using TimeTracker.Core.Entities;
 
-namespace TimeTracker.AdminUI
+var builder = WebApplication.CreateBuilder(args);
+
+// ---------- DB / Identity ----------
+builder.Services.AddDbContext<ApplicationDbContext>(opt =>
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(opt =>
 {
-    public class Program
+    opt.Password.RequireDigit = true;
+    opt.Password.RequireLowercase = true;
+    opt.Password.RequireUppercase = true;
+    opt.Password.RequireNonAlphanumeric = false;
+    opt.Password.RequiredLength = 6;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+// ❌ Supprime AddAuthentication().AddCookie(...)
+// ✅ Configure le cookie Identity (schéma: Identity.Application)
+builder.Services.ConfigureApplicationCookie(opt =>
+{
+    opt.LoginPath = "/Account/Login";
+    opt.LogoutPath = "/Account/Logout";
+    opt.AccessDeniedPath = "/Account/AccessDenied";
+    opt.ExpireTimeSpan = TimeSpan.FromHours(48);
+    opt.SlidingExpiration = true;
+    opt.Cookie.HttpOnly = true;
+    opt.Cookie.SameSite = SameSiteMode.Strict;
+    opt.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    // Optionnel :
+    // opt.Cookie.Name = ".TimeTracker.Identity";
+});
+
+builder.Services.AddAuthorization(o =>
+    o.AddPolicy("RequireAdminRole", p => p.RequireRole("Admin")));
+
+// ---------- Localisation (SharedResource unique) ----------
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+builder.Services.AddRazorPages()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization()
+    .AddRazorPagesOptions(options =>
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+        options.Conventions.AddPageRoute("/Home", "");                  // "/" -> Home
+        options.Conventions.AddPageRoute("/Admin/AdminDashboard", "admin");
+        options.Conventions.AddPageRoute("/UserPage", "user");
+    });
 
-            // 1) DbContext pour Identity (partagez la même base que l’API si besoin)
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+// Cultures supportées
+var supportedCultures = new[] { "fr", "en", "it" }.Select(c => new CultureInfo(c)).ToArray();
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("fr");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    options.RequestCultureProviders = new List<IRequestCultureProvider>
+    {
+        new CookieRequestCultureProvider(),
+        new AcceptLanguageHeaderRequestCultureProvider()
+    };
+});
 
-            // 2) Identity avec règles identiques à l’API
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
-            {
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 6;
-            })
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+// ---------- JSON global ----------
+builder.Services.ConfigureHttpJsonOptions(opt =>
+{
+    opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    opt.SerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+});
 
-            // 3) Authentification par cookie (pas de JWT côté UI)
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            })
-            .AddCookie(options =>
-            {
-                options.LoginPath = "/Account/Login";
-                options.LogoutPath = "/Account/Logout";
-                options.ExpireTimeSpan = TimeSpan.FromHours(48);
-                options.SlidingExpiration = true;
-                options.AccessDeniedPath = "/Account/AccessDenied";
-            });
+// ---------- HttpClient (Bearer depuis cookie jwt_token) ----------
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<JwtCookieAuthHandler>();
 
-            // 4) Autorisation par rôles (exemple policy admin)
-            builder.Services.AddAuthorization(options =>
-            {
-                options.AddPolicy("RequireAdminRole", policy =>
-                    policy.RequireRole("Admin"));
-            });
+var apiBase = builder.Configuration["ApiSettings:BaseUrl"]
+    ?? throw new InvalidOperationException("ApiSettings:BaseUrl manquant dans appsettings.json.");
 
-            builder.Services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(30);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
-            });
+builder.Services.AddHttpClient("TimeTrackerAPI", c =>
+{
+    c.BaseAddress = new Uri(apiBase);
+    c.DefaultRequestHeaders.Accept.Clear();
+    c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+})
+.AddHttpMessageHandler<JwtCookieAuthHandler>()
+.ConfigurePrimaryHttpMessageHandler(() =>
+    new HttpClientHandler
+    {
+        // DEV seulement — retire en PROD
+        ServerCertificateCustomValidationCallback =
+            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    });
 
-            // 5) Razor Pages + localisation
-            builder.Services.AddRazorPages()
-                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-                .AddDataAnnotationsLocalization();
+var app = builder.Build();
 
-            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+// ---------- Pipeline ----------
+app.UseRequestLocalization();
 
-            // 6) HttpClient pour appeler l’API distante sécurisée par JWT
-            var baseUrl = builder.Configuration["ApiSettings:BaseUrl"];
-            if (string.IsNullOrWhiteSpace(baseUrl))
-                throw new InvalidOperationException("La clé 'ApiSettings:BaseUrl' est manquante ou vide dans appsettings.json.");
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
+}
 
-            builder.Services.AddHttpClient("TimeTrackerAPI", client =>
-            {
-                client.BaseAddress = new Uri(baseUrl);
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            })
-            .ConfigurePrimaryHttpMessageHandler(() =>
-                new HttpClientHandler
-                {
-                    // Pour dev uniquement : accepte les certificats autosignés
-                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                });
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
 
-            var app = builder.Build();
+app.UseAuthentication();
+app.UseAuthorization();
 
-            // 7) Localisation
-            var supportedCultures = new[] { "it", "fr", "en" };
-            app.UseRequestLocalization(new RequestLocalizationOptions
-            {
-                DefaultRequestCulture = new RequestCulture("it"),
-                SupportedCultures = supportedCultures.Select(c => new CultureInfo(c)).ToList(),
-                SupportedUICultures = supportedCultures.Select(c => new CultureInfo(c)).ToList(),
-                RequestCultureProviders = new List<IRequestCultureProvider>
-                {
-                    new CookieRequestCultureProvider(),
-                    new AcceptLanguageHeaderRequestCultureProvider()
-                }
-            });
+app.MapRazorPages();
+app.Run();
 
-            // 8) Pipeline HTTP
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                app.UseHsts();
-            }
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseSession();
-
-            app.MapRazorPages();
-
-            app.Run();
-        }
+public sealed class JwtCookieAuthHandler(IHttpContextAccessor http) : DelegatingHandler
+{
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+    {
+        var jwt = http.HttpContext?.Request?.Cookies["jwt_token"];
+        if (!string.IsNullOrWhiteSpace(jwt))
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+        return base.SendAsync(request, ct);
     }
 }

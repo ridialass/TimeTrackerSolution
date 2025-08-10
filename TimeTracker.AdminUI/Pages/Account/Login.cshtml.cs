@@ -1,118 +1,96 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity; // <-- nécessaire pour IdentityConstants.ApplicationScheme
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
+using System.Net.Http.Json;
 using System.Security.Claims;
-using System.Text;
-using System.Text.Json;
+using TimeTracker.AdminUI.Serialization; // si tu utilises JsonDefaults.Options
 using TimeTracker.Core.DTOs;
+using TimeTracker.Core.Resources;
 
-namespace TimeTracker.AdminUI.Pages.Account
+namespace TimeTracker.AdminUI.Pages.Account;
+
+public class LoginModel(IHttpClientFactory http, IStringLocalizer<SharedResource> S) : PageModel
 {
-    public class LoginModel : PageModel
+    [BindProperty] public string Username { get; set; } = "";
+    [BindProperty] public string Password { get; set; } = "";
+    public string? ErrorMessage { get; set; }
+
+    public void OnGet()
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        if (User.Identity?.IsAuthenticated == true)
+            Response.Redirect("/");
+    }
 
-        [BindProperty]
-        public string Username { get; set; } = "";
-
-        [BindProperty]
-        public string Password { get; set; } = "";
-
-        public string? ErrorMessage { get; set; }
-
-        public LoginModel(IHttpClientFactory httpClientFactory)
+    public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
+    {
+        if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
         {
-            _httpClientFactory = httpClientFactory;
+            ErrorMessage = S["LoginEmptyError"];
+            return Page();
         }
 
-        public void OnGet()
+        var client = http.CreateClient("TimeTrackerAPI");
+
+        var payload = new LoginRequestDto { Username = Username.Trim(), Password = Password };
+
+        using var content = JsonContent.Create(payload /*, options: JsonDefaults.Options */);
+        var resp = await client.PostAsync("api/auth/login", content);
+
+        if (!resp.IsSuccessStatusCode)
         {
-            if (User.Identity?.IsAuthenticated == true)
-                Response.Redirect("/");
+            ErrorMessage = S["LoginInvalidError"];
+            return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
+        var login = await resp.Content.ReadFromJsonAsync<LoginResponseDto>(/* JsonDefaults.Options */);
+        if (login is null || string.IsNullOrWhiteSpace(login.Token) || string.IsNullOrWhiteSpace(login.Username))
         {
-            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
-            {
-                ErrorMessage = "Veuillez saisir votre nom d’utilisateur et votre mot de passe.";
-                return Page();
-            }
+            ErrorMessage = S["LoginServerError"];
+            return Page();
+        }
 
-            var client = _httpClientFactory.CreateClient("TimeTrackerAPI");
-            var loginDto = new LoginRequestDto
-            {
-                Username = Username.Trim(),
-                Password = Password
-            };
-            var json = JsonSerializer.Serialize(loginDto);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Name, login.Username!),
+            new(ClaimTypes.Role, login.Role.ToString()),
+            new(ClaimTypes.NameIdentifier, login.ApplicationUserId.ToString())
+        };
 
-            var response = await client.PostAsync("api/auth/login", content);
-            if (!response.IsSuccessStatusCode)
-            {
-                ErrorMessage = "Identifiants invalides.";
-                return Page();
-            }
+        // 🔑 Signe avec le schéma Identity (cookie .AspNetCore.Identity.Application)
+        var identity = new ClaimsIdentity(
+            claims,
+            IdentityConstants.ApplicationScheme,
+            ClaimTypes.Name,
+            ClaimTypes.Role
+        );
 
-            var responseString = await response.Content.ReadAsStringAsync();
-            var loginResponse = JsonSerializer.Deserialize<LoginResponseDto>(
-                responseString,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-            );
-
-            if (loginResponse == null
-                || string.IsNullOrWhiteSpace(loginResponse.Token)
-                || string.IsNullOrWhiteSpace(loginResponse.Username)
-            )
-            {
-                ErrorMessage = "Réponse invalide du serveur.";
-                return Page();
-            }
-
-            // Add UserId claim
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, loginResponse.Username!),
-                new Claim(ClaimTypes.Role, loginResponse.Role.ToString()!),
-                new Claim(ClaimTypes.NameIdentifier, loginResponse.ApplicationUserId.ToString())
-            };
-
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
-            var props = new AuthenticationProperties
+        await HttpContext.SignInAsync(
+            IdentityConstants.ApplicationScheme,
+            new ClaimsPrincipal(identity),
+            new AuthenticationProperties
             {
                 ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1),
                 IsPersistent = true,
                 AllowRefresh = true,
                 RedirectUri = returnUrl
-            };
-
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                principal,
-                props
-            );
-
-            Response.Cookies.Append("jwt_token", loginResponse.Token, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddHours(1)
             });
 
-            // Détermine la page d'accueil selon le rôle
-            string homePage = (loginResponse.Role.ToString() == "Admin")
-                ? Url.Content("~/Admin/Index")
-                : Url.Content("~/Index"); // ou "~/Sessions/Index" si tu préfères
+        // JWT pour le HttpClient handler (API)
+        Response.Cookies.Append("jwt_token", login.Token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddHours(1)
+        });
 
-            // Si returnUrl est null ou vide, utilise la page d'accueil adaptée
-            if (string.IsNullOrWhiteSpace(returnUrl))
-                returnUrl = homePage;
-
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
             return LocalRedirect(returnUrl);
-        }
+
+        return login.Role.ToString() == "Admin"
+            ? RedirectToPage("/Admin/AdminDashboard")
+            : RedirectToPage("/UserPage");
     }
 }

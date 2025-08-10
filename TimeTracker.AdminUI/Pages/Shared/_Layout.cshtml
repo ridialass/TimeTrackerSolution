@@ -3,12 +3,12 @@
 
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TimeTracker DashBoard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <title>@ViewData["Title"] - TimeTracker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Login.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TimeTracker.AdminUI.styles.css" asp-append-version="true" />
@@ -16,7 +16,7 @@
 <body>
     <header>
         @{
-            var pagesSansMenu = new[] { "/Account/Login", "/Account/Logout", "/Account/ForgotPassword", "/Account/ResetPasswordByToken" };
+            var pagesSansMenu = new[] { "/Account/Login", "/Account/Logout", "/Account/ForgotPassword", "/Account/ResetPasswordByToken", "/" };
             var pageActuelle = Context.Request.Path.Value;
             var cacherMenu = pagesSansMenu.Any(p => pageActuelle.StartsWith(p, StringComparison.OrdinalIgnoreCase));
         }
@@ -26,7 +26,7 @@
                 {
                     @if (User.IsInRole("Admin"))
                     {
-                        <a class="navbar-brand" asp-area="" asp-page="/Index">@Localizer["AdminDashboard"]</a>
+                        <a class="navbar-brand" asp-area="" asp-page="/AdminDashboard">@SharedLocalizer["AdminDashboard"]</a>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                                 aria-expanded="false" aria-label="Toggle navigation">
                             <span class="navbar-toggler-icon"></span>
@@ -34,10 +34,10 @@
                         <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                             <ul class="navbar-nav flex-grow-1">
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Admin/Index">@Localizer["Home"]</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Admin/AdminDashboard">@SharedLocalizer["Home"]</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">@Localizer["Privacy"]</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">@SharedLocalizer["Privacy"]</a>
                                 </li>
                             </ul>
                             <partial name="_LoginPartial" />
@@ -45,7 +45,7 @@
                     }
                     else
                     {
-                        <a class="navbar-brand" asp-area="" asp-page="/Index">@Localizer["Accueil"]</a>
+                        <a class="navbar-brand" asp-area="" asp-page="/UserPage">@SharedLocalizer["MyAccueil"]</a>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                                 aria-expanded="false" aria-label="Toggle navigation">
                             <span class="navbar-toggler-icon"></span>
@@ -53,10 +53,15 @@
                         <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                             <ul class="navbar-nav flex-grow-1">
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Account/Session">@Localizer["MesSessions"]</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Account/Profile">@SharedLocalizer["MonProfil"]</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Account/Profile">@Localizer["MonProfil"]</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Account/Session">@SharedLocalizer["MesSessions"]</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" href="https://fastlinecappelli-my.sharepoint.com/:x:/g/personal/office_fastlinecappelli_onmicrosoft_com/EZwC1mIuM-ZOj2xAN_Q87PIBZ3N7crEoEnoTKh-fKnbpmw?rtime=nMBgEfTR3Ug"
+                                       target="_blank">@SharedLocalizer["MonPlanning"]
+                                    </a>
                                 </li>
                             </ul>
                             <partial name="_LoginPartial" />
@@ -70,9 +75,9 @@
                         @CultureInfo.CurrentUICulture.DisplayName
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="languageDropdown">
-                        <li><a class="dropdown-item" href="/Lang?culture=it">@Localizer["ItCultureDropList"]</a></li>
-                        <li><a class="dropdown-item" href="/Lang?culture=fr">@Localizer["FrCultureDropList"]</a></li>
-                        <li><a class="dropdown-item" href="/Lang?culture=en">@Localizer["EnCultureDropList"]</a></li>
+                        <li><a class="dropdown-item" href="/Lang?culture=it">@SharedLocalizer["ItCultureDropList"]</a></li>
+                        <li><a class="dropdown-item" href="/Lang?culture=fr">@SharedLocalizer["FrCultureDropList"]</a></li>
+                        <li><a class="dropdown-item" href="/Lang?culture=en">@SharedLocalizer["EnCultureDropList"]</a></li>
                     </ul>
                 </li>
             </ul>
@@ -86,7 +91,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - TimeTracker.AdminUI - <a asp-area="" asp-page="/Privacy">@Localizer["Privacy"]</a>
+            &copy; 2025 - TimeTracker.AdminUI - <a asp-area="" asp-page="/Privacy">@SharedLocalizer["Privacy"]</a>
         </div>
     </footer>
 

@@ -1,122 +1,79 @@
-﻿using System.Text.Json;
+﻿// TimeTracker.Mobile/Services/SessionStateService.cs
+#nullable enable
+using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
-using TimeTracker.Core.Enums;
 
 namespace TimeTracker.Mobile.Services
 {
-    public class SessionStateService : ISessionStateService
+    /// <summary>
+    /// Orchestrateur d'état de session côté mobile.
+    /// - Délègue l'auth à <see cref="IAuthService"/>.
+    /// - Délègue la gestion du pointage en cours à <see cref="IMobileTimeEntryService"/>.
+    /// - Nettoie le stockage local si besoin via <see cref="ILocalStorageService"/>.
+    /// </summary>
+    public sealed class SessionStateService : ISessionStateService
     {
-        private readonly IAuthService _authService;
-        private readonly INavigationService _navigation;
-        private readonly ISecureStorageService _secureStorage;
-        private const string InProgressSessionKey = "InProgressSession";
+        private const string InProgressKey = "InProgressSession"; // doit rester aligné avec MobileTimeEntryService
+
+        private readonly IAuthService _auth;
+        private readonly IMobileTimeEntryService _time;
+        private readonly ILocalStorageService _storage;
 
         public SessionStateService(
             IAuthService authService,
-            INavigationService navigation,
-            ISecureStorageService secureStorage)
+            IMobileTimeEntryService timeEntryService,
+            ILocalStorageService storage)
         {
-            _authService = authService;
-            _navigation = navigation;
-            _secureStorage = secureStorage;
+            _auth = authService;
+            _time = timeEntryService;
+            _storage = storage;
         }
 
-        public string? CurrentUserRole => _authService.CurrentUser?.Role;
-        public object? CurrentUser => _authService.CurrentUser;
+        public string? CurrentUserRole => _auth.CurrentUser?.Role;
+        public object? CurrentUser => _auth.CurrentUser;
 
         public async Task<bool> TryRestoreSessionAsync()
         {
-            // 1. Si pas de session, on reste sur LoginPage (ne navigue pas si déjà sur LoginPage)
-            if (!await _authService.TryRestoreSessionAsync())
-            {
-                await _navigation.GoToLoginPageAsync();
-                if (Shell.Current is AppShell appShell)
-                    appShell.FlyoutBehavior = FlyoutBehavior.Disabled;
-                return false;
-            }
+            // 1) Restaurer l'auth (JWT en SecureStorage)
+            var authOk = await _auth.TryRestoreSessionAsync();
 
-            // 2. Si session restaurée, on modifie le menu puis navigue selon le rôle
-            if (Shell.Current is AppShell shell)
-            {
-                shell.FlyoutBehavior = FlyoutBehavior.Flyout;
-                shell.ConfigureFlyoutForRole(CurrentUserRole ?? string.Empty);
-            }
+            // 2) Restaurer la session de pointage en cours (depuis le stockage local non sensible)
+            await _time.LoadInProgressSessionAsync();
 
-            if (CurrentUserRole == UserRole.Admin.ToString())
-                await _navigation.GoToAdminDashboardPageAsync();
-            else
-                await _navigation.GoToHomePageAsync();
-
-            return true;
+            return authOk;
         }
 
         public async Task<bool> LoginAsync(string username, string password)
         {
-            var result = await _authService.LoginAsync(username, password);
-            if (!result.IsSuccess)
-                return false;
+            var res = await _auth.LoginAsync(username, password);
+            if (!res.IsSuccess) return false;
 
-            if (Shell.Current is AppShell shell)
-            {
-                shell.ConfigureFlyoutForRole(CurrentUserRole ?? string.Empty);
-                shell.FlyoutBehavior = FlyoutBehavior.Flyout;
-            }
-
-            if (CurrentUserRole == UserRole.Admin.ToString())
-                await _navigation.GoToAdminDashboardPageAsync();
-            else
-                await _navigation.GoToHomePageAsync();
-
+            // Optionnel : tenter de recharger une session en cours si existante
+            await _time.LoadInProgressSessionAsync();
             return true;
         }
 
         public async Task LogoutAsync()
         {
-            await _authService.LogoutAsync();
-
-            // Diagnostic avancé
-            System.Diagnostics.Debug.WriteLine($"[Logout] Shell.Current = {Shell.Current?.GetType().FullName}");
-            System.Diagnostics.Debug.WriteLine($"[Logout] MainPage = {Application.Current?.MainPage?.GetType().FullName}");
-
-            // Étape 1 : S'assurer que le Shell est bien la MainPage
-            if (Application.Current.MainPage is not AppShell)
-            {
-                var newShell = TimeTracker.Mobile.App.ServiceProvider?.GetService<AppShell>() ?? new AppShell();
-                Application.Current.MainPage = newShell;
-                await Task.Delay(100); // Laisse le temps à la MainPage d'être affichée
-            }
-
-            // Étape 2 : S'assurer que le menu contient bien LoginPage SEUL (ResetForLogoutAsync)
-            if (Application.Current.MainPage is AppShell shell)
-            {
-                await Task.Delay(50); // Synchronisation asynchrone du Shell
-                await shell.ResetForLogoutAsync();
-            }
-            else
-            {
-                // Fallback ultime
-                System.Diagnostics.Debug.WriteLine("[Logout] Impossible de retrouver un Shell MAUI valide après réinitialisation.");
-            }
-
-            System.Diagnostics.Debug.WriteLine("User logged out and shell reset.");
+            await _auth.LogoutAsync();
+            await ClearSessionAsync();
         }
 
-        public async Task<TimeEntryDto?> GetCurrentSessionAsync()
-        {
-            var json = await _secureStorage.GetAsync(InProgressSessionKey);
-            if (string.IsNullOrEmpty(json)) return null;
-            return JsonSerializer.Deserialize<TimeEntryDto>(json);
-        }
+        public Task<TimeEntryDto?> GetCurrentSessionAsync() =>
+            Task.FromResult(_time.InProgressSession);
 
         public async Task SetCurrentSessionAsync(TimeEntryDto session)
         {
-            var json = JsonSerializer.Serialize(session);
-            await _secureStorage.SetAsync(InProgressSessionKey, json);
+            // Définit la session en cours (en mémoire + persistance locale par le service)
+            await _time.StartSessionAsync(session);
         }
 
         public async Task ClearSessionAsync()
         {
-            await _secureStorage.RemoveAsync(InProgressSessionKey);
+            // Supprime la session en cours du stockage local,
+            // puis recharge l'état du service pour refléter l'effacement.
+            await _storage.RemoveAsync(InProgressKey);
+            await _time.LoadInProgressSessionAsync();
         }
     }
 }

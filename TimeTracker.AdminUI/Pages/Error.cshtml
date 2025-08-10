@@ -4,24 +4,24 @@
 
 
 @{
-    ViewData["Title"] = Localizer["ErrorTitle"];
+    ViewData["Title"] = ViewLocalizer["ErrorTitle"];
 }
 
-<h1 class="text-danger">@Localizer["ErrorHeader"]</h1>
-<h2 class="text-danger">@Localizer["ErrorOccurredMessage"]</h2>
+<h1 class="text-danger">@ViewLocalizer["ErrorHeader"]</h1>
+<h2 class="text-danger">@ViewLocalizer["ErrorOccurredMessage"]</h2>
 
 @if (Model.ShowRequestId)
 {
     <p>
-        <strong>@Localizer["RequestIdLabel"]</strong> <code>@Model.RequestId</code>
+        <strong>@ViewLocalizer["RequestIdLabel"]</strong> <code>@Model.RequestId</code>
     </p>
 }
 
-<h3>@Localizer["DevelopmentModeHeader"]</h3>
+<h3>@ViewLocalizer["DevelopmentModeHeader"]</h3>
 <p>
-    @Localizer["DevelopmentModeInfo"]
+    @ViewLocalizer["DevelopmentModeInfo"]
 </p>
 <p>
-    <strong>@Localizer["DevelopmentWarningHeader"]</strong>
-    @Localizer["DevelopmentWarningBody"]
+    <strong>@ViewLocalizer["DevelopmentWarningHeader"]</strong>
+    @ViewLocalizer["DevelopmentWarningBody"]
 </p>

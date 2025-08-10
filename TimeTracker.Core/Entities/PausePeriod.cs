@@ -9,9 +9,13 @@ namespace TimeTracker.Core.Entities
 {
     public class PausePeriod
     {
-        [Required(ErrorMessage = "La date de début de la pause est obligatoire.")]
+        public int Id { get; set; }
+
         public DateTime Start { get; set; }
         public DateTime? End { get; set; }
-    }
 
+        // FK
+        public int TimeEntryId { get; set; }
+        public TimeEntry TimeEntry { get; set; } = default!;
+    }
 }

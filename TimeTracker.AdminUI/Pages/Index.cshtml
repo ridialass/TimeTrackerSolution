@@ -1,73 +1,30 @@
 ﻿@page
-@model TimeTracker.AdminUI.Pages.IndexModel
-@using Microsoft.Extensions.Localization
-
-
+@model TimeTracker.AdminUI.Pages.Index1Model
+@using TimeTracker.Core.Resources
 @{
-    ViewData["Title"] = Localizer["Accueil"];
+    ViewData["Title"] = SharedLocalizer["HomeTitle"];
 }
+<div class="container py-4">
+    <h1 class="mb-3">@SharedLocalizer["WelcomeTo"] TimeTracker</h1>
 
-
-
-@if (Model.IsAdmin)
-{
-    <p>@Localizer["RedirectionAdmin"]</p>
-}
-else
-{
-    <div class="user-home">
-        <div class="container overflow-hidden text-center">
-            <div class="row">
-                <div class="col-sm-9 "><h2>@Localizer["BienvenueSur"] TimeTracker</h2></div>
-                <div class="align-middle col-sm-3">
-                    <p>
-                        <img src="@Model.UserImg" class="object-fit-sm-contain border rounded-pill w-25" alt="...">
-                        @Localizer["BonjourUser"] <b>@Model.FirstName</b>!
-                        
-                    </p>
-                </div>
-            </div>
-            <div class="row gx-5">
-                <div class="col">
-                    <div class="p-3">
-                        <div class="card">
-                            <img src="~/images/ProfileImage.png" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">@Localizer["MonProfil"]</h5>
-                                <p class="card-text">@Localizer["MonProfilDescription"]</p>
-                                <a href="/Account/Profile">@Localizer["MonProfilAction"]</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="p-3">
-                        <div class="card">
-                            <img src="~/images/SessionImage.png" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">@Localizer["MesSessions"]</h5>
-                                <p class="card-text">@Localizer["MesSessionsDescription"]</p>
-                                <a href="/Account/Session">@Localizer["MesSessionsAction"]</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="p-3">
-                        <div class="card">
-                            <img src="~/images/PlanningImage.png" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">@Localizer["MonPlanning"]</h5>
-                                <p class="card-text">@Localizer["MonPlanningDescription"]</p>
-                                <a href="https://fastlinecappelli-my.sharepoint.com/:x:/g/personal/office_fastlinecappelli_onmicrosoft_com/EZwC1mIuM-ZOj2xAN_Q87PIBZ3N7crEoEnoTKh-fKnbpmw?rtime=nMBgEfTR3Ug"
-                                   target="_blank">@Localizer["MonPlanningAction"]</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    @if (!(User?.Identity?.IsAuthenticated ?? false))
+    {
+        <p class="lead">@SharedLocalizer["NotAuthenticatedMessage"]</p>
+        <a class="btn btn-primary" asp-page="/Account/Login">@SharedLocalizer["LoginButton"]</a>
+    }
+    else
+    {
+        <p class="lead">@SharedLocalizer["SignedInAs"] <strong>@User.Identity!.Name</strong>.</p>
+        <div class="d-flex gap-2">
+            @if (User.IsInRole("Admin"))
+            {
+                <a class="btn btn-secondary" asp-page="/Admin/AdminDashboard">@SharedLocalizer["GoToAdmin"]</a>
+            }
+            else
+            {
+                <a class="btn btn-secondary" asp-page="/UserPage">@SharedLocalizer["GoToMyPage"]</a>
+            }
+            <a class="btn btn-outline-danger" asp-page="/Account/Logout">@SharedLocalizer["Logout"]</a>
         </div>
-    </div>
-
-    
-}
+    }
+</div>

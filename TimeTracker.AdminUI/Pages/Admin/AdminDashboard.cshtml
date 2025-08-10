@@ -1,25 +1,24 @@
 ﻿@page
-@model TimeTracker.AdminUI.Pages.Admin.IndexModel
+@model TimeTracker.AdminUI.Pages.Admin.AdminDashboardModel
 @using Microsoft.Extensions.Localization
-
-@using TimeTracker.Core.DTOs
-@using TimeTracker.Core.Enums
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
 
 @{
-    ViewData["Title"] = Localizer["AdminDashboardTitle"];
+    ViewData["Title"] = SharedLocalizer["AdminDashboardTitle"];
 }
+
 @if (!(User?.Identity?.IsAuthenticated ?? false))
 {
     <div class="alert alert-warning">
-        <p>@Localizer["LoginRequiredMessage"]</p>
-        <a href="/Account/Login" class="btn btn-primary">@Localizer["LoginButton"]</a>
+        <p>@SharedLocalizer["LoginRequiredMessage"]</p>
+        <a href="/Account/Login" class="btn btn-primary">@SharedLocalizer["LoginButton"]</a>
     </div>
 }
 else if (!User.IsInRole("Admin"))
 {
     <div class="alert alert-danger">
-        <p>@Localizer["AccessDeniedMessage"]</p>
-        <a href="/" class="btn btn-secondary">@Localizer["BackToHomeButton"]</a>
+        <p>@SharedLocalizer["AccessDeniedMessage"]</p>
+        <a href="/" class="btn btn-secondary">@SharedLocalizer["BackToHomeButton"]</a>
     </div>
 }
 else
@@ -30,15 +29,15 @@ else
             <div class="card shadow-sm">
                 <form method="post" asp-page-handler="LoadSessions" class="row row-cols-lg-auto g-3 align-items-center">
                     <div class="12">
-                        <strong>@Localizer["FilterLabel"]</strong>
+                        <strong>@SharedLocalizer["FilterLabel"]</strong>
                     </div>
                     <div class="12">
-                        @Localizer["EmployeeLabel"] :
+                        @SharedLocalizer["EmployeeLabel"] :
                     </div>
                     <div class="col-12">
-                        <label class="visually-hidden" for="inlineFormSelectPref">@Localizer["EmployeeLabel"]</label>
+                        <label class="visually-hidden" for="inlineFormSelectPref">@SharedLocalizer["EmployeeLabel"]</label>
                         <select asp-for="SelectedEmployeeId" class="form-select">
-                            <option value="0">-- @Localizer["SelectLabel"] --</option>
+                            <option value="0">-- @SharedLocalizer["SelectLabel"] --</option>
                             @foreach (var emp in Model.AllEmployees)
                             {
                                 <option value="@emp.Id">@emp.Username</option>
@@ -46,25 +45,23 @@ else
                         </select>
                     </div>
                     <div class="12">
-                        @Localizer["PeriodLabel"] :
+                        @SharedLocalizer["PeriodLabel"] :
                     </div>
                     <div class="col-12">
                         <select asp-for="SelectedPeriod" class="form-select" id="periodSelect" onchange="toggleCustomDates(this.value)">
-                            <option value="all">@Localizer["AllPeriodsOption"]</option>
-                            <option value="week">@Localizer["ThisWeekOption"]</option>
-                            <option value="month">@Localizer["ThisMonthOption"]</option>
-                            <option value="custom">@Localizer["CustomOption"]</option>
+                            <option value="all">@SharedLocalizer["AllPeriodsOption"]</option>
+                            <option value="week">@SharedLocalizer["ThisWeekOption"]</option>
+                            <option value="month">@SharedLocalizer["ThisMonthOption"]</option>
+                            <option value="custom">@SharedLocalizer["CustomOption"]</option>
                         </select>
                     </div>
                     <div class="col-12" id="customDates" style="display:none;">
                         <div class="col">
-                            <label asp-for="CustomStartDate" class="form-label">@Localizer["FromLabel"]</label>
+                            <label asp-for="CustomStartDate" class="form-label">@SharedLocalizer["FromLabel"]</label>
                         </div>
                         <div class="col">
                             <input asp-for="CustomStartDate" type="date" class="form-control" />
-                        </div>
-                        <div class="col">
-                            <label asp-for="CustomEndDate" class="form-label">@Localizer["ToLabel"]</label>
+                            <label asp-for="CustomEndDate" class="form-label">@SharedLocalizer["ToLabel"]</label>
                         </div>
                         <div class="col">
                             <input asp-for="CustomEndDate" type="date" class="form-control" />
@@ -72,13 +69,13 @@ else
                     </div>
                     <input type="hidden" asp-for="WeekOffset" />
                     <div class="col-12">
-                        <button type="submit" class="btn btn-primary">@Localizer["SubmitButton"]</button>
+                        <button type="submit" class="btn btn-primary">@SharedLocalizer["SubmitButton"]</button>
                     </div>
                 </form>
                 <!-- Nouveau bouton Créer un utilisateur, aligné à droite du filtre -->
                 <div class="position-absolute top-0 end-0">
                     <a asp-page="/Account/Register" class="btn btn-success">
-                        <i class="bi bi-person-plus-fill me-2"></i>@Localizer["CreateEmployeeButton"]
+                        <i class="bi bi-person-plus-fill me-2"></i>@SharedLocalizer["CreateEmployeeButton"]
                     </a>
                 </div>
             </div>
@@ -89,7 +86,7 @@ else
             <div class="card shadow-sm">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">
-                        @Localizer["SessionsForLabel"]&nbsp;
+                        @SharedLocalizer["SessionsForLabel"]&nbsp;
                         @Model.AllEmployees.FirstOrDefault(e => e.Id == Model.SelectedEmployeeId)?.Username
                     </h5>
                 </div>
@@ -102,7 +99,7 @@ else
                                asp-route-employeeId="@Model.SelectedEmployeeId"
                                asp-route-employeeUsername="@Model.AllEmployees.FirstOrDefault(e => e.Id == Model.SelectedEmployeeId)?.Username"
                                class="btn btn-success">
-                                <i class="bi bi-plus-circle me-2"></i>@Localizer["AddTimeEntryButton"]
+                                <i class="bi bi-plus-circle me-2"></i>@SharedLocalizer["AddTimeEntryButton"]
                             </a>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -112,7 +109,7 @@ else
                                 <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
                                 <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
                                 <input type="hidden" name="WeekOffset" value="@(Model.WeekOffset - 1)" />
-                                <button type="submit" class="btn btn-link">&laquo; @Localizer["PreviousWeekButton"]</button>
+                                <button type="submit" class="btn btn-link">&laquo; @SharedLocalizer["PreviousWeekButton"]</button>
                             </form>
                             <span>
                                 @Model.CurrentWeekStart.ToString("dd/MM/yyyy") - @Model.CurrentWeekEnd.ToString("dd/MM/yyyy")
@@ -125,12 +122,12 @@ else
                                     <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
                                     <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
                                     <input type="hidden" name="WeekOffset" value="@(Model.WeekOffset + 1)" />
-                                    <button type="submit" class="btn btn-link">@Localizer["NextWeekButton"] &raquo;</button>
+                                    <button type="submit" class="btn btn-link">@SharedLocalizer["NextWeekButton"] &raquo;</button>
                                 </form>
                             }
                             else
                             {
-                                <button type="button" class="btn btn-link text-muted" disabled>@Localizer["NextWeekButton"] &raquo;</button>
+                                <button type="button" class="btn btn-link text-muted" disabled>@SharedLocalizer["NextWeekButton"] &raquo;</button>
                             }
                         </div>
                     }
@@ -144,29 +141,29 @@ else
                                 <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
                                 <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
                                 <button type="submit" class="btn btn-info">
-                                    <i class="bi bi-download me-1"></i>@Localizer["ExportCsvButton"]
+                                    <i class="bi bi-download me-1"></i>@SharedLocalizer["ExportCsvButton"]
                                 </button>
                             </form>
                             <table class="table table-striped align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>@Localizer["SessionTypeLabel"]</th>
-                                        <th>@Localizer["StartTimeLabel"]</th>
-                                        <th>@Localizer["EndTimeLabel"]</th>
-                                        <th>@Localizer["DurationLabel"]</th>
-                                        <th>@Localizer["IncludesTravelTimeLabel"]</th>
-                                        <th>@Localizer["TravelTimeEstimateLabel"]</th>
-                                        <th>@Localizer["StartAddressLabel"]</th>
-                                        <th>@Localizer["EndAddressLabel"]</th>
-                                        <th>@Localizer["DinnerPaidLabel"]</th>
-                                        <th>@Localizer["ActionsLabel"]</th>
+                                        <th>@SharedLocalizer["SessionTypeLabel"]</th>
+                                        <th>@SharedLocalizer["StartTimeLabel"]</th>
+                                        <th>@SharedLocalizer["EndTimeLabel"]</th>
+                                        <th>@SharedLocalizer["WorkNetLabel"]</th>
+                                        <th>@SharedLocalizer["IncludesTravelTimeLabel"]</th>
+                                        <th>@SharedLocalizer["TravelTimeEstimateLabel"]</th>
+                                        <th>@SharedLocalizer["StartAddressLabel"]</th>
+                                        <th>@SharedLocalizer["EndAddressLabel"]</th>
+                                        <th>@SharedLocalizer["DinnerPaidLabel"]</th>
+                                        <th>@SharedLocalizer["ActionsLabel"]</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach (var s in Model.FilteredEntries)
                                     {
                                         <tr>
-                                            <td>@Localizer[$"SessionType_{s.SessionType}"]</td>
+                                            <td>@SharedLocalizer[$"SessionType_{s.SessionType}"]</td>
                                             <td>
                                                 <span class="dt-local" data-dt="@s.StartTime.ToString("o")"></span>
                                             </td>
@@ -180,12 +177,12 @@ else
                                                     <span>—</span>
                                                 }
                                             </td>
-                                            <td>@(s.WorkDuration.HasValue ? $"{(int)s.WorkDuration.Value.TotalHours}h{s.WorkDuration.Value.Minutes}m" : "—")</td>
-                                            <td>@Localizer[s.IncludesTravelTime ? "YesLabel" : "NoLabel"]</td>
+                                            <td>@(s.WorkDurationNetFormatted ?? "—")</td>
+                                            <td>@SharedLocalizer[s.IncludesTravelTime ? "YesLabel" : "NoLabel"]</td>
                                             <td>@(s.TravelTimeEstimate.HasValue? s.TravelTimeEstimate.Value.ToString(@"hh\:mm") : "—")</td>
                                             <td>@s.StartAddress</td>
                                             <td>@s.EndAddress</td>
-                                            <td>@Localizer[$"DinnerPaidBy_{s.DinnerPaid}"]</td>
+                                            <td>@SharedLocalizer[$"DinnerPaidBy_{s.DinnerPaid}"]</td>
                                             <td>
                                                 <a asp-page="/Admin/DetailsTimeEntry"
                                                    asp-route-id="@s.Id"
@@ -195,7 +192,7 @@ else
                                                    asp-route-customEndDate="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")"
                                                    asp-route-weekOffset="@Model.WeekOffset"
                                                    class="btn btn-sm btn-info"
-                                                   title="@Localizer["DetailsButton"]">
+                                                   title="@SharedLocalizer["DetailsButton"]">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                             </td>
@@ -208,7 +205,7 @@ else
                                                    asp-route-customEndDate="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")"
                                                    asp-route-weekOffset="@Model.WeekOffset"
                                                    class="btn btn-sm btn-warning"
-                                                   title="@Localizer["EditButton"]">
+                                                   title="@SharedLocalizer["EditButton"]">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                             </td>
@@ -220,7 +217,7 @@ else
                     }
                     else
                     {
-                        <p class="text-muted mb-0">@Localizer["NoSessionsMessage"]</p>
+                        <p class="text-muted mb-0">@SharedLocalizer["NoSessionsMessage"]</p>
                     }
                 </div>
             </div>

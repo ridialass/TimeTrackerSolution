@@ -1,105 +1,129 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
+﻿// TimeTracker.Mobile/ViewModels/HomeViewModel.cs
+#nullable enable
+using System;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using TimeTracker.Core.DTOs;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using TimeTracker.Core.Enums;
+using TimeTracker.Mobile.Resources.Strings;
 using TimeTracker.Mobile.Services;
-using TimeTracker.Mobile.Resources.Strings; // Ajout pour i18n
+using Microsoft.Maui.Controls;
 
-namespace TimeTracker.Mobile.ViewModels;
-
-public partial class HomeViewModel : BaseViewModel
+namespace TimeTracker.Mobile.ViewModels
 {
-    // ... Existing observable properties ...
-
-    private readonly IAuthService _authService;
-    private readonly IMobileTimeEntryService _timeEntryService;
-    private readonly IGeolocationService _geoService;
-    private readonly INavigationService _navigationService;
-    private readonly IDialogService _dialogService;
-
-    public HomeViewModel(
-        IAuthService authService,
-        IMobileTimeEntryService timeEntryService,
-        IGeolocationService geoService,
-        INavigationService navigationService,
-        IDialogService dialogService)
+    public partial class HomeViewModel : BaseViewModel
     {
-        _authService = authService;
-        _timeEntryService = timeEntryService;
-        _geoService = geoService;
-        _navigationService = navigationService;
-        _dialogService = dialogService;
-    }
+        private readonly IAuthService _authService;
+        private readonly IMobileTimeEntryService _timeEntryService;
+        private readonly IGeolocationService _geoService;
+        private readonly INavigationService _navigationService;
+        private readonly IDialogService _dialogService;
 
-    [RelayCommand]
-    private async Task StartSessionAsync()
-    {
-        if (_timeEntryService.InProgressSession != null)
+        public HomeViewModel(
+            IAuthService authService,
+            IMobileTimeEntryService timeEntryService,
+            IGeolocationService geoService,
+            INavigationService navigationService,
+            IDialogService dialogService)
         {
-            await _dialogService.ShowAlertAsync(
-                AppResources.Home_StartSession_Alert_Title,
-                AppResources.Home_StartSession_Alert_AlreadyStarted,
-                AppResources.Home_OK);
-            return;
-        }
-        await _navigationService.GoToStartSessionPageAsync();
-    }
+            _authService = authService;
+            _timeEntryService = timeEntryService;
+            _geoService = geoService;
+            _navigationService = navigationService;
+            _dialogService = dialogService;
 
-    [RelayCommand]
-    private async Task EndSessionAsync()
-    {
-        if (_timeEntryService.InProgressSession == null)
+            // Init l'état “admin” au démarrage
+            UpdateIsCurrentUserAdmin();
+        }
+
+        // --- Etat dérivé : admin ou pas (avec notifications) ---
+        private bool isCurrentUserAdmin;
+        public bool IsCurrentUserAdmin
         {
-            await _dialogService.ShowAlertAsync(
-                AppResources.Home_EndSession_Alert_Title,
-                AppResources.Home_EndSession_Alert_NoSession,
-                AppResources.Home_OK);
-            return;
+            get => isCurrentUserAdmin;
+            private set => SetProperty(ref isCurrentUserAdmin, value);
         }
-        await _navigationService.GoToEndSessionPageAsync();
-    }
 
-    [RelayCommand]
-    private async Task GoToHistoryAsync()
-    {
-        await _navigationService.GoToTimeEntriesPageAsync();
-    }
-
-    [RelayCommand]
-    private async Task GoToAdminDashboardAsync()
-    {
-        var currentUser = _authService.CurrentUser;
-        if (currentUser == null ||
-            !System.Enum.TryParse<UserRole>(currentUser.Role, out var roleEnum) ||
-            roleEnum != UserRole.Admin)
+        private void UpdateIsCurrentUserAdmin()
         {
-            await _dialogService.ShowAlertAsync(
-                AppResources.Home_AdminDashboard_Alert_Title,
-                AppResources.Home_AdminDashboard_Alert_AccessDenied,
-                AppResources.Home_OK);
-            return;
+            var roleStr = _authService.CurrentUser?.Role;
+            IsCurrentUserAdmin = Enum.TryParse<UserRole>(roleStr, out var role) && role == UserRole.Admin;
         }
-        await _navigationService.GoToAdminDashboardPageAsync();
-    }
 
-    [RelayCommand]
-    private async Task LogoutAsync()
-    {
-        if (Application.Current is App app)
-            await app.LogoutAsync();
-    }
-
-    public bool IsCurrentUserAdmin
-    {
-        get
+        /// <summary>
+        /// A appeler depuis OnAppearing/OnNavigatedTo de la page.
+        /// Met à jour l’état (ex. si l’auth a changé en arrière-plan).
+        /// </summary>
+        [RelayCommand]
+        public Task RefreshAsync()
         {
-            var role = _authService.CurrentUser?.Role;
-            return System.Enum.TryParse<UserRole>(role, out var roleEnum) && roleEnum == UserRole.Admin;
+            UpdateIsCurrentUserAdmin();
+            return Task.CompletedTask;
+        }
+
+        // --- Commandes de navigation/actions ---
+
+        [RelayCommand]
+        private async Task StartSessionAsync()
+        {
+            if (_timeEntryService.InProgressSession != null)
+            {
+                await _dialogService.ShowAlertAsync(
+                    AppResources.Home_StartSession_Alert_Title,
+                    AppResources.Home_StartSession_Alert_AlreadyStarted,
+                    AppResources.Home_OK);
+                return;
+            }
+            await _navigationService.GoToStartSessionPageAsync();
+        }
+
+        [RelayCommand]
+        private async Task EndSessionAsync()
+        {
+            if (_timeEntryService.InProgressSession == null)
+            {
+                await _dialogService.ShowAlertAsync(
+                    AppResources.Home_EndSession_Alert_Title,
+                    AppResources.Home_EndSession_Alert_NoSession,
+                    AppResources.Home_OK);
+                return;
+            }
+            await _navigationService.GoToEndSessionPageAsync();
+        }
+
+        [RelayCommand]
+        private Task GoToHistoryAsync() => _navigationService.GoToTimeEntriesPageAsync();
+
+        [RelayCommand]
+        private async Task GoToAdminDashboardAsync()
+        {
+            var currentUser = _authService.CurrentUser;
+            if (currentUser == null ||
+                !Enum.TryParse<UserRole>(currentUser.Role, out var roleEnum) ||
+                roleEnum != UserRole.Admin)
+            {
+                await _dialogService.ShowAlertAsync(
+                    AppResources.Home_AdminDashboard_Alert_Title,
+                    AppResources.Home_AdminDashboard_Alert_AccessDenied,
+                    AppResources.Home_OK);
+                return;
+            }
+            await _navigationService.GoToAdminDashboardPageAsync();
+        }
+
+        [RelayCommand]
+        private async Task LogoutAsync()
+        {
+            // Si ton App expose déjà un Logout orchestré, on le garde
+            if (Application.Current is App app)
+            {
+                await app.LogoutAsync();
+                return;
+            }
+
+            // Fallback sans App.LogoutAsync :
+            await _authService.LogoutAsync();
+            await _navigationService.GoToLoginPageAsync();
         }
     }
-
-    // ... Any additional properties/methods ...
 }

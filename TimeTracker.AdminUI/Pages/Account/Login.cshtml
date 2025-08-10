@@ -3,7 +3,7 @@
 
 @model TimeTracker.AdminUI.Pages.Account.LoginModel
 @{
-    ViewData["Title"] = Localizer["LoginTitle"];
+    ViewData["Title"] = SharedLocalizer["LoginTitle"];
 }
 
 
@@ -24,26 +24,26 @@
         <form method="post" class="p-4 p-md-5 border rounded-3 bg-body-tertiary">
             <div class="form-floating mb-3">
                 <input asp-for="Username" class="form-control" id="floatingInput" placeholder="Cristian.T">
-                <label asp-for="Username" class="floatingInput">@Localizer["UsernameLabel"]</label>
+                <label asp-for="Username" class="floatingInput">@SharedLocalizer["UsernameLabel"]</label>
                 <span asp-validation-for="Username" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
                 <input asp-for="Password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
-                <label asp-for="Password" class="floatingPassword">@Localizer["PasswordLabel"]</label>
+                <label asp-for="Password" class="floatingPassword">@SharedLocalizer["PasswordLabel"]</label>
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             @if (!string.IsNullOrEmpty(Model.ErrorMessage))
             {
-                <div class="alert alert-danger">@Localizer[Model.ErrorMessage]</div>
+                <div class="alert alert-danger">@SharedLocalizer[Model.ErrorMessage]</div>
                 <!-- Si le message d'erreur n'est pas localisé côté backend, tu peux créer des clés pour les messages courants -->
             }
             <div class="checkbox mb-1">
-                <label> <input type="checkbox" value="remember-me"> Remember me </label>
+                <label> <input type="checkbox" value="remember-me"> @SharedLocalizer["RememberMe"] </label>
             </div>
-            <button class="w-100 btn btn-lg btn-primary" type="submit">@Localizer["LoginButton"]</button>
+            <button class="w-100 btn btn-lg btn-primary" type="submit">@SharedLocalizer["LoginButton"]</button>
             <hr class="my-2">
             <small class="text-body-secondary">
-                <a asp-page="/Account/ForgotPassword">@Localizer["ForgotPasswordLink"]</a>
+                <a asp-page="/Account/ForgotPassword">@SharedLocalizer["ForgotPasswordLink"]</a>
             </small>
             *
         </form>

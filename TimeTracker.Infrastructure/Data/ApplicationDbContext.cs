@@ -17,6 +17,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     /// </summary>
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<TimeEntry> TimeEntries { get; set; } = default!;
+    public DbSet<PausePeriod> PausePeriods => Set<PausePeriod>();
 
     // Ajoute ici d'autres DbSet pour tes entités métier (ex: Projects, Tasks, etc.)
     // public DbSet<Project> Projects { get; set; }
@@ -36,27 +37,41 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         // Vous n'avez plus besoin de mapper ApplicationUser.UserName
         // Identity s'occupe déjà de UserName → AspNetUsers.UserName
 
-        builder.Entity<TimeEntry>()
-               .HasOne(te => te.User)         // flèche vers la propriété navigation
-               .WithMany(u => u.TimeEntries)
-               .HasForeignKey(te => te.UserId);
+        builder.Entity<TimeEntry>(b =>
+        {
+            b.HasKey(t => t.Id);
+            b.HasOne(t => t.User)
+             .WithMany(u => u.TimeEntries)
+             .HasForeignKey(t => t.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.Property(t => t.StartTime).IsRequired();
+            b.Property(t => t.SessionType).IsRequired();
+
+            // ✅ relation 1‑n vers PausePeriod
+            b.HasMany(t => t.Pauses)
+             .WithOne(p => p.TimeEntry)
+             .HasForeignKey(p => p.TimeEntryId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // PausePeriod
+        builder.Entity<PausePeriod>(b =>
+        {
+            b.HasKey(p => p.Id);
+            b.Property(p => p.Start).IsRequired();
+            // p.End est nullable → OK
+        });
 
         // Configuration de la relation RefreshToken <-> ApplicationUser
-        builder.Entity<RefreshToken>()
-            .HasOne(rt => rt.User)
-            .WithMany(u => u.RefreshTokens)
-            .HasForeignKey(rt => rt.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Configuration des pauses (owned collection)
-        builder.Entity<TimeEntry>()
-            .OwnsMany(te => te.Pauses, nav =>
-            {
-                nav.WithOwner().HasForeignKey("TimeEntryId");
-                nav.Property(p => p.Start).IsRequired();
-                nav.Property(p => p.End);
-                nav.ToTable("PausePeriods"); // Nom explicite
-                nav.HasKey("TimeEntryId", "Start"); // Clé composite
-            });
+        // RefreshToken -> User
+        builder.Entity<RefreshToken>(b =>
+        {
+            b.HasKey(rt => rt.Id);
+            b.HasOne(rt => rt.User)
+             .WithMany(u => u.RefreshTokens)
+             .HasForeignKey(rt => rt.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

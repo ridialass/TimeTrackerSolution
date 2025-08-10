@@ -1,67 +1,124 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
+﻿// TimeTracker.Mobile/Services/MobileTimeEntryService.cs
+#nullable enable
 using System.Net.Http.Json;
-using System.Threading.Tasks;
+using System.Text.Json;
 using TimeTracker.Core.DTOs;
 
 namespace TimeTracker.Mobile.Services
 {
-    public class MobileTimeEntryService : IMobileTimeEntryService
+    /// <summary>
+    /// Service mobile pour gérer le cycle de vie de la session (en cours, sauvegarde locale, synchro API).
+    /// - DTO-only (aucune entité EF côté mobile).
+    /// - Persiste la session en cours en local (ILocalStorageService).
+    /// - Synchronise avec l’API via HttpClient "Api" (Bearer ajouté par AuthHeaderHandler).
+    /// </summary>
+    public sealed class MobileTimeEntryService : IMobileTimeEntryService
     {
-        private readonly HttpClient _httpClient;
-        private readonly ISessionStateService _sessionStateService;
-        private TimeEntryDto? _inProgress;
+        private const string StorageKey = "InProgressSession";
+        private readonly IHttpClientFactory _httpFactory;
+        private readonly ILocalStorageService _storage;
 
-        public MobileTimeEntryService(HttpClient httpClient, ISessionStateService sessionStateService)
+        // État en mémoire
+        private TimeEntryDto? _inProgressSession;
+        public TimeEntryDto? InProgressSession => _inProgressSession;
+
+        private static class Api
         {
-            _httpClient = httpClient;
-            _sessionStateService = sessionStateService;
+            public const string ClientName = "Api";                   // enregistré dans DI
+            public const string TimeEntries = "api/timeentries";
+            public static string ByUser(int userId) => $"api/timeentries?userId={userId}";
+            public static string ById(int id) => $"api/timeentries/{id}";
         }
 
-        public TimeEntryDto? InProgressSession => _inProgress;
+        private static readonly JsonSerializerOptions JsonOpts = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
 
-        // Call this when app starts or when a page appears to reload persisted state
+        public MobileTimeEntryService(
+            IHttpClientFactory httpFactory,
+            ILocalStorageService storage)
+        {
+            _httpFactory = httpFactory;
+            _storage = storage;
+        }
+
         public async Task LoadInProgressSessionAsync()
         {
-            _inProgress = await _sessionStateService.GetCurrentSessionAsync();
+            var json = await _storage.GetStringAsync(StorageKey);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                _inProgressSession = null;
+                return;
+            }
+
+            try
+            {
+                _inProgressSession = JsonSerializer.Deserialize<TimeEntryDto>(json, JsonOpts);
+            }
+            catch
+            {
+                await _storage.RemoveAsync(StorageKey); // purge si corruption
+                _inProgressSession = null;
+            }
         }
 
         public async Task StartSessionAsync(TimeEntryDto dto)
         {
-            _inProgress = dto;
-            await _sessionStateService.SetCurrentSessionAsync(dto);
+            _inProgressSession = dto;
+            await SaveLocalAsync();
         }
 
         public async Task EndAndSaveCurrentSessionAsync()
         {
-            if (_inProgress == null) return;
-            await CreateTimeEntryAsync(_inProgress);
-            _inProgress = null;
-            await _sessionStateService.ClearSessionAsync();
+            if (_inProgressSession is null)
+                throw new InvalidOperationException("Aucune session en cours.");
+
+            if (_inProgressSession.Id <= 0)
+                throw new InvalidOperationException("La session n’a pas encore été créée côté serveur.");
+
+            var client = CreateClient();
+            var resp = await client.PutAsJsonAsync(Api.ById(_inProgressSession.Id), _inProgressSession, JsonOpts);
+            resp.EnsureSuccessStatusCode();
+
+            _inProgressSession = null;
+            await _storage.RemoveAsync(StorageKey);
         }
 
         public async Task<IEnumerable<TimeEntryDto>> GetTimeEntriesAsync(int userId)
         {
-            var list = await _httpClient.GetFromJsonAsync<IEnumerable<TimeEntryDto>>(
-                $"api/timeentries?userId={userId}");
-            return list ?? Array.Empty<TimeEntryDto>();
+            var client = CreateClient();
+            var list = await client.GetFromJsonAsync<IEnumerable<TimeEntryDto>>(Api.ByUser(userId), JsonOpts);
+            return list ?? Enumerable.Empty<TimeEntryDto>();
         }
 
         public async Task CreateTimeEntryAsync(TimeEntryDto entry)
         {
-            try
-            {
-                var response = await _httpClient.PostAsJsonAsync("api/timeentries", entry);
-                var content = await response.Content.ReadAsStringAsync();
-                if (!response.IsSuccessStatusCode)
-                    throw new Exception($"Échec création entrée: {response.StatusCode} - {content}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Erreur: " + ex.Message);
-                throw;
-            }
+            var client = CreateClient();
+            var resp = await client.PostAsJsonAsync(Api.TimeEntries, entry, JsonOpts);
+            resp.EnsureSuccessStatusCode();
+
+            // Récupère l’entité créée (Id serveur, etc.)
+            var created = await resp.Content.ReadFromJsonAsync<TimeEntryDto>(JsonOpts)
+                          ?? throw new InvalidOperationException("Réponse serveur inattendue (TimeEntryDto nul).");
+
+            entry.Id = created.Id;
+            entry.UserId = created.UserId;
+            entry.Username = created.Username ?? entry.Username;
+
+            // Si c'est la même instance que la session en cours, on persiste l'Id
+            if (ReferenceEquals(entry, _inProgressSession))
+                await SaveLocalAsync();
         }
+
+        // ----------------- Helpers -----------------
+        private async Task SaveLocalAsync()
+        {
+            var json = JsonSerializer.Serialize(_inProgressSession, JsonOpts);
+            await _storage.SetStringAsync(StorageKey, json);
+        }
+
+        private HttpClient CreateClient() => _httpFactory.CreateClient(Api.ClientName);
     }
 }

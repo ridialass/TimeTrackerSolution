@@ -1,72 +1,39 @@
-﻿using System.Threading.Tasks;
-using System.Linq;
+﻿#nullable enable
+using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 
 namespace TimeTracker.Mobile.Services
 {
     public class NavigationService : INavigationService
     {
-        public Task GoToLoginPageAsync()
+        // Routes : adapter si tes routes Shell diffèrent
+        private const string RouteLoginRoot = "//LoginPage";
+        private const string RouteHomeRoot = "//HomePage";
+        private const string RouteAdminDashboardRoot = "//AdminDashboardPage";
+
+        private const string RouteStartSession = "StartSessionPage";
+        private const string RouteEndSession = "EndSessionPage";
+        private const string RouteTimeEntries = "TimeEntriesPage";
+
+        public Task GoToLoginPageAsync() => NavigateOnUIAsync(() => Shell.Current.GoToAsync(RouteLoginRoot));
+        public Task GoToHomePageAsync() => NavigateOnUIAsync(() => Shell.Current.GoToAsync(RouteHomeRoot));
+        public Task GoToAdminDashboardPageAsync() => NavigateOnUIAsync(() => Shell.Current.GoToAsync(RouteAdminDashboardRoot));
+
+        public Task GoToStartSessionPageAsync() => NavigateOnUIAsync(() => Shell.Current.GoToAsync(RouteStartSession));
+        public Task GoToEndSessionPageAsync() => NavigateOnUIAsync(() => Shell.Current.GoToAsync(RouteEndSession));
+        public Task GoToTimeEntriesPageAsync() => NavigateOnUIAsync(() => Shell.Current.GoToAsync(RouteTimeEntries));
+
+        public Task GoBackAsync() => NavigateOnUIAsync(() => Shell.Current.GoToAsync(".."));
+
+        // ----------------- Helpers -----------------
+
+        private static Task NavigateOnUIAsync(Func<Task> navigation)
         {
-            if (Shell.Current is Shell shell)
-            {
-                var loginFlyoutItem = shell.Items.OfType<FlyoutItem>().FirstOrDefault(i => i.Route == "LoginPage");
-                if (loginFlyoutItem != null)
-                {
-                    if (shell.CurrentItem == loginFlyoutItem)
-                        return Task.CompletedTask;
-                    shell.CurrentItem = loginFlyoutItem;
-                    return Task.CompletedTask;
-                }
-                throw new System.Exception("Aucune racine LoginPage disponible dans le Shell !");
-            }
-            throw new System.Exception("Shell.Current n'est pas un Shell valide.");
+            var shell = Shell.Current;
+            if (shell is null) return Task.CompletedTask; // UI pas prête : on échoue silencieusement
+            return MainThread.InvokeOnMainThreadAsync(navigation);
         }
-
-        public Task GoToHomePageAsync()
-        {
-            if (Shell.Current is Shell shell)
-            {
-                var homeFlyoutItem = shell.Items.OfType<FlyoutItem>().FirstOrDefault(i => i.Route == "HomePage");
-                if (homeFlyoutItem != null)
-                {
-                    if (shell.CurrentItem == homeFlyoutItem)
-                        return Task.CompletedTask;
-                    shell.CurrentItem = homeFlyoutItem;
-                    return Task.CompletedTask;
-                }
-                throw new System.Exception("Aucune racine HomePage disponible dans le Shell !");
-            }
-            throw new System.Exception("Shell.Current n'est pas un Shell valide.");
-        }
-
-        public Task GoToAdminDashboardPageAsync()
-        {
-            if (Shell.Current is Shell shell)
-            {
-                var adminFlyoutItem = shell.Items.OfType<FlyoutItem>().FirstOrDefault(i => i.Route == "AdminDashboardPage");
-                if (adminFlyoutItem != null)
-                {
-                    if (shell.CurrentItem == adminFlyoutItem)
-                        return Task.CompletedTask;
-                    shell.CurrentItem = adminFlyoutItem;
-                    return Task.CompletedTask;
-                }
-                throw new System.Exception("Aucune racine AdminDashboardPage disponible dans le Shell !");
-            }
-            throw new System.Exception("Shell.Current n'est pas un Shell valide.");
-        }
-
-        public Task GoToStartSessionPageAsync()
-            => Shell.Current.GoToAsync("StartSessionPage");
-
-        public Task GoToEndSessionPageAsync()
-            => Shell.Current.GoToAsync("EndSessionPage");
-
-        public Task GoToTimeEntriesPageAsync()
-            => Shell.Current.GoToAsync("TimeEntriesPage");
-
-        public Task GoBackAsync()
-            => Shell.Current.GoToAsync("..");
     }
 }

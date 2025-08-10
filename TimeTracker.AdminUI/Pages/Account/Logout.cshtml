@@ -4,7 +4,7 @@
 @model TimeTracker.AdminUI.Pages.Account.LogoutModel
 @{
     Layout = null;
-    ViewData["Title"] = Localizer["LogoutTitle"];
+    ViewData["Title"] = SharedLocalizer["LogoutTitle"];
 }
 
 <!DOCTYPE html>
@@ -17,8 +17,8 @@
 <body>
     <div class="container mt-5">
         <h2>@ViewData["Title"]</h2>
-        <p>@Localizer["LogoutMessage"]</p>
-        <a href="/" class="btn btn-primary">@Localizer["BackToHomeButton"]</a>
+        <p>@SharedLocalizer["LogoutMessage"]</p>
+        <a href="/" class="btn btn-primary">@SharedLocalizer["BackToHomeButton"]</a>
     </div>
 </body>
 </html>

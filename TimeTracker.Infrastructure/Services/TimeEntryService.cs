@@ -61,14 +61,15 @@ namespace TimeTracker.Infrastructure.Services
         public async Task<IEnumerable<TimeEntryDto>> GetAllTimeEntriesAsync()
         {
             var all = await _timeEntryRepo.GetAllAsync();
-            foreach (var e in all)
-            {
+            var dtos = all.Select(e => {
                 var dto = _mapper.Map<TimeEntryDto>(e);
+                FillWorkDurationNet(dto);
                 var sessionTypeLabel = EnumLocalizationHelper.GetEnumLabel(dto.SessionType, _localizer);
                 var dinnerPaidLabel = EnumLocalizationHelper.GetEnumLabel(dto.DinnerPaid, _localizer);
                 Console.WriteLine($"SessionType: {sessionTypeLabel}, DinnerPaid: {dinnerPaidLabel}");
-            }
-            return all.Select(e => _mapper.Map<TimeEntryDto>(e));
+                return dto;
+            });
+            return dtos;
         }
 
         public async Task<IEnumerable<TimeEntryDto>> GetTimeEntriesByUserAsync(int userId)
@@ -78,14 +79,15 @@ namespace TimeTracker.Infrastructure.Services
                 throw new Exception(_localizer["EmployeeNotFound"]);
 
             var list = await _timeEntryRepo.GetByEmployeeAsync(userId);
-            foreach (var e in list)
-            {
+            var dtos = list.Select(e => {
                 var dto = _mapper.Map<TimeEntryDto>(e);
+                FillWorkDurationNet(dto);
                 var sessionTypeLabel = EnumLocalizationHelper.GetEnumLabel(dto.SessionType, _localizer);
                 var dinnerPaidLabel = EnumLocalizationHelper.GetEnumLabel(dto.DinnerPaid, _localizer);
                 Console.WriteLine($"SessionType: {sessionTypeLabel}, DinnerPaid: {dinnerPaidLabel}");
-            }
-            return list.Select(e => _mapper.Map<TimeEntryDto>(e));
+                return dto;
+            });
+            return dtos;
         }
 
         public async Task<TimeEntryDto?> GetTimeEntryByIdAsync(int id)
@@ -96,29 +98,50 @@ namespace TimeTracker.Infrastructure.Services
             var dto = _mapper.Map<TimeEntryDto>(e);
             var sessionTypeLabel = EnumLocalizationHelper.GetEnumLabel(dto.SessionType, _localizer);
             var dinnerPaidLabel = EnumLocalizationHelper.GetEnumLabel(dto.DinnerPaid, _localizer);
+            FillWorkDurationNet(dto);
             Console.WriteLine($"SessionType: {sessionTypeLabel}, DinnerPaid: {dinnerPaidLabel}");
             return dto;
         }
 
         public async Task<bool> UpdateTimeEntryAsync(TimeEntryDto dto)
         {
-            var existing = await _timeEntryRepo.GetByIdAsync(dto.Id);
-            if (existing == null)
-                return false;
+            // Map complet (y compris Pauses)
+            var entity = _mapper.Map<TimeEntry>(dto);
+            return await _timeEntryRepo.UpdateAsync(entity);
+            // Vérification de l'existence de l'entrée
+            //var existing = await _timeEntryRepo.GetByIdAsync(dto.Id);
+            //if (existing == null)
+            //    return false;
 
-            // Update only the fields you want to change
-            existing.StartTime = dto.StartTime;
-            existing.EndTime = dto.EndTime;
-            existing.SessionType = dto.SessionType;
-            existing.DinnerPaid = dto.DinnerPaid;
-            existing.IncludesTravelTime = dto.IncludesTravelTime;
-            existing.StartAddress = dto.StartAddress;
-            existing.EndAddress = dto.EndAddress;
-            existing.TravelDurationHours = dto.TravelDurationHours;
-            existing.IsAdminModified = dto.IsAdminModified;
+            //existing.StartTime = dto.StartTime;
+            //existing.EndTime = dto.EndTime;
+            //existing.SessionType = dto.SessionType;
+            //existing.DinnerPaid = dto.DinnerPaid;
+            //existing.IncludesTravelTime = dto.IncludesTravelTime;
+            //existing.StartAddress = dto.StartAddress;
+            //existing.EndAddress = dto.EndAddress;
+            //existing.TravelDurationHours = dto.TravelDurationHours;
+            //existing.IsAdminModified = dto.IsAdminModified;
 
-            // Now update using repository (which will attach and mark as Modified)
-            return await _timeEntryRepo.UpdateAsync(existing);
+            //// MISE À JOUR DES PAUSES
+            //existing.Pauses = dto.Pauses?.Select(p => new PausePeriod
+            //{
+            //    Start = p.Start,
+            //    End = p.End
+            //}).ToList() ?? new List<PausePeriod>();
+
+            //return await _timeEntryRepo.UpdateAsync(existing);
+        }
+
+        // Methode pour recalculer la durée nette de travail
+        private void FillWorkDurationNet(TimeEntryDto dto)
+        {
+            // Cas: pas de pause, ou pause non fermée ou incohérente
+            var brut = dto.EndTime.HasValue ? dto.EndTime.Value - dto.StartTime : (TimeSpan?)null;
+            var pause = TimeSpan.FromSeconds(dto.Pauses?.Where(p => p.End.HasValue)
+                    .Sum(p => (p.End.Value - p.Start).TotalSeconds) ?? 0);
+
+            dto.WorkDurationNet = (brut.HasValue && brut.Value > pause) ? brut - pause : brut;
         }
     }
 }

@@ -4,26 +4,20 @@
 @using TimeTracker.Core.Enums
 
 @{
-    ViewData["Title"] = Localizer["EditTimeEntryTitle"];
+    ViewData["Title"] = SharedLocalizer["EditTimeEntryTitle"];
 }
 
 <h2>@ViewData["Title"]</h2>
 
 <form method="post">
     <span asp-validation-summary="All" class="text-danger"></span>
-    <!-- Id (hidden field) -->
     <input type="hidden" asp-for="TimeEntry.Id" />
-    <!-- UserId (hidden field) -->
     <input type="hidden" asp-for="TimeEntry.UserId" />
-    <span asp-validation-for="TimeEntry.UserId" class="text-danger"></span>
-
-    <!-- Username (hidden field) -->
     <input type="hidden" asp-for="TimeEntry.Username" />
-    <span asp-validation-for="TimeEntry.Username" class="text-danger"></span>
 
     <!-- Start Time -->
     <div class="mb-3">
-        <label class="form-label" for="startTimePicker">@Localizer["StartTimeLabel"]</label>
+        <label class="form-label" for="startTimePicker">@SharedLocalizer["StartTimeLabel"]</label>
         <input id="startTimePicker"
                name="TimeEntry.StartTime"
                type="datetime-local"
@@ -37,7 +31,7 @@
 
     <!-- End Time -->
     <div class="mb-3">
-        <label class="form-label" for="endTimePicker">@Localizer["EndTimeLabel"]</label>
+        <label class="form-label" for="endTimePicker">@SharedLocalizer["EndTimeLabel"]</label>
         <input id="endTimePicker"
                name="TimeEntry.EndTime"
                type="datetime-local"
@@ -49,13 +43,56 @@
         <span asp-validation-for="TimeEntry.EndTime" class="text-danger"></span>
     </div>
 
+    <!-- Pause rapide (heure/minute) -->
+    <div class="mb-3">
+        <label class="form-label">Durée totale des pauses (rapide)</label>
+        <div class="row">
+            <div class="col">
+                <input type="number" min="0" max="12" class="form-control" name="PauseHours" value="@Model.PauseHours" placeholder="h" />
+            </div>
+            <div class="col">
+                <input type="number" min="0" max="59" class="form-control" name="PauseMinutes" value="@Model.PauseMinutes" placeholder="min" />
+            </div>
+        </div>
+        <span class="form-text text-warning">Si ce champ est rempli (&gt;0), il écrasera la liste manuelle des pauses.</span>
+    </div>
+
+    <!-- Pauses détaillées -->
+    <div class="mb-3">
+        <label class="form-label">Liste des pauses (début/fin)</label>
+        <div id="pauses-list">
+            @for (int i = 0; i < Model.TimeEntry.Pauses.Count; i++)
+            {
+                <div class="row mb-2 pause-row">
+                    <div class="col">
+                        <input type="datetime-local"
+                               name="TimeEntry.Pauses[@i].Start"
+                               class="form-control"
+                               value="@(Model.TimeEntry.Pauses[i].Start.ToString("yyyy-MM-ddTHH:mm"))" />
+                    </div>
+                    <div class="col">
+                        <input type="datetime-local"
+                               name="TimeEntry.Pauses[@i].End"
+                               class="form-control"
+                               value="@(Model.TimeEntry.Pauses[i].End.HasValue ? Model.TimeEntry.Pauses[i].End.Value.ToString("yyyy-MM-ddTHH:mm") : "")" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-danger btn-remove-pause" onclick="removePause(this)">X</button>
+                    </div>
+                </div>
+            }
+        </div>
+        <button type="button" class="btn btn-outline-primary mt-2" onclick="addPauseRow()">Ajouter une pause</button>
+        <span class="form-text">Les pauses sont déduites du temps travaillé.</span>
+    </div>
+
     <!-- Session Type -->
     <div class="mb-3">
-        <label asp-for="TimeEntry.SessionType" class="form-label">@Localizer["SessionTypeLabel"]</label>
+        <label asp-for="TimeEntry.SessionType" class="form-label">@SharedLocalizer["SessionTypeLabel"]</label>
         <select asp-for="TimeEntry.SessionType" class="form-select">
             @foreach (WorkSessionType t in Enum.GetValues(typeof(WorkSessionType)))
             {
-                <option value="@((int)t)">@Localizer[$"SessionType_{t}"]</option>
+                <option value="@((int)t)">@SharedLocalizer[$"SessionType_{t}"]</option>
             }
         </select>
         <span asp-validation-for="TimeEntry.SessionType" class="text-danger"></span>
@@ -63,14 +100,14 @@
 
     <!-- Start Address -->
     <div class="mb-3">
-        <label asp-for="TimeEntry.StartAddress" class="form-label">@Localizer["StartAddressLabel"]</label>
+        <label asp-for="TimeEntry.StartAddress" class="form-label">@SharedLocalizer["StartAddressLabel"]</label>
         <input asp-for="TimeEntry.StartAddress" type="text" class="form-control" />
         <span asp-validation-for="TimeEntry.StartAddress" class="text-danger"></span>
     </div>
 
     <!-- End Address -->
     <div class="mb-3">
-        <label asp-for="TimeEntry.EndAddress" class="form-label">@Localizer["EndAddressLabel"]</label>
+        <label asp-for="TimeEntry.EndAddress" class="form-label">@SharedLocalizer["EndAddressLabel"]</label>
         <input asp-for="TimeEntry.EndAddress" type="text" class="form-control" />
         <span asp-validation-for="TimeEntry.EndAddress" class="text-danger"></span>
     </div>
@@ -78,54 +115,114 @@
     <!-- Includes Travel Time -->
     <div class="mb-3 form-check">
         <input asp-for="TimeEntry.IncludesTravelTime" type="checkbox" class="form-check-input" />
-        <label asp-for="TimeEntry.IncludesTravelTime" class="form-check-label">@Localizer["IncludesTravelTimeLabel"]</label>
+        <label asp-for="TimeEntry.IncludesTravelTime" class="form-check-label">@SharedLocalizer["IncludesTravelTimeLabel"]</label>
         <span asp-validation-for="TimeEntry.IncludesTravelTime" class="text-danger"></span>
     </div>
 
     <!-- Travel Duration Hours -->
     <div class="mb-3">
-        <label asp-for="TimeEntry.TravelDurationHours" class="form-label">@Localizer["TravelTimeEstimateLabel"]</label>
+        <label asp-for="TimeEntry.TravelDurationHours" class="form-label">@SharedLocalizer["TravelTimeEstimateLabel"]</label>
         <input asp-for="TimeEntry.TravelDurationHours" type="number" step="0.01" class="form-control" />
         <span asp-validation-for="TimeEntry.TravelDurationHours" class="text-danger"></span>
     </div>
 
     <!-- Dinner Paid By -->
     <div class="mb-3">
-        <label asp-for="TimeEntry.DinnerPaid" class="form-label">@Localizer["DinnerPaidLabel"]</label>
+        <label asp-for="TimeEntry.DinnerPaid" class="form-label">@SharedLocalizer["DinnerPaidLabel"]</label>
         <select asp-for="TimeEntry.DinnerPaid" class="form-select">
             @foreach (DinnerPaidBy d in Enum.GetValues(typeof(DinnerPaidBy)))
             {
-                <option value="@((int)d)">@Localizer[$"DinnerPaidBy_{d}"]</option>
+                <option value="@((int)d)">@SharedLocalizer[$"DinnerPaidBy_{d}"]</option>
             }
         </select>
         <span asp-validation-for="TimeEntry.DinnerPaid" class="text-danger"></span>
     </div>
 
     <!-- Save and Cancel Buttons -->
-    <button type="submit" class="btn btn-primary">@Localizer["SaveButton"]</button>
-    <a asp-page="/Admin/Index"
+    <button type="submit" class="btn btn-primary">@SharedLocalizer["SaveButton"]</button>
+    <a asp-page="/Admin/AdminDashboard"
        asp-route-SelectedEmployeeId="@Model.EmployeeId"
        asp-route-SelectedPeriod="@Model.Period"
-       class="btn btn-secondary">@Localizer["CancelButton"]</a>
+       class="btn btn-secondary">@SharedLocalizer["CancelButton"]</a>
 
-    <!-- Bouton supprimer l'entrée, affiché uniquement si TimeEntry existe et Id > 0 -->
     @if (Model.TimeEntry != null && Model.TimeEntry.Id > 0)
     {
         <button type="button" class="btn btn-danger" id="deleteEntryBtn">
-            @Localizer["DeleteButton"]
+            @SharedLocalizer["DeleteButton"]
         </button>
     }
 </form>
 
-<!-- Formulaire dédié à la suppression (caché), affiché uniquement si TimeEntry existe et Id > 0 -->
 @if (Model.TimeEntry != null && Model.TimeEntry.Id > 0)
 {
     <form id="deleteEntryForm" method="post" asp-page-handler="Delete" style="display:none;">
         <input type="hidden" name="TimeEntry.Id" value="@Model.TimeEntry.Id" />
     </form>
 }
-
 @section Scripts {
+    <script>
+            // Formatte une date en yyyy-MM-ddTHH:mm
+            function formatForDatetimeLocalInput(date) {
+                const pad = n => n.toString().padStart(2, "0");
+                return date.getFullYear() + "-" +
+                    pad(date.getMonth() + 1) + "-" +
+                    pad(date.getDate()) + "T" +
+                    pad(date.getHours()) + ":" +
+                    pad(date.getMinutes());
+            }
+
+            function setLocalDateTimeFromUtc(inputId) {
+                var input = document.getElementById(inputId);
+                if (input) {
+                    var utcValue = input.getAttribute("data-utc-value");
+                    if (utcValue) {
+                        var date = new Date(utcValue);
+                        if (!isNaN(date)) {
+                            input.value = formatForDatetimeLocalInput(date);
+                        }
+                    }
+                }
+            }
+
+            function attachDatePickerAutoClose(pickerId) {
+                const picker = document.getElementById(pickerId);
+                if (picker) {
+                    let previousValue = picker.value;
+                    picker.addEventListener('input', function () {
+                        const currentValue = this.value;
+                        if (previousValue && currentValue) {
+                            const previousMinutes = previousValue.split(':')[1];
+                            const currentMinutes = currentValue.split(':')[1];
+                            if (previousMinutes !== currentMinutes) {
+                                this.blur();
+                            }
+                        }
+                        previousValue = currentValue;
+                    });
+                }
+            }
+
+            // Pauses dynamique
+            function addPauseRow() {
+                const idx = document.querySelectorAll('#pauses-list .pause-row').length;
+                const html = `
+                <div class="row mb-2 pause-row">
+                    <div class="col">
+                        <input type="datetime-local" name="TimeEntry.Pauses[${idx}].Start" class="form-control" />
+                    </div>
+                    <div class="col">
+                        <input type="datetime-local" name="TimeEntry.Pauses[${idx}].End" class="form-control" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-danger btn-remove-pause" onclick="removePause(this)">X</button>
+                    </div>
+                </div>`;
+                document.getElementById('pauses-list').insertAdjacentHTML('beforeend', html);
+            }
+            function removePause(btn) {
+                btn.closest('.pause-row').remove();
+            }
+</script>
     <script>
         // Formatte une date en yyyy-MM-ddTHH:mm
         function formatForDatetimeLocalInput(date) {
@@ -206,3 +303,4 @@
         });
     </script>
 }
+

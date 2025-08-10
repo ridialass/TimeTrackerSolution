@@ -8,14 +8,14 @@
     {
         <li class="nav-item">
             <form method="post" asp-page="/Account/Logout" class="d-inline">
-                <button type="submit" class="nav-link btn btn-link">@Localizer["LogoutButton"]</button>
+                <button type="submit" class="nav-link btn btn-link">@SharedLocalizer["LogoutButton"]</button>
             </form>
         </li>
     }
     else
     {
         <li class="nav-item">
-            <a asp-page="/Account/Login" class="nav-link">@Localizer["LoginButton"]</a>
+            <a asp-page="/Account/Login" class="nav-link">@SharedLocalizer["LoginButton"]</a>
         </li>
     }
 </ul>

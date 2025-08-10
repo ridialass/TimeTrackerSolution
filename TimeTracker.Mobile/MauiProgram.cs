@@ -42,6 +42,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IGeolocationService, GeolocationService>();
         services.AddSingleton<ISessionStateService, SessionStateService>();
+        builder.Services.AddSingleton<Microsoft.Maui.Storage.IPreferences>(Preferences.Default);
+        builder.Services.AddSingleton<ILocalStorageService, LocalStorageService>();
+
 
         // Handlers HTTP
         services.AddTransient<AuthHeaderHandler>();
