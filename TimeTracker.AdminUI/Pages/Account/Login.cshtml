@@ -1,54 +1,123 @@
 ﻿@page
 @using Microsoft.Extensions.Localization
-
 @model TimeTracker.AdminUI.Pages.Account.LoginModel
 @{
     ViewData["Title"] = SharedLocalizer["LoginTitle"];
 }
 
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
 
-
-
-<h2>@ViewData["Title"]</h2>
-
-
-<div class="px-4 pt-2 my-2 text-center border-bottom">
-    <h1 class="display-4 fw-bold text-body-emphasis">TimeTracker:</h1>
-    <div class="col-lg-6 mx-auto">
-
-
-        <h1 class="display-4 fw-bold lh-1 text-body-emphasis mb-3">€€ time  ££ is $$ money</h1>
-        
-    </div>
-    <div class="col-md-10 mx-auto col-lg-5">
-        <form method="post" class="p-4 p-md-5 border rounded-3 bg-body-tertiary">
-            <div class="form-floating mb-3">
-                <input asp-for="Username" class="form-control" id="floatingInput" placeholder="Cristian.T">
-                <label asp-for="Username" class="floatingInput">@SharedLocalizer["UsernameLabel"]</label>
-                <span asp-validation-for="Username" class="text-danger"></span>
+            <div class="text-center mb-4">
+                <h1 class="h3 fw-bold mb-1">TimeTracker</h1>
+                <p class="text-muted m-0">€€ time  ££ is $$ money</p>
             </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
-                <label asp-for="Password" class="floatingPassword">@SharedLocalizer["PasswordLabel"]</label>
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
-            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-            {
-                <div class="alert alert-danger">@SharedLocalizer[Model.ErrorMessage]</div>
-                <!-- Si le message d'erreur n'est pas localisé côté backend, tu peux créer des clés pour les messages courants -->
-            }
-            <div class="checkbox mb-1">
-                <label> <input type="checkbox" value="remember-me"> @SharedLocalizer["RememberMe"] </label>
-            </div>
-            <button class="w-100 btn btn-lg btn-primary" type="submit">@SharedLocalizer["LoginButton"]</button>
-            <hr class="my-2">
-            <small class="text-body-secondary">
-                <a asp-page="/Account/ForgotPassword">@SharedLocalizer["ForgotPasswordLink"]</a>
-            </small>
-            *
-        </form>
+
+            <form method="post" class="p-4 border rounded-3 bg-body-tertiary shadow-sm">
+                <input type="hidden" asp-antiforgery="true" />
+
+                <!-- résumé des erreurs -->
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert" style="display:none"></div>
+
+                <!-- Username -->
+                <div class="form-floating mb-3">
+                    <input asp-for="Username"
+                           class="form-control"
+                           id="login-username"
+                           placeholder="username"
+                           autocomplete="username"
+                           spellcheck="false"
+                           autofocus />
+                    <label for="login-username">@SharedLocalizer["UsernameLabel"]</label>
+                    <span asp-validation-for="Username" class="text-danger small"></span>
+                </div>
+
+                <!-- Password + eye toggle -->
+                <div class="form-floating mb-3 position-relative">
+                    <input asp-for="Password"
+                           type="password"
+                           class="form-control pe-5"
+                           id="login-password"
+                           placeholder="••••••••"
+                           autocomplete="current-password" />
+                    <label for="login-password">@SharedLocalizer["PasswordLabel"]</label>
+                    <button type="button"
+                            class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0"
+                            aria-label="Toggle password visibility"
+                            id="btn-toggle-password">
+                        <i class="bi bi-eye" id="eye-icon"></i>
+                    </button>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                @* message d’erreur renvoyé par le modèle *@
+                @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @SharedLocalizer[Model.ErrorMessage]
+                    </div>
+                }
+
+                <!-- Remember me (visuel uniquement si non supporté côté modèle) -->
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="remember-me">
+                    <label class="form-check-label" for="remember-me">
+                        @SharedLocalizer["RememberMe"]
+                    </label>
+                </div>
+
+                <button class="w-100 btn btn-primary btn-lg" id="btn-submit" type="submit">
+                    @SharedLocalizer["LoginButton"]
+                </button>
+
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <a class="small" asp-page="/Account/ForgotPassword">
+                        @SharedLocalizer["ForgotPasswordLink"]
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
+@section Scripts {
+    <script>
+        // affiche/masque le mot de passe
+        (function () {
+            const pwd = document.getElementById('login-password');
+            const btn = document.getElementById('btn-toggle-password');
+            const icon = document.getElementById('eye-icon');
+            if (pwd && btn && icon) {
+                btn.addEventListener('click', function () {
+                    const showing = pwd.type === 'text';
+                    pwd.type = showing ? 'password' : 'text';
+                    icon.classList.toggle('bi-eye');
+                    icon.classList.toggle('bi-eye-slash');
+                });
+            }
+        })();
 
+        // évite le double-submit (UX)
+        (function () {
+            const form = document.querySelector('form[method="post"]');
+            const submit = document.getElementById('btn-submit');
+            if (form && submit) {
+                form.addEventListener('submit', function () {
+                    submit.disabled = true;
+                    submit.classList.add('disabled');
+                    // réactive si le navigateur empêche la navigation
+                    setTimeout(() => { submit.disabled = false; submit.classList.remove('disabled'); }, 6000);
+                });
+            }
+        })();
 
+        // affiche le résumé si des erreurs serveur existent
+        (function () {
+            const summary = document.querySelector('[asp-validation-summary]');
+            if (summary && summary.innerText.trim().length > 0) {
+                summary.style.display = '';
+            }
+        })();
+    </script>
+}

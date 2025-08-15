@@ -1,73 +1,139 @@
 ﻿@page
 @using Microsoft.Extensions.Localization
-
 @model TimeTracker.AdminUI.Pages.Account.RegisterModel
-
-<p>@SharedLocalizer["WelcomeMessage"]</p>
 
 @{
     ViewData["Title"] = SharedLocalizer["RegisterTitle"];
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container py-3">
+    <h2 class="mb-3">@ViewData["Title"]</h2>
 
-<form method="post" class="mt-4">
-    <div class="form-group mb-3">
-        <label asp-for="Username" class="form-label">@SharedLocalizer["UsernameLabel"]</label>
-        <input asp-for="Username" class="form-control" />
-        <span asp-validation-for="Username" class="text-danger"></span>
-    </div>
-    <div class="form-group mb-3">
-        <label asp-for="Email" class="form-label">@SharedLocalizer["EmailLabel"]</label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
-    <div class="form-group mb-3">
-        <label asp-for="Password" class="form-label">@SharedLocalizer["PasswordLabel"]</label>
-        <input asp-for="Password" type="password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-    <div class="form-group mb-3">
-        <label asp-for="Role" class="form-label">@SharedLocalizer["RoleLabel"]</label>
-        <select asp-for="Role" class="form-select">
-            <option value="Employee">@SharedLocalizer["RoleEmployee"]</option>
-            <option value="Admin">@SharedLocalizer["RoleAdmin"]</option>
-            <option value="Technician">@SharedLocalizer["RoleTechnician"]</option>
-        </select>
-        <span asp-validation-for="Role" class="text-danger"></span>
-    </div>
-    <div class="form-group mb-3">
-        <label asp-for="FirstName" class="form-label">@SharedLocalizer["FirstNameLabel"]</label>
-        <input asp-for="FirstName" class="form-control" />
-        <span asp-validation-for="FirstName" class="text-danger"></span>
-    </div>
-    <div class="form-group mb-3">
-        <label asp-for="LastName" class="form-label">@SharedLocalizer["LastNameLabel"]</label>
-        <input asp-for="LastName" class="form-control" />
-        <span asp-validation-for="LastName" class="text-danger"></span>
-    </div>
-    <div class="form-group mb-3">
-        <label asp-for="Town" class="form-label">@SharedLocalizer["TownLabel"]</label>
-        <input asp-for="Town" class="form-control" />
-        <span asp-validation-for="Town" class="text-danger"></span>
-    </div>
-    <div class="form-group mb-3">
-        <label asp-for="Country" class="form-label">@SharedLocalizer["CountryLabel"]</label>
-        <input asp-for="Country" class="form-control" />
-        <span asp-validation-for="Country" class="text-danger"></span>
-    </div>
-
-    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-    {
-        <div class="alert alert-danger">@SharedLocalizer[Model.ErrorMessage]</div>
-        <!-- Ou simplement: <div class="alert alert-danger">@Model.ErrorMessage</div> si déjà localisé -->
-    }
-
+    @* Messages serveur existants *@
     @if (!string.IsNullOrEmpty(Model.SuccessMessage))
     {
-        <div class="alert alert-success">@SharedLocalizer[Model.SuccessMessage]</div>
-        <!-- Idem ici -->
+        <div class="alert alert-success" role="alert">@SharedLocalizer[Model.SuccessMessage]</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger" role="alert">@SharedLocalizer[Model.ErrorMessage]</div>
     }
 
-    <button type="submit" class="btn btn-success">@SharedLocalizer["RegisterButton"]</button>
-</form>
+    <form method="post" class="card shadow-sm">
+        <div class="card-body">
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert" style="display:none"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Username" class="form-label">@SharedLocalizer["UsernameLabel"]</label>
+                    <input asp-for="Username" class="form-control" autocomplete="username" />
+                    <span asp-validation-for="Username" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label">@SharedLocalizer["EmailLabel"]</label>
+                    <input asp-for="Email" type="email" class="form-control" autocomplete="email" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Password" class="form-label">@SharedLocalizer["PasswordLabel"]</label>
+                    <div class="input-group">
+                        <input asp-for="Password"
+                               id="pwdInput"
+                               type="password"
+                               class="form-control"
+                               autocomplete="new-password"
+                               minlength="6" />
+                        <button type="button" class="btn btn-outline-secondary" id="togglePwd" aria-label="Show/Hide">
+                            <i class="bi bi-eye" id="togglePwdIcon"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                    <div class="form-text">@* Laisse la règle côté serveur/Annotations ; ici juste un hint *@</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Role" class="form-label">@SharedLocalizer["RoleLabel"]</label>
+                    <select asp-for="Role" class="form-select">
+                        <option value="Employee">@SharedLocalizer["RoleEmployee"]</option>
+                        <option value="Admin">@SharedLocalizer["RoleAdmin"]</option>
+                        <option value="Technician">@SharedLocalizer["RoleTechnician"]</option>
+                    </select>
+                    <span asp-validation-for="Role" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="FirstName" class="form-label">@SharedLocalizer["FirstNameLabel"]</label>
+                    <input asp-for="FirstName" class="form-control" autocomplete="given-name" />
+                    <span asp-validation-for="FirstName" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="LastName" class="form-label">@SharedLocalizer["LastNameLabel"]</label>
+                    <input asp-for="LastName" class="form-control" autocomplete="family-name" />
+                    <span asp-validation-for="LastName" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Town" class="form-label">@SharedLocalizer["TownLabel"]</label>
+                    <input asp-for="Town" class="form-control" autocomplete="address-level2" />
+                    <span asp-validation-for="Town" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Country" class="form-label">@SharedLocalizer["CountryLabel"]</label>
+                    <input asp-for="Country" class="form-control" autocomplete="country-name" />
+                    <span asp-validation-for="Country" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer d-flex justify-content-end gap-2">
+            <a asp-page="/Admin/AdminDashboard" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <button type="submit" id="btnSubmit" class="btn btn-success">
+                @SharedLocalizer["RegisterButton"]
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // Affiche le résumé d'erreurs seulement s'il y a du contenu
+        (function () {
+            const summary = document.querySelector('[asp-validation-summary]');
+            if (summary && summary.innerText.trim().length > 0) summary.style.display = '';
+        })();
+
+        // Toggle show/hide password
+        (function () {
+            const btn = document.getElementById('togglePwd');
+            const icon = document.getElementById('togglePwdIcon');
+            const input = document.getElementById('pwdInput');
+            if (!btn || !icon || !input) return;
+
+            btn.addEventListener('click', function () {
+                const showing = input.type === 'text';
+                input.type = showing ? 'password' : 'text';
+                icon.classList.toggle('bi-eye', showing);
+                icon.classList.toggle('bi-eye-slash', !showing);
+                input.focus();
+            });
+        })();
+
+        // Anti double-submit
+        (function () {
+            const form = document.querySelector('form[method="post"]');
+            const btn = document.getElementById('btnSubmit');
+            if (!form || !btn) return;
+            form.addEventListener('submit', function () {
+                btn.disabled = true; btn.classList.add('disabled');
+                setTimeout(() => { btn.disabled = false; btn.classList.remove('disabled'); }, 6000);
+            });
+        })();
+    </script>
+}

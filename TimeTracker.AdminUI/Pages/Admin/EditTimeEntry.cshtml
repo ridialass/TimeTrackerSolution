@@ -7,300 +7,299 @@
     ViewData["Title"] = SharedLocalizer["EditTimeEntryTitle"];
 }
 
-<h2>@ViewData["Title"]</h2>
+<h2 class="mb-3">@ViewData["Title"]</h2>
 
-<form method="post">
-    <span asp-validation-summary="All" class="text-danger"></span>
-    <input type="hidden" asp-for="TimeEntry.Id" />
-    <input type="hidden" asp-for="TimeEntry.UserId" />
-    <input type="hidden" asp-for="TimeEntry.Username" />
+<form method="post" class="card shadow-sm">
+    <div class="card-body">
+        <div asp-validation-summary="All" class="alert alert-danger py-2" role="alert" style="display:none"></div>
 
-    <!-- Start Time -->
-    <div class="mb-3">
-        <label class="form-label" for="startTimePicker">@SharedLocalizer["StartTimeLabel"]</label>
-        <input id="startTimePicker"
-               name="TimeEntry.StartTime"
-               type="datetime-local"
-               class="form-control"
-               step="60"
-               data-utc-value="@Model.TimeEntry.StartTime.ToString("o")"
-               value=""
-               autocomplete="off" />
-        <span asp-validation-for="TimeEntry.StartTime" class="text-danger"></span>
-    </div>
+        <!-- IDs -->
+        <input type="hidden" asp-for="TimeEntry.Id" />
+        <input type="hidden" asp-for="TimeEntry.UserId" />
+        <input type="hidden" asp-for="TimeEntry.Username" />
 
-    <!-- End Time -->
-    <div class="mb-3">
-        <label class="form-label" for="endTimePicker">@SharedLocalizer["EndTimeLabel"]</label>
-        <input id="endTimePicker"
-               name="TimeEntry.EndTime"
-               type="datetime-local"
-               class="form-control"
-               step="60"
-               data-utc-value="@(Model.TimeEntry.EndTime.HasValue? Model.TimeEntry.EndTime.Value.ToString("o") : "")"
-               value=""
-               autocomplete="off" />
-        <span asp-validation-for="TimeEntry.EndTime" class="text-danger"></span>
-    </div>
-
-    <!-- Pause rapide (heure/minute) -->
-    <div class="mb-3">
-        <label class="form-label">Durée totale des pauses (rapide)</label>
-        <div class="row">
-            <div class="col">
-                <input type="number" min="0" max="12" class="form-control" name="PauseHours" value="@Model.PauseHours" placeholder="h" />
-            </div>
-            <div class="col">
-                <input type="number" min="0" max="59" class="form-control" name="PauseMinutes" value="@Model.PauseMinutes" placeholder="min" />
-            </div>
+        <!-- Start Time (visible text + hidden ISO for binding) -->
+        <div class="mb-3">
+            <label class="form-label" for="startPicker">@SharedLocalizer["StartTimeLabel"]</label>
+            <input id="startPicker"
+                   type="text"
+                   class="form-control"
+                   autocomplete="off"
+                   data-utc="@Model.TimeEntry.StartTime.ToString("O")" />
+            <input type="hidden" id="startHidden" name="TimeEntry.StartTime" />
+            <span asp-validation-for="TimeEntry.StartTime" class="text-danger"></span>
         </div>
-        <span class="form-text text-warning">Si ce champ est rempli (&gt;0), il écrasera la liste manuelle des pauses.</span>
-    </div>
 
-    <!-- Pauses détaillées -->
-    <div class="mb-3">
-        <label class="form-label">Liste des pauses (début/fin)</label>
-        <div id="pauses-list">
-            @for (int i = 0; i < Model.TimeEntry.Pauses.Count; i++)
-            {
-                <div class="row mb-2 pause-row">
-                    <div class="col">
-                        <input type="datetime-local"
-                               name="TimeEntry.Pauses[@i].Start"
-                               class="form-control"
-                               value="@(Model.TimeEntry.Pauses[i].Start.ToString("yyyy-MM-ddTHH:mm"))" />
-                    </div>
-                    <div class="col">
-                        <input type="datetime-local"
-                               name="TimeEntry.Pauses[@i].End"
-                               class="form-control"
-                               value="@(Model.TimeEntry.Pauses[i].End.HasValue ? Model.TimeEntry.Pauses[i].End.Value.ToString("yyyy-MM-ddTHH:mm") : "")" />
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-danger btn-remove-pause" onclick="removePause(this)">X</button>
-                    </div>
+        <!-- End Time -->
+        <div class="mb-3">
+            <label class="form-label" for="endPicker">@SharedLocalizer["EndTimeLabel"]</label>
+            <input id="endPicker"
+                   type="text"
+                   class="form-control"
+                   autocomplete="off"
+                   data-utc="@(Model.TimeEntry.EndTime.HasValue? Model.TimeEntry.EndTime.Value.ToString("O") : "")" />
+            <input type="hidden" id="endHidden" name="TimeEntry.EndTime" />
+            <span asp-validation-for="TimeEntry.EndTime" class="text-danger"></span>
+        </div>
+
+        <!-- Pause rapide (heure/minute) -->
+        <div class="mb-3">
+            <label class="form-label">@* clé existante *@ Durée totale des pauses (rapide)</label>
+            <div class="row g-2">
+                <div class="col-6 col-md-3">
+                    <input type="number" min="0" max="12" class="form-control" name="PauseHours" value="@Model.PauseHours" placeholder="h" />
                 </div>
+                <div class="col-6 col-md-3">
+                    <input type="number" min="0" max="59" class="form-control" name="PauseMinutes" value="@Model.PauseMinutes" placeholder="min" />
+                </div>
+            </div>
+            <span class="form-text text-warning">Si ce champ est rempli (&gt;0), il écrasera la liste manuelle des pauses.</span>
+        </div>
+
+        <!-- Pauses détaillées (chaque input a un picker ; on re-numérote les index au delete) -->
+        <div class="mb-3">
+            <label class="form-label">@* clé existante *@ Liste des pauses (début/fin)</label>
+            <div id="pauses-list">
+                @for (int i = 0; i < Model.TimeEntry.Pauses.Count; i++)
+                {
+                    <div class="row g-2 mb-2 pause-row">
+                        <div class="col">
+                            <input type="text"
+                                   class="form-control pause-start"
+                                   name="TimeEntry.Pauses[@i].Start"
+                                   data-utc="@Model.TimeEntry.Pauses[i].Start.ToString("O")" />
+                        </div>
+                        <div class="col">
+                            <input type="text"
+                                   class="form-control pause-end"
+                                   name="TimeEntry.Pauses[@i].End"
+                                   data-utc="@(Model.TimeEntry.Pauses[i].End.HasValue ? Model.TimeEntry.Pauses[i].End.Value.ToString("O") : "")" />
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-danger btn-remove-pause" title="Remove" onclick="removePause(this)">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+            <button type="button" class="btn btn-outline-primary mt-2" onclick="addPauseRow()">
+                <i class="bi bi-plus-circle me-1"></i> Ajouter une pause
+            </button>
+            <span class="form-text d-block">Les pauses sont déduites du temps travaillé.</span>
+        </div>
+
+        <!-- Session Type -->
+        <div class="mb-3">
+            <label asp-for="TimeEntry.SessionType" class="form-label">@SharedLocalizer["SessionTypeLabel"]</label>
+            <select asp-for="TimeEntry.SessionType" class="form-select">
+                @foreach (WorkSessionType t in Enum.GetValues(typeof(WorkSessionType)))
+                {
+                    <option value="@((int)t)">@SharedLocalizer[$"SessionType_{t}"]</option>
+                }
+            </select>
+            <span asp-validation-for="TimeEntry.SessionType" class="text-danger"></span>
+        </div>
+
+        <!-- Addresses -->
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="TimeEntry.StartAddress" class="form-label">@SharedLocalizer["StartAddressLabel"]</label>
+                <input asp-for="TimeEntry.StartAddress" type="text" class="form-control" />
+                <span asp-validation-for="TimeEntry.StartAddress" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="TimeEntry.EndAddress" class="form-label">@SharedLocalizer["EndAddressLabel"]</label>
+                <input asp-for="TimeEntry.EndAddress" type="text" class="form-control" />
+                <span asp-validation-for="TimeEntry.EndAddress" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Travel -->
+        <div class="form-check my-3">
+            <input asp-for="TimeEntry.IncludesTravelTime" type="checkbox" class="form-check-input" id="chkTravel" />
+            <label asp-for="TimeEntry.IncludesTravelTime" class="form-check-label" for="chkTravel">
+                @SharedLocalizer["IncludesTravelTimeLabel"]
+            </label>
+        </div>
+        <div class="mb-3">
+            <label asp-for="TimeEntry.TravelDurationHours" class="form-label">@SharedLocalizer["TravelTimeEstimateLabel"]</label>
+            <input asp-for="TimeEntry.TravelDurationHours" type="number" step="0.01" class="form-control" />
+            <span asp-validation-for="TimeEntry.TravelDurationHours" class="text-danger"></span>
+        </div>
+
+        <!-- Dinner -->
+        <div class="mb-3">
+            <label asp-for="TimeEntry.DinnerPaid" class="form-label">@SharedLocalizer["DinnerPaidLabel"]</label>
+            <select asp-for="TimeEntry.DinnerPaid" class="form-select">
+                @foreach (DinnerPaidBy d in Enum.GetValues(typeof(DinnerPaidBy)))
+                {
+                    <option value="@((int)d)">@SharedLocalizer[$"DinnerPaidBy_{d}"]</option>
+                }
+            </select>
+            <span asp-validation-for="TimeEntry.DinnerPaid" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="card-footer d-flex justify-content-between">
+        <div>
+            @if (Model.TimeEntry != null && Model.TimeEntry.Id > 0)
+            {
+                <button type="button" class="btn btn-outline-danger" id="deleteEntryBtn">
+                    <i class="bi bi-trash"></i> @SharedLocalizer["DeleteButton"]
+                </button>
             }
         </div>
-        <button type="button" class="btn btn-outline-primary mt-2" onclick="addPauseRow()">Ajouter une pause</button>
-        <span class="form-text">Les pauses sont déduites du temps travaillé.</span>
+        <div class="d-flex gap-2">
+            <a asp-page="/Admin/AdminDashboard"
+               asp-route-SelectedEmployeeId="@Model.EmployeeId"
+               asp-route-SelectedPeriod="@Model.Period"
+               asp-route-CustomStartDate="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")"
+               asp-route-CustomEndDate="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")"
+               asp-route-WeekOffset="@Model.WeekOffset"
+               class="btn btn-secondary">@SharedLocalizer["CancelButton"]</a>
+            <button type="submit" class="btn btn-primary" id="btnSave">
+                <i class="bi bi-check-lg"></i> @SharedLocalizer["SaveButton"]
+            </button>
+        </div>
     </div>
 
-    <!-- Session Type -->
-    <div class="mb-3">
-        <label asp-for="TimeEntry.SessionType" class="form-label">@SharedLocalizer["SessionTypeLabel"]</label>
-        <select asp-for="TimeEntry.SessionType" class="form-select">
-            @foreach (WorkSessionType t in Enum.GetValues(typeof(WorkSessionType)))
-            {
-                <option value="@((int)t)">@SharedLocalizer[$"SessionType_{t}"]</option>
-            }
-        </select>
-        <span asp-validation-for="TimeEntry.SessionType" class="text-danger"></span>
-    </div>
-
-    <!-- Start Address -->
-    <div class="mb-3">
-        <label asp-for="TimeEntry.StartAddress" class="form-label">@SharedLocalizer["StartAddressLabel"]</label>
-        <input asp-for="TimeEntry.StartAddress" type="text" class="form-control" />
-        <span asp-validation-for="TimeEntry.StartAddress" class="text-danger"></span>
-    </div>
-
-    <!-- End Address -->
-    <div class="mb-3">
-        <label asp-for="TimeEntry.EndAddress" class="form-label">@SharedLocalizer["EndAddressLabel"]</label>
-        <input asp-for="TimeEntry.EndAddress" type="text" class="form-control" />
-        <span asp-validation-for="TimeEntry.EndAddress" class="text-danger"></span>
-    </div>
-
-    <!-- Includes Travel Time -->
-    <div class="mb-3 form-check">
-        <input asp-for="TimeEntry.IncludesTravelTime" type="checkbox" class="form-check-input" />
-        <label asp-for="TimeEntry.IncludesTravelTime" class="form-check-label">@SharedLocalizer["IncludesTravelTimeLabel"]</label>
-        <span asp-validation-for="TimeEntry.IncludesTravelTime" class="text-danger"></span>
-    </div>
-
-    <!-- Travel Duration Hours -->
-    <div class="mb-3">
-        <label asp-for="TimeEntry.TravelDurationHours" class="form-label">@SharedLocalizer["TravelTimeEstimateLabel"]</label>
-        <input asp-for="TimeEntry.TravelDurationHours" type="number" step="0.01" class="form-control" />
-        <span asp-validation-for="TimeEntry.TravelDurationHours" class="text-danger"></span>
-    </div>
-
-    <!-- Dinner Paid By -->
-    <div class="mb-3">
-        <label asp-for="TimeEntry.DinnerPaid" class="form-label">@SharedLocalizer["DinnerPaidLabel"]</label>
-        <select asp-for="TimeEntry.DinnerPaid" class="form-select">
-            @foreach (DinnerPaidBy d in Enum.GetValues(typeof(DinnerPaidBy)))
-            {
-                <option value="@((int)d)">@SharedLocalizer[$"DinnerPaidBy_{d}"]</option>
-            }
-        </select>
-        <span asp-validation-for="TimeEntry.DinnerPaid" class="text-danger"></span>
-    </div>
-
-    <!-- Save and Cancel Buttons -->
-    <button type="submit" class="btn btn-primary">@SharedLocalizer["SaveButton"]</button>
-    <a asp-page="/Admin/AdminDashboard"
-       asp-route-SelectedEmployeeId="@Model.EmployeeId"
-       asp-route-SelectedPeriod="@Model.Period"
-       class="btn btn-secondary">@SharedLocalizer["CancelButton"]</a>
-
+    @* Delete handler *@
     @if (Model.TimeEntry != null && Model.TimeEntry.Id > 0)
     {
-        <button type="button" class="btn btn-danger" id="deleteEntryBtn">
-            @SharedLocalizer["DeleteButton"]
-        </button>
+        <form id="deleteEntryForm" method="post" asp-page-handler="Delete" style="display:none;">
+            <input type="hidden" name="TimeEntry.Id" value="@Model.TimeEntry.Id" />
+        </form>
     }
 </form>
 
-@if (Model.TimeEntry != null && Model.TimeEntry.Id > 0)
-{
-    <form id="deleteEntryForm" method="post" asp-page-handler="Delete" style="display:none;">
-        <input type="hidden" name="TimeEntry.Id" value="@Model.TimeEntry.Id" />
-    </form>
-}
 @section Scripts {
     <script>
-            // Formatte une date en yyyy-MM-ddTHH:mm
-            function formatForDatetimeLocalInput(date) {
-                const pad = n => n.toString().padStart(2, "0");
-                return date.getFullYear() + "-" +
-                    pad(date.getMonth() + 1) + "-" +
-                    pad(date.getDate()) + "T" +
-                    pad(date.getHours()) + ":" +
-                    pad(date.getMinutes());
-            }
+        // Affiche le summary seulement s'il contient des erreurs
+        (function () {
+            const s = document.querySelector('[asp-validation-summary]');
+            if (s && s.innerText.trim().length > 0) s.style.display = '';
+        })();
 
-            function setLocalDateTimeFromUtc(inputId) {
-                var input = document.getElementById(inputId);
-                if (input) {
-                    var utcValue = input.getAttribute("data-utc-value");
-                    if (utcValue) {
-                        var date = new Date(utcValue);
-                        if (!isNaN(date)) {
-                            input.value = formatForDatetimeLocalInput(date);
-                        }
-                    }
-                }
+        // Flatpickr helpers
+        const fpLocale = (function () {
+            switch (window.appCulture) {
+                case 'fr': return flatpickr.l10ns.fr;
+                case 'it': return flatpickr.l10ns.it;
+                case 'de': return flatpickr.l10ns.de;
+                default:   return undefined;
             }
+        })();
 
-            function attachDatePickerAutoClose(pickerId) {
-                const picker = document.getElementById(pickerId);
-                if (picker) {
-                    let previousValue = picker.value;
-                    picker.addEventListener('input', function () {
-                        const currentValue = this.value;
-                        if (previousValue && currentValue) {
-                            const previousMinutes = previousValue.split(':')[1];
-                            const currentMinutes = currentValue.split(':')[1];
-                            if (previousMinutes !== currentMinutes) {
-                                this.blur();
-                            }
-                        }
-                        previousValue = currentValue;
-                    });
-                }
+        function initPicker(input, utcString) {
+            const opts = {
+                enableTime: true,
+                time_24hr: true,
+                minuteIncrement: 5,
+                dateFormat: "Y-m-d H:i",
+                allowInput: true,
+                locale: fpLocale
+            };
+            const fp = flatpickr(input, opts);
+            if (utcString) {
+                const d = new Date(utcString);
+                if (!isNaN(d)) fp.setDate(d);
             }
+            return fp;
+        }
 
-            // Pauses dynamique
-            function addPauseRow() {
-                const idx = document.querySelectorAll('#pauses-list .pause-row').length;
-                const html = `
-                <div class="row mb-2 pause-row">
-                    <div class="col">
-                        <input type="datetime-local" name="TimeEntry.Pauses[${idx}].Start" class="form-control" />
-                    </div>
-                    <div class="col">
-                        <input type="datetime-local" name="TimeEntry.Pauses[${idx}].End" class="form-control" />
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-danger btn-remove-pause" onclick="removePause(this)">X</button>
-                    </div>
+        // Start / End pickers (visible) + hidden ISO for model binding
+        const startInput = document.getElementById('startPicker');
+        const endInput   = document.getElementById('endPicker');
+        const startHidden= document.getElementById('startHidden');
+        const endHidden  = document.getElementById('endHidden');
+
+        const fpStart = initPicker(startInput, startInput.getAttribute('data-utc'));
+        const fpEnd   = initPicker(endInput,   endInput.getAttribute('data-utc'));
+
+        // Pauses pickers
+        function attachPausePickers(scope) {
+            (scope || document).querySelectorAll('.pause-row').forEach(row => {
+                const start = row.querySelector('.pause-start');
+                const end   = row.querySelector('.pause-end');
+                if (!start._fp) start._fp = initPicker(start, start.getAttribute('data-utc'));
+                if (!end._fp)   end._fp   = initPicker(end, end.getAttribute('data-utc'));
+            });
+        }
+        attachPausePickers();
+
+        // Add / Remove pause rows
+        function renumberPauseRows() {
+            document.querySelectorAll('#pauses-list .pause-row').forEach((row, i) => {
+                const s = row.querySelector('.pause-start');
+                const e = row.querySelector('.pause-end');
+                s.setAttribute('name', `TimeEntry.Pauses[${i}].Start`);
+                e.setAttribute('name', `TimeEntry.Pauses[${i}].End`);
+            });
+        }
+
+        window.addPauseRow = function () {
+            const list = document.getElementById('pauses-list');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'row g-2 mb-2 pause-row';
+            wrapper.innerHTML = `
+                <div class="col">
+                    <input type="text" class="form-control pause-start" />
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control pause-end" />
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-outline-danger btn-remove-pause" onclick="removePause(this)">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
                 </div>`;
-                document.getElementById('pauses-list').insertAdjacentHTML('beforeend', html);
-            }
-            function removePause(btn) {
-                btn.closest('.pause-row').remove();
-            }
-</script>
-    <script>
-        // Formatte une date en yyyy-MM-ddTHH:mm
-        function formatForDatetimeLocalInput(date) {
-            const pad = n => n.toString().padStart(2, "0");
-            return date.getFullYear() + "-" +
-                pad(date.getMonth() + 1) + "-" +
-                pad(date.getDate()) + "T" +
-                pad(date.getHours()) + ":" +
-                pad(date.getMinutes());
+            list.appendChild(wrapper);
+            attachPausePickers(wrapper);
+            renumberPauseRows();
         }
 
-        // Remplit le champ à partir de l'attribut data-utc-value
-        function setLocalDateTimeFromUtc(inputId) {
-            var input = document.getElementById(inputId);
-            if (input) {
-                var utcValue = input.getAttribute("data-utc-value");
-                if (utcValue) {
-                    var date = new Date(utcValue);
-                    if (!isNaN(date)) {
-                        input.value = formatForDatetimeLocalInput(date);
-                    }
+        window.removePause = function (btn) {
+            const row = btn.closest('.pause-row');
+            row?.remove();
+            renumberPauseRows();
+        }
+
+        // Submit: pousse des ISO 8601 en hidden (UTC). Pour les pauses, on remplace les valeurs texte par ISO.
+        document.querySelector('form').addEventListener('submit', function () {
+            const sd = fpStart.selectedDates?.[0];
+            startHidden.value = sd ? sd.toISOString() : '';
+
+            const ed = fpEnd.selectedDates?.[0];
+            endHidden.value = ed ? ed.toISOString() : '';
+
+            document.querySelectorAll('#pauses-list .pause-row').forEach(row => {
+                const s = row.querySelector('.pause-start');
+                const e = row.querySelector('.pause-end');
+                if (s && s._fp) {
+                    const d = s._fp.selectedDates?.[0];
+                    if (d) s.value = d.toISOString();
                 }
-            }
-        }
-
-        // Auto-fermeture du datepicker à la sélection des minutes
-        function attachDatePickerAutoClose(pickerId) {
-            const picker = document.getElementById(pickerId);
-            if (picker) {
-                let previousValue = picker.value;
-                picker.addEventListener('input', function () {
-                    const currentValue = this.value;
-                    if (previousValue && currentValue) {
-                        const previousMinutes = previousValue.split(':')[1];
-                        const currentMinutes = currentValue.split(':')[1];
-                        if (previousMinutes !== currentMinutes) {
-                            this.blur();
-                        }
-                    }
-                    previousValue = currentValue;
-                });
-            }
-        }
-
-                document.addEventListener('DOMContentLoaded', function () {
-            setLocalDateTimeFromUtc('startTimePicker');
-            setLocalDateTimeFromUtc('endTimePicker');
-            attachDatePickerAutoClose('startTimePicker');
-            attachDatePickerAutoClose('endTimePicker');
-
-            // LOG: Affiche la value JS au chargement
-            var startValSpan = document.getElementById('startTimePickerValue');
-            var endValSpan = document.getElementById('endTimePickerValue');
-            var startInput = document.getElementById('startTimePicker');
-            var endInput = document.getElementById('endTimePicker');
-            if (startValSpan && startInput) {
-                startValSpan.innerText = startInput.value;
-            }
-            if (endValSpan && endInput) {
-                endValSpan.innerText = endInput.value;
-            }
-
-            // LOG: Affiche la value JS avant le submit
-            document.querySelector('form').addEventListener('submit', function(e) {
-                console.log('[Submit] startTimePicker value:', startInput ? startInput.value : "(absent)");
-                console.log('[Submit] endTimePicker value:', endInput ? endInput.value : "(absent)");
+                if (e && e._fp) {
+                    const d = e._fp.selectedDates?.[0];
+                    e.value = d ? d.toISOString() : '';
+                }
             });
 
-            // Confirmation suppression
-            const deleteBtn = document.getElementById('deleteEntryBtn');
-            if (deleteBtn) {
-                deleteBtn.addEventListener('click', function () {
-                    if (confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) {
-                        document.getElementById('deleteEntryForm').submit();
-                    }
-                });
-            }
+            // anti double-submit
+            const btn = document.getElementById('btnSave');
+            if (btn) { btn.disabled = true; btn.classList.add('disabled'); setTimeout(()=>{btn.disabled=false;btn.classList.remove('disabled');},6000); }
         });
+
+        // Delete confirmation
+        (function () {
+            const btn = document.getElementById('deleteEntryBtn');
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) {
+                    document.getElementById('deleteEntryForm').submit();
+                }
+            });
+        })();
     </script>
 }
-

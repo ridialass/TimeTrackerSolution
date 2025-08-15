@@ -295,7 +295,7 @@
     <value>Esci</value>
   </data>
   <data name="LogoutMessage" xml:space="preserve">
-    <value>Sei stato disconnesso.</value>
+    <value>Stai per essere disconnesso.</value>
   </data>
   <data name="LogoutTitle" xml:space="preserve">
     <value>Esci</value>
@@ -614,5 +614,230 @@
   </data>
   <data name="MyAccueil" xml:space="preserve">
     <value>Area personale</value>
+  </data>
+  <data name="Privacy_Title" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+  <data name="Privacy_S1_Title" xml:space="preserve">
+    <value>Chi siamo</value>
+  </data>
+  <data name="Privacy_S1_Body" xml:space="preserve">
+    <value>L’app “TimeTracker” è fornita da {0} per piccole imprese. Offerta a forfait con assistenza post-vendita di 2 anni. In questa pagina spieghiamo cosa raccogliamo e perché.</value>
+  </data>
+  <data name="Privacy_S2_Title" xml:space="preserve">
+    <value>Dati che trattiamo</value>
+  </data>
+  <data name="Privacy_S2_Item_Accounts" xml:space="preserve">
+    <value>Account (identificativi, username, e-mail, ruolo).</value>
+  </data>
+  <data name="Privacy_S2_Item_Security" xml:space="preserve">
+    <value>Sicurezza/accessi (timestamp di login, token tecnici).</value>
+  </data>
+  <data name="Privacy_S2_Item_TimeEntries" xml:space="preserve">
+    <value>Registrazioni orarie (inizio/fine, pause, tipo intervento, pasto, tempo di trasferimento se indicato).</value>
+  </data>
+  <data name="Privacy_S2_Item_Geoloc" xml:space="preserve">
+    <value>Geolocalizzazione (indirizzo/coordinate a inizio/fine sessione se forniti).</value>
+  </data>
+  <data name="Privacy_S2_Item_Logs" xml:space="preserve">
+    <value>Log tecnici minimi per diagnostica.</value>
+  </data>
+  <data name="Privacy_S3_Title" xml:space="preserve">
+    <value>Basi giuridiche</value>
+  </data>
+  <data name="Privacy_S3_Item_Contract" xml:space="preserve">
+    <value>Esecuzione del contratto (erogazione del servizio, supporto 2 anni).</value>
+  </data>
+  <data name="Privacy_S3_Item_Legitimate" xml:space="preserve">
+    <value>Legittimo interesse (sicurezza, prevenzione abusi).</value>
+  </data>
+  <data name="Privacy_S3_Item_Consent" xml:space="preserve">
+    <value>Consenso (funzionalità opzionali come la geolocalizzazione).</value>
+  </data>
+  <data name="Privacy_S4_Title" xml:space="preserve">
+    <value>Finalità</value>
+  </data>
+  <data name="Privacy_S4_Body" xml:space="preserve">
+    <value>Fornire il tracciamento del tempo, generare esportazioni, supportare fatturazione e amministrazione HR, garantire supporto e sicurezza.</value>
+  </data>
+  <data name="Privacy_S5_Title" xml:space="preserve">
+    <value>Conservazione</value>
+  </data>
+  <data name="Privacy_S5_Item_Accounts" xml:space="preserve">
+    <value>Dati account: per il periodo d’uso + 24 mesi dopo l’ultima attività, salvo diverso obbligo di legge.</value>
+  </data>
+  <data name="Privacy_S5_Item_Logs" xml:space="preserve">
+    <value>Log tecnici: fino a 90 giorni (salvo incidenti di sicurezza).</value>
+  </data>
+  <data name="Privacy_S5_Item_Support" xml:space="preserve">
+    <value>Pratiche di supporto: fino a 24 mesi (assistenza post-vendita).</value>
+  </data>
+  <data name="Privacy_S6_Title" xml:space="preserve">
+    <value>Cookie e token</value>
+  </data>
+  <data name="Privacy_S6_Item_AuthCookie" xml:space="preserve">
+    <value>Cookie di autenticazione applicativa (.AspNetCore.Cookies / .AspNetCore.Identity.Application).</value>
+  </data>
+  <data name="Privacy_S6_Item_Jwt" xml:space="preserve">
+    <value>jwt_token: token di accesso HttpOnly, Secure, SameSite=Strict usato per le API.</value>
+  </data>
+  <data name="Privacy_S6_Trailing" xml:space="preserve">
+    <value>Non utilizziamo cookie pubblicitari.</value>
+  </data>
+  <data name="Privacy_S7_Title" xml:space="preserve">
+    <value>Sicurezza</value>
+  </data>
+  <data name="Privacy_S7_Item_Https" xml:space="preserve">
+    <value>TLS (HTTPS) obbligatorio.</value>
+  </data>
+  <data name="Privacy_S7_Item_Hash" xml:space="preserve">
+    <value>Password con hash e salt lato server.</value>
+  </data>
+  <data name="Privacy_S7_Item_Rbac" xml:space="preserve">
+    <value>Controlli di accesso basati su ruoli (Admin, Employee/Technician).</value>
+  </data>
+  <data name="Privacy_S8_Title" xml:space="preserve">
+    <value>Condivisione</value>
+  </data>
+  <data name="Privacy_S8_Body" xml:space="preserve">
+    <value>Nessuna vendita di dati. Solo fornitori tecnici essenziali (hosting, e-mail) vincolati a riservatezza e accordi di trattamento.</value>
+  </data>
+  <data name="Privacy_S9_Title" xml:space="preserve">
+    <value>I tuoi diritti</value>
+  </data>
+  <data name="Privacy_S9_Body" xml:space="preserve">
+    <value>Accesso, rettifica, cancellazione, limitazione, portabilità e opposizione ove applicabile. Contattaci all’indirizzo di supporto.</value>
+  </data>
+  <data name="Privacy_S10_Title" xml:space="preserve">
+    <value>Contatti</value>
+  </data>
+  <data name="Privacy_S10_Body" xml:space="preserve">
+    <value>Per domande o richieste sui diritti: support@timetracker.it</value>
+  </data>
+  <data name="Privacy_S11_Title" xml:space="preserve">
+    <value>Modifiche</value>
+  </data>
+  <data name="Privacy_S11_Body" xml:space="preserve">
+    <value>Questa informativa può essere aggiornata; fa fede la versione online.</value>
+  </data>
+  <data name="Privacy_S12_Title" xml:space="preserve">
+    <value>Versione</value>
+  </data>
+  <data name="Privacy_S12_LastUpdated" xml:space="preserve">
+    <value>Ultimo aggiornamento: {0}</value>
+  </data>
+  <data name="Privacy_Disclaimer" xml:space="preserve">
+    <value>Questo testo è informativo e non costituisce consulenza legale. Adattalo agli obblighi locali.</value>
+  </data>
+  <data name="ProfilePictureLabel" xml:space="preserve">
+    <value>Foto di profilo</value>
+  </data>
+  <data name="AlreadyLoggedOutMessage" xml:space="preserve">
+    <value>Sei disconnesso adesso.</value>
+  </data>
+  <data name="InfoMessage" xml:space="preserve">
+    <value>Sei disconnesso adesso.</value>
+  </data>
+  <data name="Support_Title" xml:space="preserve">
+    <value>Aiuto &amp; Supporto</value>
+  </data>
+  <data name="Support_FAQ_Title" xml:space="preserve">
+    <value>Domande frequente</value>
+  </data>
+  <data name="Support_Contact_Title" xml:space="preserve">
+    <value>Contactare il supporto</value>
+  </data>
+  <data name="Support_Form_Invalid" xml:space="preserve">
+    <value>Il modulo contiene errori. Correggi i campi evidenziati.</value>
+  </data>
+  <data name="Support_Sent_Success" xml:space="preserve">
+    <value>Grazie, il tuo messaggio è stato inviato. Ti risponderemo al più presto.</value>
+  </data>
+  <data name="Support_Sent_Error" xml:space="preserve">
+    <value>Invio non riuscito. Riprova o usa il pulsante "Invia email".</value>
+  </data>
+  <data name="Support_Smtp_NotConfigured" xml:space="preserve">
+    <value>La posta diretta non è configurata su questo server. Puoi contattarci utilizzando il pulsante "Invia email".</value>
+  </data>
+  <data name="Support_Contact_Mailto" xml:space="preserve">
+    <value>Invia un'e-mail</value>
+  </data>
+  <data name="Support_Contact_Footer" xml:space="preserve">
+    <value>Indirizzo di supporto: {0}</value>
+  </data>
+  <data name="Support_Field_Topic" xml:space="preserve">
+    <value>Titolo</value>
+  </data>
+  <data name="Support_Field_Email" xml:space="preserve">
+    <value>Installazione/distribuzione</value>
+  </data>
+  <data name="Support_Topic_Login" xml:space="preserve">
+    <value>Accesso / Password</value>
+  </data>
+  <data name="Support_Topic_Billing" xml:space="preserve">
+    <value>Fatturazione e licenza</value>
+  </data>
+  <data name="Support_Topic_Bug" xml:space="preserve">
+    <value>Bug / Anomalia</value>
+  </data>
+  <data name="Support_Topic_Feature" xml:space="preserve">
+    <value>Idea / evoluzione</value>
+  </data>
+  <data name="Support_Topic_General" xml:space="preserve">
+    <value>Domanda generale</value>
+  </data>
+  <data name="Support_Field_Email_Hint" xml:space="preserve">
+    <value>Se fornito, risponderemo direttamente a questo indirizzo.</value>
+  </data>
+  <data name="Support_Field_Message" xml:space="preserve">
+    <value>Messaggio</value>
+  </data>
+  <data name="Support_Field_Message_Placeholder" xml:space="preserve">
+    <value>Descrivi la tua esigenza, l'azione eseguita, la schermata interessata e il risultato atteso...</value>
+  </data>
+  <data name="Support_Field_IncludeTechnical" xml:space="preserve">
+    <value>Allega informazioni tecniche (browser, cultura, ora, ecc.)</value>
+  </data>
+  <data name="Support_FAQ_Login_Title" xml:space="preserve">
+    <value>Non riesco a fare il login</value>
+  </data>
+  <data name="Support_FAQ_Login_Body" xml:space="preserve">
+    <value>&lt;p&gt;Controlla il tuo &lt;strong&gt;nome utente&lt;/strong&gt; e la &lt;strong&gt;password&lt;/strong&gt;. Se hai dimenticato la password, usa &lt;em&gt;"Password dimenticata"&lt;/em&gt; dalla pagina di accesso. Se non hai abbastanza ruoli, contatta un amministratore.&lt;/p&gt;</value>
+  </data>
+  <data name="Support_FAQ_Reset_Title" xml:space="preserve">
+    <value>Reimposta la mia password</value>
+  </data>
+  <data name="Support_FAQ_Reset_Body" xml:space="preserve">
+    <value>&lt;p&gt;Dalla pagina di login, clicca su &lt;em&gt;"Password dimenticata"&lt;/em&gt; e segui il link ricevuto via email per impostare una nuova password.&lt;/p&gt;</value>
+  </data>
+  <data name="Support_FAQ_Roles_Title" xml:space="preserve">
+    <value>Ruoli e accesso</value>
+  </data>
+  <data name="Support_FAQ_Roles_Body" xml:space="preserve">
+    <value>&lt;p&gt;I ruoli (Amministratore, Tecnico, Dipendente) determinano l'accesso alle pagine. Un amministratore può gestire gli utenti e visualizzare le schede attività.&lt;/p&gt;</value>
+  </data>
+  <data name="Support_FAQ_Export_Title" xml:space="preserve">
+    <value>Esportazione CSV delle sessioni</value>
+  </data>
+  <data name="Support_FAQ_Export_Body" xml:space="preserve">
+    <value>&lt;p&gt;Nella tabella delle sessioni, utilizzare il pulsante &lt;strong&gt;Esporta&lt;/strong&gt;. All'esportazione si applicano i filtri (settimana, mese, personalizzato).&lt;/p&gt;</value>
+  </data>
+  <data name="Support_FAQ_Billing_Title" xml:space="preserve">
+    <value>Fatturazione e licenza</value>
+  </data>
+  <data name="Support_FAQ_Billing_Body" xml:space="preserve">
+    <value>&lt;p&gt;L'app è disponibile per le piccole imprese tramite un piano che include 2 anni di supporto. Per ulteriori informazioni, contattare l'assistenza.&lt;/p&gt;</value>
+  </data>
+  <data name="Support_FAQ_Bug_Title" xml:space="preserve">
+    <value>Segnala un bug</value>
+  </data>
+  <data name="Support_FAQ_Bug_Body" xml:space="preserve">
+    <value>&lt;p&gt;Descrivi la schermata, i passaggi per riprodurla, il browser utilizzato e, se possibile, aggiungi uno screenshot.&lt;/p&gt;</value>
+  </data>
+  <data name="GoToAdmin" xml:space="preserve">
+    <value>Vai sul Dashboard</value>
+  </data>
+  <data name="Support_Send_Button" xml:space="preserve">
+    <value>Invia al supporto</value>
   </data>
 </root>

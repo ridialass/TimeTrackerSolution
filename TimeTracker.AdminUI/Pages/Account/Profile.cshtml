@@ -5,92 +5,206 @@
 
 @{
     ViewData["Title"] = SharedLocalizer["ProfileTitle"];
-    // Affichage : image par défaut SI PAS d'image utilisateur
-    var photoUrl = !string.IsNullOrEmpty(Model.ProfilePictureUrl)
+    var photoUrl = !string.IsNullOrWhiteSpace(Model.ProfilePictureUrl)
         ? Model.ProfilePictureUrl
         : Url.Content("~/images/default-profile.png");
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container py-3">
+    <h2 class="mb-3">@ViewData["Title"]</h2>
 
-@if (!string.IsNullOrEmpty(Model.ProfileMessage))
-{
-    <div class="alert alert-success">@Model.ProfileMessage</div>
-}
+    @if (!string.IsNullOrWhiteSpace(Model.ProfileMessage))
+    {
+        <div class="alert alert-success" role="alert">@Model.ProfileMessage</div>
+    }
 
-<div class="container text-center d-grid gap-3">
-    <div class="row">
-        <div class="col-8">
-            <form method="post" enctype="multipart/form-data" asp-page-handler="UpdateProfile">
-                <div class="mb-4">
-                    @* <label class="form-label">@SharedLocalizer["ProfilePictureLabel"]</label><br /> *@
-                    <img src="@photoUrl" alt="Avatar" style="width:100px;border-radius:50%;margin-bottom:10px;" />
-                    <input asp-for="ProfilePicture" type="file" accept="image/*" class="form-control" />
-                    <input type="hidden" asp-for="ProfilePictureUrl" />
-                    <span asp-validation-for="ProfilePicture" class="text-danger"></span>
-                </div>
-                <div class="mb-2">
-                    <label asp-for="EditableEmail" class="form-label">@SharedLocalizer["EmailLabel"]</label>
-                    <input asp-for="EditableEmail" class="form-control" />
-                    <span asp-validation-for="EditableEmail" class="text-danger"></span>
-                </div>
-                <div class="mb-2">
-                    <label asp-for="FirstName" class="form-label">@SharedLocalizer["FirstNameLabel"]</label>
-                    <input asp-for="FirstName" class="form-control" />
-                    <span asp-validation-for="FirstName" class="text-danger"></span>
-                </div>
-                <div class="mb-2">
-                    <label asp-for="LastName" class="form-label">@SharedLocalizer["LastNameLabel"]</label>
-                    <input asp-for="LastName" class="form-control" />
-                    <span asp-validation-for="LastName" class="text-danger"></span>
-                </div>
-                <div class="mb-2">
-                    <label asp-for="Town" class="form-label">@SharedLocalizer["TownLabel"]</label>
-                    <input asp-for="Town" class="form-control" />
-                    <span asp-validation-for="Town" class="text-danger"></span>
-                </div>
-                <div class="mb-2">
-                    <label asp-for="Country" class="form-label">@SharedLocalizer["CountryLabel"]</label>
-                    <input asp-for="Country" class="form-control" />
-                    <span asp-validation-for="Country" class="text-danger"></span>
-                </div>
-                <button type="submit" class="btn btn-success">@SharedLocalizer["SaveProfileButton"]</button>
-            </form>
-        </div>
-        <div class="col-1"></div>
-        <div class="col-3">
-            <div class="card">
-                <img src="@photoUrl" class="object-fit-sm-contain border rounded " alt="@SharedLocalizer["UserProfilPicture"]">
+    <div class="row g-4">
+        <!-- Col gauche : Formulaire -->
+        <div class="col-lg-7">
+            <form method="post" enctype="multipart/form-data" asp-page-handler="UpdateProfile" class="card shadow-sm">
                 <div class="card-body">
-                    <div class="form-floating ">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <input asp-for="FirstName" readonly class="form-control-plaintext"> 
-                            </li>
-                            <li class="list-group-item">
-                                <input asp-for="LastName" readonly class="form-control-plaintext">
-                            </li>
-                            <li class="list-group-item">
-                                 <input asp-for="EditableEmail" readonly class="form-control-plaintext">
-                            </li>
-                            <li class="list-group-item">
-                                <input asp-for="Town" readonly class="form-control-plaintext">
-                            </li>
-                            <li class="list-group-item">
-                                <input asp-for="Country" readonly class="form-control-plaintext">
-                            </li>
-                        </ul>
+                    <input type="hidden" asp-for="ProfilePictureUrl" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert" style="display:none"></div>
+
+                    <!-- Avatar + bouton changer -->
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="position-relative me-3">
+                            <img id="avatarPreview"
+                                 src="@photoUrl"
+                                 alt="@SharedLocalizer["UserProfilPicture"]"
+                                 class="rounded-circle"
+                                 style="width:96px;height:96px;object-fit:cover;border:1px solid #e5e5e5" />
+                            <label for="fileAvatar"
+                                   class="btn btn-sm btn-outline-primary position-absolute bottom-0 end-0 translate-middle-x">
+                                <i class="bi bi-camera"></i>
+                            </label>
+                        </div>
+                        <div class="flex-grow-1">
+                            <input id="fileAvatar"
+                                   asp-for="ProfilePicture"
+                                   type="file"
+                                   accept="image/*"
+                                   class="form-control form-control-sm"
+                                   style="max-width:320px" />
+                            <span class="form-text">@SharedLocalizer["ProfilePictureLabel"]</span>
+                            <span asp-validation-for="ProfilePicture" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Champs identité -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FirstName" class="form-label">@SharedLocalizer["FirstNameLabel"]</label>
+                            <input asp-for="FirstName" class="form-control" autocomplete="given-name" />
+                            <span asp-validation-for="FirstName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="LastName" class="form-label">@SharedLocalizer["LastNameLabel"]</label>
+                            <input asp-for="LastName" class="form-control" autocomplete="family-name" />
+                            <span asp-validation-for="LastName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="EditableEmail" class="form-label">@SharedLocalizer["EmailLabel"]</label>
+                            <input asp-for="EditableEmail" type="email" class="form-control" autocomplete="email" />
+                            <span asp-validation-for="EditableEmail" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Town" class="form-label">@SharedLocalizer["TownLabel"]</label>
+                            <input asp-for="Town" class="form-control" autocomplete="address-level2" />
+                            <span asp-validation-for="Town" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Country" class="form-label">@SharedLocalizer["CountryLabel"]</label>
+                            <input asp-for="Country" class="form-control" autocomplete="country-name" />
+                            <span asp-validation-for="Country" class="text-danger small"></span>
+                        </div>
                     </div>
                 </div>
-                <div class="card-footer text-body-secondary">
-                    <a asp-page="/Account/ChangePassword" class="btn btn-primary" style="margin-bottom:20px;">
-                        @SharedLocalizer["ChangePasswordButton"]
+
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <a asp-page="/Account/ChangePassword" class="btn btn-outline-secondary">
+                        <i class="bi bi-key me-1"></i>@SharedLocalizer["ChangePasswordButton"]
                     </a>
+                    <button type="submit" id="btnSave" class="btn btn-success">
+                        <i class="bi bi-check2-circle me-1"></i>@SharedLocalizer["SaveProfileButton"]
+                    </button>
                 </div>
-            </div>   
+            </form>
+        </div>
+
+        <!-- Col droite : Carte récap -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <img id="avatarCard"
+                         src="@photoUrl"
+                         class="rounded-circle mb-3"
+                         alt="@SharedLocalizer["UserProfilPicture"]"
+                         style="width:128px;height:128px;object-fit:cover;border:1px solid #e5e5e5" />
+                    <ul class="list-group list-group-flush text-start">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">@SharedLocalizer["FirstNameLabel"]</span>
+                            <strong id="vFirstName">@Model.FirstName</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">@SharedLocalizer["LastNameLabel"]</span>
+                            <strong id="vLastName">@Model.LastName</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">@SharedLocalizer["EmailLabel"]</span>
+                            <strong id="vEmail">@Model.EditableEmail</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">@SharedLocalizer["TownLabel"]</span>
+                            <strong id="vTown">@Model.Town</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">@SharedLocalizer["CountryLabel"]</span>
+                            <strong id="vCountry">@Model.Country</strong>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer text-body-secondary small">
+                    @* espace pour des infos complémentaires *@
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
+@section Scripts {
+    <script>
+        // Affiche le résumé si erreurs serveur
+        (function () {
+            const summary = document.querySelector('[asp-validation-summary]');
+            if (summary && summary.innerText.trim().length > 0) summary.style.display = '';
+        })();
 
+        // Prévisualisation avatar + petite validation client
+        (function () {
+            const input = document.getElementById('fileAvatar');
+            const imgForm = document.getElementById('avatarPreview');
+            const imgCard = document.getElementById('avatarCard');
+            if (!input || !imgForm || !imgCard) return;
 
+            input.addEventListener('change', function () {
+                const file = this.files && this.files[0];
+                if (!file) return;
+
+                const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+                const maxBytes = 2 * 1024 * 1024; // 2MB
+
+                if (!validTypes.includes(file.type)) {
+                    alert('Format image non supporté (jpeg, png, webp, gif).');
+                    this.value = '';
+                    return;
+                }
+                if (file.size > maxBytes) {
+                    alert('Image trop lourde (max 2MB).');
+                    this.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = e => {
+                    imgForm.src = e.target.result;
+                    imgCard.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        })();
+
+        // Miroir live des champs vers la carte de droite (UX sympa)
+        (function () {
+            const pairs = [
+                ['FirstName', 'vFirstName'],
+                ['LastName', 'vLastName'],
+                ['EditableEmail', 'vEmail'],
+                ['Town', 'vTown'],
+                ['Country', 'vCountry']
+            ];
+            for (const [srcName, targetId] of pairs) {
+                const input = document.querySelector(`[name="${srcName}"]`);
+                const target = document.getElementById(targetId);
+                if (!input || !target) continue;
+                const render = () => target.textContent = input.value || '—';
+                input.addEventListener('input', render);
+                render();
+            }
+        })();
+
+        // anti double-submit
+        (function () {
+            const form = document.querySelector('form[asp-page-handler="UpdateProfile"]');
+            const btn = document.getElementById('btnSave');
+            if (form && btn) {
+                form.addEventListener('submit', function () {
+                    btn.disabled = true; btn.classList.add('disabled');
+                    setTimeout(() => { btn.disabled = false; btn.classList.remove('disabled'); }, 6000);
+                });
+            }
+        })();
+    </script>
+}

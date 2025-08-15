@@ -1,0 +1,114 @@
+﻿@page
+@model TimeTracker.AdminUI.Pages.Admin.SupportModel
+@using Microsoft.Extensions.Localization
+
+@{
+    ViewData["Title"] = SharedLocalizer["Support_Title"];
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+@if (!string.IsNullOrEmpty(Model.Success))
+{
+    <div class="alert alert-success">@Model.Success</div>
+}
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="alert alert-warning">
+        @Model.Error
+        @* Repli mailto si SMTP non configuré *@
+        <div class="mt-2">
+            <a class="btn btn-outline-primary"
+               href="mailto:@Model.SupportTo?subject=@Uri.EscapeDataString("[TimeTracker Support]")">
+                <i class="bi bi-envelope"></i>
+                @SharedLocalizer["Support_Contact_Mailto"]
+            </a>
+        </div>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <strong><i class="bi bi-question-circle me-2"></i>@SharedLocalizer["Support_FAQ_Title"]</strong>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="faqAccordion">
+                    @foreach (var item in Model.Faq)
+                    {
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="h-@item.Id">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#c-@item.Id"
+                                        aria-expanded="false" aria-controls="c-@item.Id">
+                                    @item.Title
+                                </button>
+                            </h2>
+                            <div id="c-@item.Id" class="accordion-collapse collapse"
+                                 aria-labelledby="h-@item.Id" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    @Html.Raw(item.Body)
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <strong><i class="bi bi-envelope-paper me-2"></i>@SharedLocalizer["Support_Contact_Title"]</strong>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label" for="topic">@SharedLocalizer["Support_Field_Topic"]</label>
+                        <select id="topic" asp-for="Topic" class="form-select">
+                            <option value="general">@SharedLocalizer["Support_Topic_General"]</option>
+                            <option value="install">@SharedLocalizer["Support_Topic_Install"]</option>
+                            <option value="login">@SharedLocalizer["Support_Topic_Login"]</option>
+                            <option value="billing">@SharedLocalizer["Support_Topic_Billing"]</option>
+                            <option value="bug">@SharedLocalizer["Support_Topic_Bug"]</option>
+                            <option value="feature">@SharedLocalizer["Support_Topic_Feature"]</option>
+                        </select>
+                        <span asp-validation-for="Topic" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="email">@SharedLocalizer["Support_Field_Email"]</label>
+                        <input id="email" asp-for="Email" type="email" class="form-control" placeholder="name@company.com" />
+                        <span class="form-text">@SharedLocalizer["Support_Field_Email_Hint"]</span>
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="message">@SharedLocalizer["Support_Field_Message"]</label>
+                        <textarea id="message" asp-for="Message" rows="6" class="form-control"
+                                  placeholder="@SharedLocalizer["Support_Field_Message_Placeholder"]"></textarea>
+                        <span asp-validation-for="Message" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" asp-for="IncludeTechnical" type="checkbox" id="techChk" />
+                        <label class="form-check-label" for="techChk">@SharedLocalizer["Support_Field_IncludeTechnical"]</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send me-1"></i>@SharedLocalizer["Support_Send_Button"]
+                    </button>
+                    <a class="btn btn-outline-secondary ms-2"
+                       href="mailto:@Model.SupportTo?subject=@Uri.EscapeDataString("[TimeTracker Support]")">
+                        <i class="bi bi-envelope"></i> @SharedLocalizer["Support_Contact_Mailto"]
+                    </a>
+                </form>
+            </div>
+            <div class="card-footer text-muted">
+                @SharedLocalizer["Support_Contact_Footer", Model.SupportTo]
+            </div>
+        </div>
+    </div>
+</div>

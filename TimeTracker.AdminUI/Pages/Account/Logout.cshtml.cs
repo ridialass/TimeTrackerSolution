@@ -38,7 +38,7 @@ public class LogoutModel : PageModel
         }
 
         // Rester sur la page et afficher un message de confirmation
-        InfoMessage = "Vous êtes maintenant déconnecté.";
+        InfoMessage = " ";
         return Page();
     }
 }

@@ -3,197 +3,195 @@
 @using Microsoft.Extensions.Localization
 
 @{
-    ViewData["Title"] = SharedLocalizer["PrivacyTitle"];
+    ViewData["Title"] = SharedLocalizer["Privacy_Title"];
 }
-<h2>@ViewData["Title"]</h2>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<h1 class="mb-4">@SharedLocalizer["Privacy_Title"]</h1>
 
+<div class="accordion" id="privacyAccordion">
 
-
-<div class="row g-4">
-    <!-- Nouveau bouton Créer un utilisateur, aligné à droite du titre -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        
-    </div>
-
-    <!-- 2. Filter Sessions by User and Date -->
-    <div class="col-lg-12">
-        <div class="card shadow-sm">
-            <form method="post" asp-page-handler="LoadSessions" class="row row-cols-lg-auto g-3 align-items-center">
-                <div class="12">
-                    <strong>@SharedLocalizer["FilterLabel"]</strong>
-                </div>
-                <div class="12">
-                    @SharedLocalizer["EmployeeLabel"] :
-                </div>
-                <div class="col-12">
-                    <label class="visually-hidden" for="inlineFormSelectPref">@SharedLocalizer["EmployeeLabel"]</label>
-                    <select asp-for="SelectedEmployeeId" class="form-select">
-                        <option value="0">-- @SharedLocalizer["SelectLabel"] --</option>
-                        @foreach (var emp in Model.AllEmployees)
-                        {
-                            <option value="@emp.Id">@emp.Username</option>
-                        }
-                    </select>
-                </div>
-                <div class="12">
-                    @SharedLocalizer["PeriodLabel"] :
-                </div>
-                <div class="col-12">
-                    <select asp-for="SelectedPeriod" class="form-select" id="periodSelect" onchange="toggleCustomDates(this.value)">
-                        <option value="all">@SharedLocalizer["AllPeriodsOption"]</option>
-                        <option value="week">@SharedLocalizer["ThisWeekOption"]</option>
-                        <option value="month">@SharedLocalizer["ThisMonthOption"]</option>
-                        <option value="custom">@SharedLocalizer["CustomOption"]</option>
-                    </select>
-                </div>
-                <div class="col-12" id="customDates" style="display:none;">
-                    <div class="col">
-                        <label asp-for="CustomStartDate" class="form-label">@SharedLocalizer["FromLabel"]</label>
-                    </div>
-                    <div class="col">
-                        
-                        <input asp-for="CustomStartDate" type="date" class="form-control" />
-                    </div>
-                    <div class="col">
-                        <label asp-for="CustomEndDate" class="form-label">@SharedLocalizer["ToLabel"]</label>
-                    </div>
-                    <div class="col">
-                        
-                        <input asp-for="CustomEndDate" type="date" class="form-control" />
-                    </div>
-                </div>
-                <input type="hidden" asp-for="WeekOffset" />
-
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">@SharedLocalizer["SubmitButton"]</button>
-                </div>
-            </form>
-            <!-- Nouveau bouton Créer un utilisateur, aligné à droite du filtre -->
-            <div class="position-absolute top-0 end-0">
-                <a asp-page="/Account/Register" class="btn btn-success">
-                    <i class="bi bi-person-plus-fill me-2"></i>@SharedLocalizer["CreateEmployeeButton"]
-                </a>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="p1">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#c1" aria-expanded="true" aria-controls="c1">
+                @SharedLocalizer["Privacy_S1_Title"]
+            </button>
+        </h2>
+        <div id="c1" class="accordion-collapse collapse show" aria-labelledby="p1" data-bs-parent="#privacyAccordion">
+            <div class="accordion-body">
+                @* Exemple avec placeholder {0} pour le nom de l’éditeur *@
+                @SharedLocalizer["Privacy_S1_Body", "Ridialass"]
             </div>
         </div>
     </div>
 
-    <!-- 3. Sessions for Selected User -->
-    <div class="col-lg-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    @SharedLocalizer["SessionsForLabel"]&nbsp;
-                    @Model.AllEmployees.FirstOrDefault(e => e.Id == Model.SelectedEmployeeId)?.Username
-                </h5>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="p2">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c2" aria-expanded="false" aria-controls="c2">
+                @SharedLocalizer["Privacy_S2_Title"]
+            </button>
+        </h2>
+        <div id="c2" class="accordion-collapse collapse" aria-labelledby="p2" data-bs-parent="#privacyAccordion">
+            <div class="accordion-body">
+                <ul>
+                    <li>@SharedLocalizer["Privacy_S2_Item_Accounts"]</li>
+                    <li>@SharedLocalizer["Privacy_S2_Item_Security"]</li>
+                    <li>@SharedLocalizer["Privacy_S2_Item_TimeEntries"]</li>
+                    <li>@SharedLocalizer["Privacy_S2_Item_Geoloc"]</li>
+                    <li>@SharedLocalizer["Privacy_S2_Item_Logs"]</li>
+                </ul>
             </div>
-            <div class="card-body">
-                @if (Model.SelectedEmployeeId != 0)
-                {
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <form method="post" asp-page-handler="LoadSessions" style="display:inline;">
-                            <input type="hidden" name="SelectedEmployeeId" value="@Model.SelectedEmployeeId" />
-                            <input type="hidden" name="SelectedPeriod" value="@Model.SelectedPeriod" />
-                            <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
-                            <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
-                            <input type="hidden" name="WeekOffset" value="@(Model.WeekOffset - 1)" />
-                            <button type="submit" class="btn btn-link">&laquo;@SharedLocalizer["PreviousWeekButton"]</button>
-                        </form>
-                        <span>
-                            @Model.CurrentWeekStart.ToString("dd/MM/yyyy") - @Model.CurrentWeekEnd.ToString("dd/MM/yyyy")
-                        </span>
-                        @if (Model.WeekOffset < 0)
-                        {
-                            <form method="post" asp-page-handler="LoadSessions" style="display:inline;">
-                                <input type="hidden" name="SelectedEmployeeId" value="@Model.SelectedEmployeeId" />
-                                <input type="hidden" name="SelectedPeriod" value="@Model.SelectedPeriod" />
-                                <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
-                                <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
-                                <input type="hidden" name="WeekOffset" value="@(Model.WeekOffset + 1)" />
-                                <button type="submit" class="btn btn-link">@SharedLocalizer["NextWeekButton"] &raquo;</button>
-                            </form>
-                        }
-                        else
-                        {
-                            <button type="button" class="btn btn-link text-muted" disabled>@SharedLocalizer["NextWeekButton"] &raquo;</button>
-                        }
-                    </div>
-                }
-                @if (Model.FilteredEntries != null && Model.FilteredEntries.Any())
-                {
-                    <div class="table-responsive">
-                        <!-- EXPORT BUTTON posts ALL filter info -->
-                        <form method="post" asp-page-handler="ExportCsv" class="mt-3 text-end">
-                            <input type="hidden" name="SelectedEmployeeId" value="@Model.SelectedEmployeeId" />
-                            <input type="hidden" name="SelectedPeriod" value="@Model.SelectedPeriod" />
-                            <input type="hidden" name="CustomStartDate" value="@(Model.CustomStartDate?.ToString("yyyy-MM-dd") ?? "")" />
-                            <input type="hidden" name="CustomEndDate" value="@(Model.CustomEndDate?.ToString("yyyy-MM-dd") ?? "")" />
-                            <button type="submit" class="btn btn-info">
-                                <i class="bi bi-download me-1"></i>@SharedLocalizer["ExportCsvButton"]
-                            </button>
-                        </form>
-                        <table class="table table-striped align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>@SharedLocalizer["SessionTypeLabel"]</th>
-                                    <th>@SharedLocalizer["StartTimeLabel"]</th>
-                                    <th>@SharedLocalizer["EndTimeLabel"]</th>
-                                    <th>@SharedLocalizer["DurationLabel"]</th>
-                                    <th>@SharedLocalizer["TravelTimeEstimateLabel"]</th>
-                                    <th>@SharedLocalizer["StartAddressLabel"]</th>
-                                    <th>@SharedLocalizer["EndAddressLabel"]</th>
-                                    <th>@SharedLocalizer["DinnerPaidLabel"]</th>
-                                    <th>@SharedLocalizer["ActionsLabel"]</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var s in Model.FilteredEntries)
-                                {
-                                    <tr>
-                                        <td>@SharedLocalizer[$"SessionType_{s.SessionType}"]</td>
-                                        <td>@s.StartTime.ToLocalTime().ToString("g")</td>
-                                        <td>@(s.EndTime.HasValue? s.EndTime.Value.ToLocalTime().ToString("g") : "—")</td>
-                                        <td>@(s.WorkDuration.HasValue ? $"{(int)s.WorkDuration.Value.TotalHours}h{s.WorkDuration.Value.Minutes}m" : "—")</td>
-                                        <td>@SharedLocalizer[s.IncludesTravelTime ? "YesLabel" : "NoLabel"]</td>
-                                        <td>@(s.TravelTimeEstimate.HasValue? s.TravelTimeEstimate.Value.ToString(@"hh\:mm") : "—")</td>
-                                        <td>@s.StartAddress</td>
-                                        <td>@s.EndAddress</td>
-                                        <td>@SharedLocalizer[$"DinnerPaidBy_{s.DinnerPaid}"]</td>
-                                        <!-- Bouton Détails -->
-                                        <td>
-                                            @* <a asp-page="/Admin/DetailsTimeEntry"
-                                               asp-route-id="@s.Id"
-                                               class="btn btn-sm btn-info"
-                                               title="Détails">
-                                                <i class="bi bi-eye"></i>
-                                            </a> *@
-                                            <a asp-page="/Admin/DetailsTimeEntry" asp-route-id="@s.Id" class="btn btn-info">
-                                                <i class="bi bi-person-plus-fill me-2"></i>Détails
-                                            </a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
-                else
-                {
-                    <p class="text-muted mb-0">@SharedLocalizer["NoSessionsMessage"]</p>
-                }
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="p3">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c3" aria-expanded="false" aria-controls="c3">
+                @SharedLocalizer["Privacy_S3_Title"]
+            </button>
+        </h2>
+        <div id="c3" class="accordion-collapse collapse" aria-labelledby="p3" data-bs-parent="#privacyAccordion">
+            <div class="accordion-body">
+                <ul>
+                    <li>@SharedLocalizer["Privacy_S3_Item_Contract"]</li>
+                    <li>@SharedLocalizer["Privacy_S3_Item_Legitimate"]</li>
+                    <li>@SharedLocalizer["Privacy_S3_Item_Consent"]</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="p4">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c4" aria-expanded="false" aria-controls="c4">
+                @SharedLocalizer["Privacy_S4_Title"]
+            </button>
+        </h2>
+        <div id="c4" class="accordion-collapse collapse" aria-labelledby="p4" data-bs-parent="#privacyAccordion">
+            <div class="accordion-body">
+                <ul>
+                    <li>@SharedLocalizer["Privacy_S4_Body"]</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="p5">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c5" aria-expanded="false" aria-controls="c5">
+                @SharedLocalizer["Privacy_S5_Title"]
+            </button>
+        </h2>
+        <div id="c5" class="accordion-collapse collapse" aria-labelledby="p5" data-bs-parent="#privacyAccordion">
+            <div class="accordion-body">
+                <ul>
+                    <li>@SharedLocalizer["Privacy_S5_Item_Accounts"]</li>
+                    <li>@SharedLocalizer["Privacy_S5_Item_Logs"]</li>
+                    <li>@SharedLocalizer["Privacy_S5_Item_Support"]</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="p6">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c6" aria-expanded="false" aria-controls="c6">
+                @SharedLocalizer["Privacy_S6_Title"]
+            </button>
+        </h2>
+        <div id="c6" class="accordion-collapse collapse" aria-labelledby="p6" data-bs-parent="#privacyAccordion">
+            <div class="accordion-body">
+                <ul>
+                    <li>@SharedLocalizer["Privacy_S6_Item_AuthCookie"]</li>
+                    <li>@SharedLocalizer["Privacy_S6_Item_Jwt"]</li>
+                    <li>@SharedLocalizer["Privacy_S6_Trailing"]</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="p7">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c7" aria-expanded="false" aria-controls="c7">
+                @SharedLocalizer["Privacy_S7_Title"]
+            </button>
+        </h2>
+        <div id="c7" class="accordion-collapse collapse" aria-labelledby="p7" data-bs-parent="#privacyAccordion">
+            <div class="accordion-body">
+                <ul>
+                    <li>@SharedLocalizer["Privacy_S7_Item_Https"]</li>
+                    <li>@SharedLocalizer["Privacy_S7_Item_Hash"]</li>
+                    <li>@SharedLocalizer["Privacy_S7_Item_Rbac"]</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="p8">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c8" aria-expanded="false" aria-controls="c8">
+                @SharedLocalizer["Privacy_S8_Title"]
+            </button>
+        </h2>
+        <div id="c8" class="accordion-collapse collapse" aria-labelledby="p8" data-bs-parent="#privacyAccordion">
+            <div class="accordion-body">
+                <ul>
+                    <li>@SharedLocalizer["Privacy_S8_Body"]</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="p9">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c9" aria-expanded="false" aria-controls="c9">
+                @SharedLocalizer["Privacy_S9_Title"]
+            </button>
+        </h2>
+        <div id="c9" class="accordion-collapse collapse" aria-labelledby="p9" data-bs-parent="#privacyAccordion">
+            <div class="accordion-body">
+                <ul>
+                    <li>@SharedLocalizer["Privacy_S9_Body"]</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="p10">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c10" aria-expanded="false" aria-controls="c10">
+                @SharedLocalizer["Privacy_S10_Title"]
+            </button>
+        </h2>
+        <div id="c10" class="accordion-collapse collapse" aria-labelledby="p10" data-bs-parent="#privacyAccordion">
+            <div class="accordion-body">
+                <ul>
+                    <li>@SharedLocalizer["Privacy_S10_Body"]</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="p11">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c11" aria-expanded="false" aria-controls="c11">
+                @SharedLocalizer["Privacy_S11_Title"]
+            </button>
+        </h2>
+        <div id="c11" class="accordion-collapse collapse" aria-labelledby="p11" data-bs-parent="#privacyAccordion">
+            <div class="accordion-body">
+                <ul>
+                    <li>@SharedLocalizer["Privacy_S11_Body"]</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="p12">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c12" aria-expanded="false" aria-controls="c12">
+                @SharedLocalizer["Privacy_S12_Title"]
+            </button>
+        </h2>
+        <div id="c12" class="accordion-collapse collapse" aria-labelledby="p12" data-bs-parent="#privacyAccordion">
+            <div class="accordion-body">
+                @SharedLocalizer["Privacy_S12_LastUpdated",
+                DateTime.Today.ToString("d", System.Globalization.CultureInfo.CurrentUICulture)]
             </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        function toggleCustomDates(val) {
-            document.getElementById('customDates').style.display = val === 'custom' ? 'flex' : 'none';
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            toggleCustomDates(document.getElementById('periodSelect').value);
-        });
-    </script>
-}
+<p class="mt-3 small text-muted">
+    <em>@SharedLocalizer["Privacy_Disclaimer"]</em>
+</p>

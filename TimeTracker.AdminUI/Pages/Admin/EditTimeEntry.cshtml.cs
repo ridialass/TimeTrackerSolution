@@ -23,6 +23,10 @@ namespace TimeTracker.AdminUI.Pages.Admin
         // Filter/navigation context properties for page return
         [BindProperty(SupportsGet = true)] public int EmployeeId { get; set; }
         [BindProperty(SupportsGet = true)] public string Period { get; set; } = "all";
+        [BindProperty(SupportsGet = true)] public DateTime? CustomStartDate { get; set; }
+        [BindProperty(SupportsGet = true)] public DateTime? CustomEndDate { get; set; }
+        [BindProperty(SupportsGet = true)] public int WeekOffset { get; set; } = 0;
+
         [BindProperty] public int PauseHours { get; set; }
         [BindProperty] public int PauseMinutes { get; set; }
 
@@ -157,7 +161,10 @@ namespace TimeTracker.AdminUI.Pages.Admin
                     return RedirectToPage("/Admin/AdminDashboard", new
                     {
                         SelectedEmployeeId = EmployeeId,
-                        SelectedPeriod = Period
+                        SelectedPeriod = Period,
+                        CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
+                        CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd"),
+                        WeekOffset
                     });
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -201,7 +208,10 @@ namespace TimeTracker.AdminUI.Pages.Admin
                 return RedirectToPage("/Admin/AdminDashboard", new
                 {
                     SelectedEmployeeId = EmployeeId,
-                    SelectedPeriod = Period
+                    SelectedPeriod = Period,
+                    CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
+                    CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd"),
+                    WeekOffset
                 });
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)

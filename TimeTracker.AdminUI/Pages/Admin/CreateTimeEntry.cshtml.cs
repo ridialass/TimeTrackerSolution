@@ -98,7 +98,7 @@ namespace TimeTracker.AdminUI.Pages.Admin
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToPage("/Admin/Index", new { SelectedEmployeeId = TimeEntry.UserId });
+                    return RedirectToPage("/Admin/AdminDashboard", new { SelectedEmployeeId = TimeEntry.UserId });
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {

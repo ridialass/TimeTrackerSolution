@@ -295,7 +295,7 @@
     <value>Déconnexion</value>
   </data>
   <data name="LogoutMessage" xml:space="preserve">
-    <value>Vous avez été déconnecté.</value>
+    <value>Vous allez être déconnecté.</value>
   </data>
   <data name="LogoutTitle" xml:space="preserve">
     <value>Déconnexion</value>
@@ -614,5 +614,230 @@
   </data>
   <data name="MyAccueil" xml:space="preserve">
     <value>Mon coin perso</value>
+  </data>
+  <data name="Privacy_Title" xml:space="preserve">
+    <value>Confidentialité</value>
+  </data>
+  <data name="Privacy_S1_Title" xml:space="preserve">
+    <value>Qui sommes-nous ?</value>
+  </data>
+  <data name="Privacy_S1_Body" xml:space="preserve">
+    <value>L’application « TimeTracker » est proposée par {0}, pour de petites entreprises. Offre au forfait incluant un service après-vente (SAV) de 2 ans. Cette page résume ce que nous collectons et pourquoi.</value>
+  </data>
+  <data name="Privacy_S2_Title" xml:space="preserve">
+    <value>Données que nous traitons</value>
+  </data>
+  <data name="Privacy_S2_Item_Accounts" xml:space="preserve">
+    <value>Comptes (identifiants, nom d’utilisateur, e-mail, rôle).</value>
+  </data>
+  <data name="Privacy_S2_Item_Security" xml:space="preserve">
+    <value>Sécurité/accès (horodatages de connexion, jetons techniques).</value>
+  </data>
+  <data name="Privacy_S2_Item_TimeEntries" xml:space="preserve">
+    <value>Pointages (horaires de début/fin, pauses, type d’intervention, repas, temps de trajet si saisi).</value>
+  </data>
+  <data name="Privacy_S2_Item_Geoloc" xml:space="preserve">
+    <value>Géolocalisation (adresse/coordonnées au début/fin de session si fournis).</value>
+  </data>
+  <data name="Privacy_S2_Item_Logs" xml:space="preserve">
+    <value>Journaux techniques minimaux pour diagnostic.</value>
+  </data>
+  <data name="Privacy_S3_Title" xml:space="preserve">
+    <value>Bases légales</value>
+  </data>
+  <data name="Privacy_S3_Item_Contract" xml:space="preserve">
+    <value>Exécution du contrat (fournir le service, support 2 ans).</value>
+  </data>
+  <data name="Privacy_S3_Item_Legitimate" xml:space="preserve">
+    <value>Intérêt légitime (sécurisation, prévention des abus).</value>
+  </data>
+  <data name="Privacy_S3_Item_Consent" xml:space="preserve">
+    <value>Consentement (fonctionnalités optionnelles comme la géolocalisation).</value>
+  </data>
+  <data name="Privacy_S4_Title" xml:space="preserve">
+    <value>Finalités</value>
+  </data>
+  <data name="Privacy_S4_Body" xml:space="preserve">
+    <value>Fournir le suivi de temps, générer des exports, aider la facturation et la gestion RH, assurer le support et la sécurité.</value>
+  </data>
+  <data name="Privacy_S5_Title" xml:space="preserve">
+    <value>Durées de conservation</value>
+  </data>
+  <data name="Privacy_S5_Item_Accounts" xml:space="preserve">
+    <value>Données de compte : pendant l’usage + 24 mois après la dernière activité, sauf obligation légale différente.</value>
+  </data>
+  <data name="Privacy_S5_Item_Logs" xml:space="preserve">
+    <value>Journaux techniques : 90 jours max (sauf incident de sécurité).</value>
+  </data>
+  <data name="Privacy_S5_Item_Support" xml:space="preserve">
+    <value>Dossiers de support : jusqu’à 24 mois (SAV).</value>
+  </data>
+  <data name="Privacy_S6_Title" xml:space="preserve">
+    <value>Cookies et jetons</value>
+  </data>
+  <data name="Privacy_S6_Item_AuthCookie" xml:space="preserve">
+    <value>Cookie d’authentification applicatif (.AspNetCore.Cookies / .AspNetCore.Identity.Application).</value>
+  </data>
+  <data name="Privacy_S6_Item_Jwt" xml:space="preserve">
+    <value>jwt_token : jeton d’accès HttpOnly, Secure, SameSite=Strict, utilisé pour les appels API.</value>
+  </data>
+  <data name="Privacy_S6_Trailing" xml:space="preserve">
+    <value>Nous n’utilisons pas de cookies publicitaires.</value>
+  </data>
+  <data name="Privacy_S7_Title" xml:space="preserve">
+    <value>Sécurité</value>
+  </data>
+  <data name="Privacy_S7_Item_Https" xml:space="preserve">
+    <value>Chiffrement TLS (HTTPS) obligatoire.</value>
+  </data>
+  <data name="Privacy_S7_Item_Hash" xml:space="preserve">
+    <value>Mots de passe hachés et salés côté serveur.</value>
+  </data>
+  <data name="Privacy_S7_Item_Rbac" xml:space="preserve">
+    <value>Contrôles d’accès par rôles (Admin, Employee/Technician).</value>
+  </data>
+  <data name="Privacy_S8_Title" xml:space="preserve">
+    <value>Partage</value>
+  </data>
+  <data name="Privacy_S8_Body" xml:space="preserve">
+    <value>Pas de vente de données. Fournisseurs techniques strictement nécessaires (hébergement, e-mail), soumis à des engagements de confidentialité et de sous-traitance.</value>
+  </data>
+  <data name="Privacy_S9_Title" xml:space="preserve">
+    <value>Vos droits</value>
+  </data>
+  <data name="Privacy_S9_Body" xml:space="preserve">
+    <value>Accès, rectification, effacement, limitation, portabilité, opposition le cas échéant. Contactez-nous à l’adresse support indiquée.</value>
+  </data>
+  <data name="Privacy_S10_Title" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="Privacy_S10_Body" xml:space="preserve">
+    <value>Pour toute question ou exercice de droits : support@timetracker.it</value>
+  </data>
+  <data name="Privacy_S11_Title" xml:space="preserve">
+    <value>Modifications</value>
+  </data>
+  <data name="Privacy_S11_Body" xml:space="preserve">
+    <value>Nous pourrons adapter cette notice ; la version en ligne fait foi.</value>
+  </data>
+  <data name="Privacy_S12_Title" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="Privacy_S12_LastUpdated" xml:space="preserve">
+    <value>Dernière mise à jour : {0}</value>
+  </data>
+  <data name="Privacy_Disclaimer" xml:space="preserve">
+    <value>Cette notice est fournie à titre informatif et ne remplace pas un avis juridique. Adaptez-la selon vos obligations locales.</value>
+  </data>
+  <data name="ProfilePictureLabel" xml:space="preserve">
+    <value>Photo de profil</value>
+  </data>
+  <data name="AlreadyLoggedOutMessage" xml:space="preserve">
+    <value>Vous êtes maintenant déconnecté.</value>
+  </data>
+  <data name="InfoMessage" xml:space="preserve">
+    <value>Vous êtes maintenant déconnecté.</value>
+  </data>
+  <data name="Support_Title" xml:space="preserve">
+    <value>Aide &amp; Support</value>
+  </data>
+  <data name="Support_FAQ_Title" xml:space="preserve">
+    <value>Questions fréquentes</value>
+  </data>
+  <data name="Support_Contact_Title" xml:space="preserve">
+    <value>Contacter le support</value>
+  </data>
+  <data name="Support_Form_Invalid" xml:space="preserve">
+    <value>Le formulaire contient des erreurs. Corrigez les champs surlignés.</value>
+  </data>
+  <data name="Support_Sent_Success" xml:space="preserve">
+    <value>Merci, votre message a été envoyé. Nous revenons vers vous rapidement.</value>
+  </data>
+  <data name="Support_Sent_Error" xml:space="preserve">
+    <value>L’envoi a échoué. Réessayez ou utilisez le bouton “Envoyer un email”.</value>
+  </data>
+  <data name="Support_Smtp_NotConfigured" xml:space="preserve">
+    <value>L’envoi direct n’est pas configuré sur ce serveur. Vous pouvez nous écrire avec le bouton “Envoyer un email”.</value>
+  </data>
+  <data name="Support_Contact_Mailto" xml:space="preserve">
+    <value>Envoyer un email</value>
+  </data>
+  <data name="Support_Contact_Footer" xml:space="preserve">
+    <value>Adresse de support : {0}</value>
+  </data>
+  <data name="Support_Field_Topic" xml:space="preserve">
+    <value>Sujet</value>
+  </data>
+  <data name="Support_Field_Email" xml:space="preserve">
+    <value>Installation / déploiement</value>
+  </data>
+  <data name="Support_Topic_Login" xml:space="preserve">
+    <value>Connexion / mot de passe</value>
+  </data>
+  <data name="Support_Topic_Billing" xml:space="preserve">
+    <value>Facturation &amp; licence</value>
+  </data>
+  <data name="Support_Topic_Bug" xml:space="preserve">
+    <value>Bug / anomalie</value>
+  </data>
+  <data name="Support_Topic_Feature" xml:space="preserve">
+    <value>Idée / évolution</value>
+  </data>
+  <data name="Support_Topic_General" xml:space="preserve">
+    <value>Question générale</value>
+  </data>
+  <data name="Support_Field_Email_Hint" xml:space="preserve">
+    <value>Si renseigné, nous répondrons directement à cette adresse.</value>
+  </data>
+  <data name="Support_Field_Message" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="Support_Field_Message_Placeholder" xml:space="preserve">
+    <value>Décrivez votre besoin, l’action réalisée, l’écran concerné, et le résultat attendu…</value>
+  </data>
+  <data name="Support_Field_IncludeTechnical" xml:space="preserve">
+    <value>Joindre des informations techniques (navigateur, culture, heure, etc.)</value>
+  </data>
+  <data name="Support_FAQ_Login_Title" xml:space="preserve">
+    <value>Je n’arrive pas à me connecter</value>
+  </data>
+  <data name="Support_FAQ_Login_Body" xml:space="preserve">
+    <value>&lt;p&gt;Vérifiez votre &lt;strong&gt;identifiant&lt;/strong&gt; et votre &lt;strong&gt;mot de passe&lt;/strong&gt;. Si vous avez oublié votre mot de passe, utilisez &lt;em&gt;“Mot de passe oublié”&lt;/em&gt; depuis la page de connexion. En cas de rôle insuffisant, contactez un administrateur.&lt;/p&gt;</value>
+  </data>
+  <data name="Support_FAQ_Reset_Title" xml:space="preserve">
+    <value>Réinitialiser mon mot de passe</value>
+  </data>
+  <data name="Support_FAQ_Reset_Body" xml:space="preserve">
+    <value>&lt;p&gt;Depuis la page de connexion, cliquez sur &lt;em&gt;“Mot de passe oublié”&lt;/em&gt; et suivez le lien reçu par e-mail pour définir un nouveau mot de passe.&lt;/p&gt;</value>
+  </data>
+  <data name="Support_FAQ_Roles_Title" xml:space="preserve">
+    <value>Rôles et accès</value>
+  </data>
+  <data name="Support_FAQ_Roles_Body" xml:space="preserve">
+    <value>&lt;p&gt;Les rôles (Admin, Technicien, Employé) déterminent l’accès aux pages. Un Admin peut gérer les utilisateurs et consulter les pointages.&lt;/p&gt;</value>
+  </data>
+  <data name="Support_FAQ_Export_Title" xml:space="preserve">
+    <value>Export CSV des sessions</value>
+  </data>
+  <data name="Support_FAQ_Export_Body" xml:space="preserve">
+    <value>&lt;p&gt;Dans le tableau des sessions, utilisez le bouton &lt;strong&gt;Exporter&lt;/strong&gt;. Les filtres (semaine, mois, personnalisé) s’appliquent à l’export.&lt;/p&gt;</value>
+  </data>
+  <data name="Support_FAQ_Billing_Title" xml:space="preserve">
+    <value>Facturation &amp;amp; licence</value>
+  </data>
+  <data name="Support_FAQ_Billing_Body" xml:space="preserve">
+    <value>&lt;p&gt;L’application est proposée aux petites entreprises via un forfait incluant 2 ans de support. Pour en savoir plus, contactez le support.&lt;/p&gt;</value>
+  </data>
+  <data name="Support_FAQ_Bug_Title" xml:space="preserve">
+    <value>Signaler un bug </value>
+  </data>
+  <data name="Support_FAQ_Bug_Body" xml:space="preserve">
+    <value>&lt;p&gt;Décrivez l’écran, les étapes pour reproduire, le navigateur utilisé et, si possible, ajoutez une capture d’écran.&lt;/p&gt;</value>
+  </data>
+  <data name="GoToAdmin" xml:space="preserve">
+    <value>Aller sur le Dashboard</value>
+  </data>
+  <data name="Support_Send_Button" xml:space="preserve">
+    <value>Envoyer au support</value>
   </data>
 </root>
