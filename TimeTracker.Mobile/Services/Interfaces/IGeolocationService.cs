@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Devices.Sensors;
 
-namespace TimeTracker.Mobile.Services
+namespace TimeTracker.Mobile.Services.Interfaces
 {
     /// <summary>
     /// Abstraction de la géolocalisation pour l'app mobile (MAUI).

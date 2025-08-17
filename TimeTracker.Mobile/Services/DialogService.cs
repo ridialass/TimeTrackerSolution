@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
+using TimeTracker.Mobile.Services.Interfaces;
 
 namespace TimeTracker.Mobile.Services
 {

@@ -1,8 +1,8 @@
-﻿// TimeTracker.Mobile/Services/SecureStorageService.cs
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
+using TimeTracker.Mobile.Services.Interfaces;
 
 namespace TimeTracker.Mobile.Services
 {

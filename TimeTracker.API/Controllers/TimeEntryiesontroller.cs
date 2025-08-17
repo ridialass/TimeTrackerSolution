@@ -178,15 +178,21 @@ namespace TimeTracker.API.Controllers
 
             try
             {
-                Console.WriteLine($"Données reçues : {JsonSerializer.Serialize(dto)}");
                 var created = await _timeEntryService.AddTimeEntryAsync(dto);
-
-                Console.WriteLine($"Entrée créée avec ID : {created.Id}");
                 return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
-                Console.WriteLine($"Erreur lors de la création : {ex.Message}");
+                // Erreur de validation => 400
+                return BadRequest(new ErrorResponseDto
+                {
+                    Code = "ValidationError",
+                    Message = ex.Message
+                });
+            }
+            catch (Exception)
+            {
+                // Erreur serveur => 500
                 return StatusCode(500, new ErrorResponseDto
                 {
                     Code = "ServerError",

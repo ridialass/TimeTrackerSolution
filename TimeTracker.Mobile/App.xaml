@@ -5,12 +5,8 @@
              x:Class="TimeTracker.Mobile.App">
     <Application.Resources>
         <ResourceDictionary>
-            <!-- OK -->
             <converters:StringNotNullOrEmptyConverter x:Key="StringNotNullOrEmptyConverter" />
-
-            <!-- FIX: utiliser la bonne classe pour l’inverseur de bool -->
-            <!--<converters:InverseBoolConverter x:Key="InverseBoolConverter" />-->
-
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
             <converters:NullToBoolConverter x:Key="NullToBoolConverter" />
             <converters:NullOrEmptyToBoolConverter x:Key="NullOrEmptyToBoolConverter" />
         </ResourceDictionary>

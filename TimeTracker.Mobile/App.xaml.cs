@@ -1,34 +1,61 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿// TimeTracker.Mobile/App.xaml.cs
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Services.Interfaces;
 
 namespace TimeTracker.Mobile;
 
 public partial class App : Application
 {
-    public static IServiceProvider ServiceProvider { get; private set; } = default!;
+    // Resolve services via the MAUI handler's ServiceProvider.
+    public static T GetService<T>() where T : notnull
+    {
+        if (Current?.Handler?.MauiContext?.Services is IServiceProvider services)
+            return services.GetRequiredService<T>();
+
+        throw new InvalidOperationException(
+            $"Unable to resolve service for type '{typeof(T)}'. " +
+            "Ensure the service is registered and App initialization has completed.");
+    }
+
 
     private readonly ISessionStateService _session;
     private readonly ILogger<App> _logger;
 
     public App(
-    ISessionStateService session,
-    ILogger<App> logger,
-    AppShell shell,
-    IServiceProvider provider)
+        ISessionStateService session,
+        ILogger<App> logger,
+        AppShell shell)
     {
         InitializeComponent();
-
-        ServiceProvider = provider;
 
         _session = session;
         _logger = logger;
         MainPage = shell;
 
-        // Laisse le temps au Shell d'être actif avant de naviguer
-        MainPage.Dispatcher.Dispatch(async () => {
-            await Task.Delay(100); // <= Ajoute ce délai
-            await TryRestoreSessionOnLaunch();
+#if DEBUG
+        // Optional: catch unexpected exceptions early during development
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            _logger.LogError(e.ExceptionObject as Exception, "UnhandledException (AppDomain)");
+        TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            _logger.LogError(e.Exception, "UnobservedTaskException");
+            e.SetObserved();
+        };
+#endif
+
+        // Restore AFTER Shell/Handler are ready to avoid race conditions
+        MainPage.Dispatcher.Dispatch(async () =>
+        {
+            try
+            {
+                await Task.Yield();               // ensure Shell.Current is ready
+                await TryRestoreSessionOnLaunch(); // token -> role menu -> nav
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled error during startup restore.");
+            }
         });
     }
 
@@ -41,12 +68,10 @@ public partial class App : Application
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur au démarrage de l'application");
-            // On vérifie que la page active est bien un Shell pour éviter une exception ici aussi
             if (Shell.Current != null)
                 await Shell.Current.DisplayAlert("Erreur", "Une erreur s’est produite au lancement.", "OK");
         }
     }
 
-    public async Task LogoutAsync()
-        => await _session.LogoutAsync();
+    public Task LogoutAsync() => _session.LogoutAsync();
 }

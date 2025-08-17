@@ -4,7 +4,7 @@
 #nullable enable
 using System.Threading.Tasks;
 
-namespace TimeTracker.Mobile.Services
+namespace TimeTracker.Mobile.Services.Interfaces
 {
     /// <summary>
     /// Abstraction des boîtes de dialogue côté mobile (MAUI).

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TimeTracker.Mobile.Resources.Strings; // Ajuste selon ton namespace
-using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Services.Interfaces;
 
 namespace TimeTracker.Mobile.ViewModels
 {
@@ -82,6 +82,20 @@ namespace TimeTracker.Mobile.ViewModels
                     ErrorMessage = AppResources.Login_Error_Invalid;
                     return;
                 }
+                // ✅ succès : on efface l’erreur et on configure le Shell
+                ErrorMessage = null;
+
+                if (Shell.Current is AppShell shell)
+                {
+                    shell.ConfigureFlyoutForRole(_sessionService.CurrentUserRole ?? string.Empty);
+                    Shell.Current.FlyoutBehavior = FlyoutBehavior.Flyout; // réactive le menu
+                }
+
+                // Puis on navigue selon le rôle
+                if (string.Equals(_sessionService.CurrentUserRole, "Admin", StringComparison.OrdinalIgnoreCase))
+                    await _navigationService.GoToAdminDashboardPageAsync();
+                else
+                    await _navigationService.GoToHomePageAsync();
 
                 // Navigation selon le rôle (Admin -> Dashboard, sinon Home)
                 var role = _sessionService.CurrentUserRole;

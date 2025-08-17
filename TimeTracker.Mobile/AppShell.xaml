@@ -1,12 +1,15 @@
-﻿<Shell
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Shell
     x:Class="TimeTracker.Mobile.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:TimeTracker.Mobile.Views"
     xmlns:resx="clr-namespace:TimeTracker.Mobile.Resources.Strings">
 
-    <!-- LoginPage (toujours présent, invisible une fois connecté) -->
-    <FlyoutItem Title="{x:Static resx:AppResources.Login_Flyout_Title}" Route="LoginPage" IsVisible="False">
+    <!-- LoginPage: always present, hidden in flyout; used as the absolute root route -->
+    <FlyoutItem Title="{x:Static resx:AppResources.Login_Flyout_Title}"
+                Route="LoginPage"
+                IsVisible="False">
         <ShellContent
             Title="{x:Static resx:AppResources.Login_Flyout_Title}"
             ContentTemplate="{DataTemplate views:LoginPage}" />

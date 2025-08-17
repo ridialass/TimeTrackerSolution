@@ -1,16 +1,19 @@
-﻿// SECURITE :
-// Pour toute configuration HttpClient, toujours utiliser HTTPS en production.
-// NE JAMAIS utiliser une baseAddress HTTP (même sur Android) pour un environnement de production ou de test réel.
-// Vérifiez régulièrement que la configuration de prod pointe bien vers une URL HTTPS sécurisée (avec certificat valide).
-// Ne jamais logger ni persister le mot de passe utilisateur ou des informations d’authentification dans la configuration ou lors des requêtes.
-
-using Microsoft.Extensions.Logging;
-using CommunityToolkit.Maui;
+﻿using System;
 using System.Globalization;
-using System.Threading;
+using System.Net.Http.Headers;
+using CommunityToolkit.Maui;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Storage;
+using Polly;
+using Polly.Extensions.Http;
 using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Services.Interfaces;
 using TimeTracker.Mobile.ViewModels;
 using TimeTracker.Mobile.Views;
+#if ANDROID
+using Xamarin.Android.Net;
+#endif
 
 namespace TimeTracker.Mobile;
 
@@ -18,78 +21,121 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo("it"); // ou "it" ou selon la config de l'utilisateur
+        // --- Localisation: enforce Italian for UI + current thread defaults
+        var it = new CultureInfo("it-IT");
+        CultureInfo.DefaultThreadCurrentCulture = it;
+        CultureInfo.DefaultThreadCurrentUICulture = it;
+
         var builder = MauiApp.CreateBuilder();
 
         builder
             .UseMauiApp<App>()
-            .UseMauiCommunityToolkit() // ← À la suite, ici !
+
+            // CommunityToolkit (Converters, Behaviors, etc.)
+            .UseMauiCommunityToolkit()
+
+            // Fonts
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
+#if DEBUG
         builder.Logging.AddDebug();
+#endif
 
         var services = builder.Services;
 
-        // Services de stockage et navigation
-        services.AddSingleton<App>();
+        // ---- Platform services
         services.AddSingleton<ISecureStorage>(SecureStorage.Default);
+        services.AddSingleton<IPreferences>(Preferences.Default);
+
+        // ---- App services
         services.AddSingleton<ISecureStorageService, SecureStorageService>();
         services.AddSingleton<INavigationService, NavigationService>();
-        builder.Services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IGeolocationService, GeolocationService>();
         services.AddSingleton<ISessionStateService, SessionStateService>();
-        builder.Services.AddSingleton<Microsoft.Maui.Storage.IPreferences>(Preferences.Default);
-        builder.Services.AddSingleton<ILocalStorageService, LocalStorageService>();
+        services.AddSingleton<ILocalStorageService, LocalStorageService>();
 
-
-        // Handlers HTTP
+        // ---- HTTP handlers (DI-friendly)
         services.AddTransient<AuthHeaderHandler>();
+        // If you later add a LoggingHandler to inspect JSON traffic, register it here:
+        // services.AddTransient<LoggingHandler>();
 
-        // NOTE DE SECURITE :
-        // En PROD, la baseAddress DOIT être en HTTPS avec certificat valide.
-        // Pour du dev local sur Android, http://10.0.2.2 est toléré, mais NE JAMAIS déployer cette configuration.
+        // ---- Shared Http policy (retry network hiccups + HTTP 5xx + 429)
+        var retryPolicy = HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .OrResult(msg => (int)msg.StatusCode == 429)
+            .WaitAndRetryAsync(new[]
+            {
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromSeconds(2),
+                TimeSpan.FromSeconds(5)
+            });
+
+        // ---- Named HttpClient used elsewhere via IHttpClientFactory.CreateClient("Api")
+        // SECURITY: Always HTTPS in prod. https://10.0.2.2 is for Android emulator talking to host.
+        services.AddHttpClient("Api", client =>
+        {
+#if ANDROID
+            client.BaseAddress = new Uri("https://10.0.2.2:7205/");
+#else
+            client.BaseAddress = new Uri("https://localhost:7205/");
+#endif
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        })
+#if ANDROID && DEBUG
+        .ConfigurePrimaryHttpMessageHandler(() => new AndroidMessageHandler
+        {
+            // ⚠️ DEBUG ONLY: trust dev cert even if hostname mismatch (localhost vs 10.0.2.2)
+            ServerCertificateCustomValidationCallback = (req, cert, chain, errors) => true
+        })
+#else
+        .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+        {
+            AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate
+        })
+#endif
+        .AddHttpMessageHandler<AuthHeaderHandler>()
+        // .AddHttpMessageHandler<LoggingHandler>() // enable when you add it
+        .AddPolicyHandler(retryPolicy);
+
+        // ---- TYPED client for IApiClientService (used by AuthService, etc.)
         services.AddHttpClient<IApiClientService, ApiClientService>(client =>
         {
 #if ANDROID
-            client.BaseAddress = new Uri(
-                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production"
-                    ? "https://votre-api-production.com/"    // Remplacer par le vrai endpoint PROD
-                    : "http://10.0.2.2:7205/"                // Dev local Android seulement !
-            );
+            client.BaseAddress = new Uri("https://10.0.2.2:7205/");
 #else
-            client.BaseAddress = new Uri(
-                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production"
-                    ? "https://votre-api-production.com/"    // Remplacer par le vrai endpoint PROD
-                    : "https://localhost:7205/"
-            );
+            client.BaseAddress = new Uri("https://localhost:7205/");
 #endif
-        }).AddHttpMessageHandler<AuthHeaderHandler>();
-
-        services.AddHttpClient<IMobileTimeEntryService, MobileTimeEntryService>(client =>
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        })
+#if ANDROID && DEBUG
+        .ConfigurePrimaryHttpMessageHandler(() => new AndroidMessageHandler
         {
-#if ANDROID
-            client.BaseAddress = new Uri(
-                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production"
-                    ? "https://votre-api-production.com/"
-                    : "http://10.0.2.2:7205/"
-            );
+            ServerCertificateCustomValidationCallback = (req, cert, chain, errors) => true
+        })
 #else
-            client.BaseAddress = new Uri(
-                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production"
-                    ? "https://votre-api-production.com/"
-                    : "https://localhost:7205/"
-            );
+        .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+        {
+            AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate
+        })
 #endif
-        }).AddHttpMessageHandler<AuthHeaderHandler>();
+        .AddHttpMessageHandler<AuthHeaderHandler>()
+        // .AddHttpMessageHandler<LoggingHandler>() // enable when you add it
+        .AddPolicyHandler(retryPolicy);
 
-        // Services métiers
+        // ---- Domain services (keep your local-first design)
+        services.AddSingleton<IMobileTimeEntryService, MobileTimeEntryService>();
         services.AddSingleton<IAuthService, AuthService>();
 
-        // ViewModels (Transient)
+        // ---- ViewModels
         services.AddTransient<LoginViewModel>();
         services.AddTransient<RegistrationViewModel>();
         services.AddTransient<HomeViewModel>();
@@ -98,7 +144,7 @@ public static class MauiProgram
         services.AddTransient<AdminDashboardViewModel>();
         services.AddTransient<TimeEntriesViewModel>();
 
-        // Views (navigation MAUI)
+        // ---- Views
         services.AddTransient<LoginPage>();
         services.AddTransient<RegistrationPage>();
         services.AddTransient<HomePage>();
@@ -107,7 +153,7 @@ public static class MauiProgram
         services.AddTransient<AdminDashboardPage>();
         services.AddTransient<TimeEntriesPage>();
 
-        // Shell & App
+        // ---- Shell & App
         services.AddSingleton<AppShell>();
         services.AddSingleton<App>();
 

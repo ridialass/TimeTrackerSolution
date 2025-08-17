@@ -1,5 +1,5 @@
 using TimeTracker.Core.Enums;
-using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Services.Interfaces;
 using TimeTracker.Mobile.ViewModels;
 
 namespace TimeTracker.Mobile.Views;

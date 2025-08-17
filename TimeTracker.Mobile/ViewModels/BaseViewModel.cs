@@ -1,5 +1,4 @@
-﻿// TimeTracker.Mobile/ViewModels/BaseViewModel.cs
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;

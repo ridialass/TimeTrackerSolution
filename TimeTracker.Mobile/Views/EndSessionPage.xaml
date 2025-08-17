@@ -48,6 +48,17 @@
                         Text="{Binding TravelMinutes}" />
                 </VerticalStackLayout>
             </HorizontalStackLayout>
+            <Button
+                Text="⏸ Pause"
+                Command="{Binding PauseCommand}"
+                IsVisible="{Binding IsPaused, Converter={StaticResource InverseBoolConverter}}"
+                HorizontalOptions="Center" />
+
+            <Button
+                Text="▶ Reprendre"
+                Command="{Binding ResumeCommand}"
+                IsVisible="{Binding IsPaused}"
+                HorizontalOptions="Center" />
 
             <!-- Choix de qui paye le dîner -->
             <Label 

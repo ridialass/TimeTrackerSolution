@@ -12,7 +12,7 @@ using CommunityToolkit.Mvvm.Input;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Resources.Strings;
-using TimeTracker.Mobile.Services;
+using TimeTracker.Mobile.Services.Interfaces;
 
 namespace TimeTracker.Mobile.ViewModels
 {

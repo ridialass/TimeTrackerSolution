@@ -7,6 +7,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices.Sensors;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
+using TimeTracker.Mobile.Services.Interfaces;
 
 namespace TimeTracker.Mobile.Services
 {

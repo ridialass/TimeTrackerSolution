@@ -3,6 +3,7 @@
 // - Transmettre les identifiants via HTTPS et uniquement via POST.
 // - Seul le token JWT est stocké localement (SecureStorage). Jamais le mot de passe.
 
+using Microsoft.Extensions.Logging;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Mobile.Models;
+using TimeTracker.Mobile.Services.Interfaces;
 using TimeTracker.Mobile.Utils;
 
 namespace TimeTracker.Mobile.Services
@@ -24,6 +26,7 @@ namespace TimeTracker.Mobile.Services
 
         private readonly IApiClientService _apiClient;
         private readonly ISecureStorageService _secureStorage;
+        private readonly ILogger<AuthService> _logger;
 
         public ApplicationUserSession? CurrentUser { get; private set; }
 
@@ -33,24 +36,31 @@ namespace TimeTracker.Mobile.Services
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
 
-        public AuthService(IApiClientService apiClient, ISecureStorageService secureStorage)
+        public AuthService(IApiClientService apiClient, ISecureStorageService secureStorage, ILogger<AuthService> logger)
         {
             _apiClient = apiClient;
             _secureStorage = secureStorage;
+            _logger = logger;
         }
 
         public async Task<Result<LoginResponseDto>> LoginAsync(string username, string password)
         {
             var result = await _apiClient.LoginAsync(username, password);
             if (!result.IsSuccess || result.Value is null)
+            {
+                _logger.LogWarning("[AuthService/Login] API login failed: {Error}", result.Error);
                 return result;
+            }
 
             var login = result.Value;
 
             // Ton DTO expose Token + ApplicationUserId + Username + Role (enum)
             var token = login.Token;
             if (string.IsNullOrWhiteSpace(token))
+            {
+                _logger.LogWarning("[AuthService/Login] Missing token in server response.");
                 return Result<LoginResponseDto>.Fail("Le jeton d'accès est manquant dans la réponse du serveur.");
+            }
 
             // Stocker le token (nouvelle clé + compat)
             await _secureStorage.SetAsync(AccessTokenKey, token);
@@ -70,10 +80,17 @@ namespace TimeTracker.Mobile.Services
             session.JwtToken = token;
 
             CurrentUser = session;
+            // 🔎 LOG ICI — juste après avoir bâti la session
+            _logger.LogInformation("[AuthService/Login] Session built: tokenNull={TokenNull}, id={Id}, role={Role}, user={User}",
+                string.IsNullOrWhiteSpace(session.JwtToken),
+                session.Id,
+                session.Role,
+                session.UserName);
 
             // Persister la session sérialisée pour restauration rapide
             var json = JsonSerializer.Serialize(session, JsonOpt);
             await _secureStorage.SetAsync(SessionKey, json);
+
 
             return result;
         }
@@ -124,6 +141,7 @@ namespace TimeTracker.Mobile.Services
                         var exp = GetJwtExpiryUtc(token);
                         if (exp.HasValue) cached.ExpiresAtUtc = exp.Value;
                         CurrentUser = cached;
+                        _logger.LogInformation("[AuthService/TryRestore] Restored from cache: id={Id}, role={Role}", cached.Id, cached.Role);
                         return true;
                     }
                 }
@@ -204,6 +222,7 @@ namespace TimeTracker.Mobile.Services
                                    c.Type == "userId" ||
                                    c.Type == "uid" ||
                                    c.Type == "id" ||
+                                   c.Type == ClaimTypes.NameIdentifier ||
                                    c.Type == JwtRegisteredClaimNames.Sub);
                 int.TryParse(idClaim?.Value, out var userId);
 

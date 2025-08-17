@@ -2,7 +2,7 @@
 #nullable enable
 using System.Threading.Tasks;
 
-namespace TimeTracker.Mobile.Services
+namespace TimeTracker.Mobile.Services.Interfaces
 {
     public interface ISecureStorageService
     {

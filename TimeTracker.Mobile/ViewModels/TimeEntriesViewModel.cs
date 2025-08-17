@@ -6,8 +6,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Mobile.Resources.Strings; // i18n
-using TimeTracker.Mobile.Services;
 using Microsoft.Maui.Controls;
+using TimeTracker.Mobile.Services.Interfaces;
 
 namespace TimeTracker.Mobile.ViewModels
 {

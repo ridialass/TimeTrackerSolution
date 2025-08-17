@@ -8,7 +8,7 @@ using TimeTracker.Core.DTOs;
 using TimeTracker.Mobile.Utils;
 using TimeTracker.Mobile.Models;
 
-namespace TimeTracker.Mobile.Services;
+namespace TimeTracker.Mobile.Services.Interfaces;
 
 public interface IAuthService
 {

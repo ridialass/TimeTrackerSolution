@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 
-namespace TimeTracker.Mobile.Services
+namespace TimeTracker.Mobile.Services.Interfaces
 {
     /// <summary>
     /// Abstraction de la navigation (basée sur <see cref="Shell"/>).

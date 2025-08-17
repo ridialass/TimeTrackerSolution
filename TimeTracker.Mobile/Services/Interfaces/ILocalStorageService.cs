@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using System.Threading.Tasks;
 
-namespace TimeTracker.Mobile.Services
+namespace TimeTracker.Mobile.Services.Interfaces
 {
     /// <summary>Stockage clé/valeur non sensible (Preferences).</summary>
     public interface ILocalStorageService

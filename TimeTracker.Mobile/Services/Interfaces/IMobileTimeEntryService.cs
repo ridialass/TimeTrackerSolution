@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 
-namespace TimeTracker.Mobile.Services
+namespace TimeTracker.Mobile.Services.Interfaces
 {
     /// <summary>
     /// Service mobile pour gérer le cycle de vie d'une session de travail côté app (DTO only).

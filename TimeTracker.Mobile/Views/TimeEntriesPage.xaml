@@ -28,17 +28,31 @@
                                     <Label Text="{Binding SessionType}" FontAttributes="Bold" FontSize="18" TextColor="DarkBlue" />
                                     <Label Text="{Binding StartTime, StringFormat='🕒 {0}'}" TextColor="DarkBlue" />
                                     <Label Text="{Binding EndTime, StringFormat='🏁 {0}'}" TextColor="DarkBlue" />
-                                    <Label Text="{Binding WorkDuration, StringFormat='{x:Static resx:AppResources.TimeEntries_TotalDuration}'}"
-                                        IsVisible="{Binding WorkDuration, Converter={StaticResource NullToBoolConverter}}" TextColor="DarkBlue" />
-                                    <!-- ✅ Ligne ajoutée -->
-                                    <Label Text="{Binding TotalPauseDuration, StringFormat='{x:Static resx:AppResources.TimeEntries_TotalPause}'}"
-                                       IsVisible="{Binding TotalPauseDuration, Converter={StaticResource NullToBoolConverter}}" 
-                                       TextColor="DarkRed" />
-                                    <Label Text="{Binding IncludesTravelTime, StringFormat='{x:Static resx:AppResources.TimeEntries_TravelIncluded}'}" TextColor="DarkBlue" />
-                                    <Label Text="{Binding TravelTimeEstimate, StringFormat='{x:Static resx:AppResources.TimeEntries_TravelTime}'}"
-                                        IsVisible="{Binding IncludesTravelTime}" TextColor="DarkBlue" />
-                                    <Label Text="{Binding StartAddress, StringFormat='{x:Static resx:AppResources.TimeEntries_StartAddress}'}" TextColor="DarkBlue" />
-                                    <Label Text="{Binding EndAddress, StringFormat='{x:Static resx:AppResources.TimeEntries_EndAddress}'}" TextColor="DarkBlue" />
+                                    <!-- Durée totale -->
+                                    <Label
+                                      Text="{Binding WorkDuration, StringFormat={x:Static resx:AppResources.TimeEntries_TotalDuration}}"
+                                      IsVisible="{Binding WorkDuration}" />
+
+                                    <!-- Pause totale -->
+                                    <Label
+                                      Text="{Binding TotalPauseDuration, StringFormat={x:Static resx:AppResources.TimeEntries_TotalPause}}"
+                                      IsVisible="{Binding TotalPauseDuration}" />
+
+                                    <!-- Trajet inclus -->
+                                    <Label
+                                        Text="{Binding IncludesTravelTime, StringFormat={x:Static resx:AppResources.TimeEntries_TravelIncluded}}"/>
+
+                                    <!-- Temps de trajet estimé -->
+                                    <Label
+                                      Text="{Binding TravelTimeEstimate, StringFormat={x:Static resx:AppResources.TimeEntries_TravelTime}}"
+                                      IsVisible="{Binding IncludesTravelTime}" />
+
+                                    <!-- Adresses -->
+                                    <Label
+                                        Text="{Binding StartAddress, StringFormat={x:Static resx:AppResources.TimeEntries_StartAddress}}" />
+                                    <Label
+                                        Text="{Binding EndAddress, StringFormat={x:Static resx:AppResources.TimeEntries_EndAddress}}" />
+
                                     <Label Text="{Binding DinnerPaid, StringFormat='{x:Static resx:AppResources.TimeEntries_DinnerPaid}'}" TextColor="DarkBlue" />
                                 </VerticalStackLayout>
 
@@ -57,3 +71,4 @@
         </Grid>
     </ContentPage.Content>
 </ContentPage>
+    

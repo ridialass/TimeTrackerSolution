@@ -1,9 +1,7 @@
 ﻿using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
-using TimeTracker.Core.Enums;
-using TimeTracker.Mobile.Views;
 
-namespace TimeTracker.Mobile.Services;
+namespace TimeTracker.Mobile.Services.Interfaces;
 
 public interface ISessionStateService
 {

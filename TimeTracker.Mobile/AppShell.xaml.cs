@@ -1,5 +1,7 @@
-﻿using TimeTracker.Core.Enums;
-using TimeTracker.Mobile.Resources.Strings; // Ajout pour l'i18n
+﻿
+using Microsoft.Maui.ApplicationModel; // MainThread
+using TimeTracker.Core.Enums;
+using TimeTracker.Mobile.Resources.Strings;
 
 namespace TimeTracker.Mobile
 {
@@ -8,56 +10,46 @@ namespace TimeTracker.Mobile
         public AppShell()
         {
             InitializeComponent();
+
+            // Routes
             Routing.RegisterRoute("HomePage", typeof(Views.HomePage));
             Routing.RegisterRoute("AdminDashboardPage", typeof(Views.AdminDashboardPage));
             Routing.RegisterRoute("StartSessionPage", typeof(Views.StartSessionPage));
             Routing.RegisterRoute("EndSessionPage", typeof(Views.EndSessionPage));
             Routing.RegisterRoute("TimeEntriesPage", typeof(Views.TimeEntriesPage));
 
-            // Toujours démarrer sur LoginPage
+            FlyoutBehavior = FlyoutBehavior.Disabled;
             SetLoginFlyoutAsCurrent();
         }
 
-        /// <summary>
-        /// Nettoie tous les FlyoutItems/MenuItems sauf LoginPage.
-        /// </summary>
-        private void ResetToLoginShell()
-        {
-            foreach (var item in Items.ToList())
-            {
-                if (item is FlyoutItem flyout && flyout.Route == "LoginPage") continue;
-                Items.Remove(item);
-            }
-            foreach (var menuItem in Items.OfType<MenuItem>().ToList())
-                Items.Remove(menuItem);
-        }
-
-        /// <summary>
-        /// Met LoginPage comme item actif.
-        /// </summary>
         private void SetLoginFlyoutAsCurrent()
         {
-            var loginFlyoutItem = Items.OfType<FlyoutItem>().FirstOrDefault(i => i.Route == "LoginPage");
-            if (loginFlyoutItem != null)
-                CurrentItem = loginFlyoutItem;
+            var login = Items.OfType<FlyoutItem>().FirstOrDefault(i => i.Route == "LoginPage");
+            if (login is not null) CurrentItem = login;
         }
 
-        /// <summary>
-        /// Appelé APRÈS login pour afficher le menu selon le rôle.
-        /// </summary>
-        public void ConfigureFlyoutForRole(string role)
+        private void ResetToLoginShell()
         {
-            // Nettoie le menu sauf LoginPage
+            // Remove all FlyoutItem/TabBar except LoginPage
             foreach (var item in Items.ToList())
             {
-                if (item is FlyoutItem flyout && flyout.Route == "LoginPage") continue;
-                if (item is FlyoutItem || item is TabBar)
+                if (item is FlyoutItem fi && fi.Route == "LoginPage") continue;
+                Items.Remove(item);
+            }
+
+            // Remove ALL menu items (use MenuItems, not Items)
+            foreach (var item in Items.ToList())
+            {
+                if (item is MenuItem)
                     Items.Remove(item);
             }
-            foreach (var menuItem in Items.OfType<MenuItem>().ToList())
-                Items.Remove(menuItem);
+        }
 
-            // Ajoute le menu selon le rôle
+        public async Task ConfigureFlyoutForRoleAsync(string role)
+        {
+            ResetToLoginShell();
+
+            // Build role-specific flyout (defaults to Home if parse fails)
             if (!string.IsNullOrWhiteSpace(role) && Enum.TryParse<UserRole>(role, out var userRole))
             {
                 switch (userRole)
@@ -65,98 +57,94 @@ namespace TimeTracker.Mobile
                     case UserRole.Admin:
                         Items.Add(new FlyoutItem
                         {
-                            Title = AppResources.AdminDashboard_Title, // i18n
+                            Title = AppResources.AdminDashboard_Title,
                             Route = "AdminDashboardPage",
                             Items =
                             {
                                 new ShellContent
                                 {
-                                    Title = AppResources.AdminDashboard_Tab, // i18n
-                                    ContentTemplate = new DataTemplate(() =>
-                                    {
-                                        var page = App.ServiceProvider?.GetService<Views.AdminDashboardPage>();
-                                        if (page == null)
-                                            throw new InvalidOperationException("AdminDashboardPage is not registered in DI.");
-                                        return page;
-                                    }),
-                                    Route = "AdminDashboardPage"
+                                    Title = AppResources.AdminDashboard_Tab,
+                                    Route = "AdminDashboardPage",
+                                    ContentTemplate = new DataTemplate(() => App.GetService<Views.AdminDashboardPage>())
                                 }
                             }
                         });
+                        CurrentItem = Items.OfType<FlyoutItem>().First(i => i.Route == "AdminDashboardPage");
+                        await GoToAsync("//AdminDashboardPage", true);
                         break;
+
+                    default: // Employee & others => Home
+                        goto case UserRole.Employee;
+
                     case UserRole.Employee:
-                        goto default;
-                    default:
                         Items.Add(new FlyoutItem
                         {
-                            Title = AppResources.Home_Title, // i18n
+                            Title = AppResources.Home_Title,
                             Route = "HomePage",
                             Items =
                             {
                                 new ShellContent
                                 {
-                                    Title = AppResources.Home_Tab, // i18n
-                                    ContentTemplate = new DataTemplate(() =>
-                                    {
-                                        var page = App.ServiceProvider?.GetService<Views.HomePage>();
-                                        if (page == null)
-                                            throw new InvalidOperationException("HomePage is not registered in DI.");
-                                        return page;
-                                    }),
-                                    Route = "HomePage"
+                                    Title = AppResources.Home_Tab,
+                                    Route = "HomePage",
+                                    ContentTemplate = new DataTemplate(() => App.GetService<Views.HomePage>())
                                 }
                             }
                         });
+                        CurrentItem = Items.OfType<FlyoutItem>().First(i => i.Route == "HomePage");
+                        await GoToAsync("//HomePage", true);
                         break;
                 }
             }
+            else
+            {
+                // Default to Home
+                Items.Add(new FlyoutItem
+                {
+                    Title = AppResources.Home_Title,
+                    Route = "HomePage",
+                    Items =
+                    {
+                        new ShellContent
+                        {
+                            Title = AppResources.Home_Tab,
+                            Route = "HomePage",
+                            ContentTemplate = new DataTemplate(() => App.GetService<Views.HomePage>())
+                        }
+                    }
+                });
+                CurrentItem = Items.OfType<FlyoutItem>().First(i => i.Route == "HomePage");
+                await GoToAsync("//HomePage", true);
+            }
 
-            // Ajoute le logout
+            // Add Logout to MenuItems (NOT to Items)
             Items.Add(new MenuItem
             {
-                Text = AppResources.Logout, // i18n
+                Text = AppResources.Logout,
                 Command = new Command(async () =>
                 {
                     if (Application.Current is App app)
                         await app.LogoutAsync();
                 })
             });
+
+            FlyoutBehavior = FlyoutBehavior.Flyout;
         }
 
-        /// <summary>
-        /// Appelé lors du logout pour remettre le Shell à l’état LoginPage.
-        /// </summary>
+        // Back-compat for old calls without "Async"
+        public void ConfigureFlyoutForRole(string role)
+            => _ = MainThread.InvokeOnMainThreadAsync(() => ConfigureFlyoutForRoleAsync(role));
+
         public async Task ResetForLogoutAsync()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("=== Début ResetForLogoutAsync ===");
-
-                foreach (var item in Items)
-                    System.Diagnostics.Debug.WriteLine("[Shell BEFORE] " + (item as FlyoutItem)?.Route);
-
                 ResetToLoginShell();
-
-                foreach (var item in Items)
-                    System.Diagnostics.Debug.WriteLine("[Shell AFTER] " + (item as FlyoutItem)?.Route);
-
                 SetLoginFlyoutAsCurrent();
-
-                System.Diagnostics.Debug.WriteLine("[Shell CURRENT] " + (CurrentItem as FlyoutItem)?.Route);
-
                 FlyoutBehavior = FlyoutBehavior.Disabled;
 
-                // NE NAVIGUE VERS //LoginPage QUE SI TU N'Y ES PAS DÉJÀ
                 if ((CurrentItem as FlyoutItem)?.Route != "LoginPage")
-                {
-                    System.Diagnostics.Debug.WriteLine("=== Juste avant GoToAsync(\"//LoginPage\") ===");
                     await GoToAsync("//LoginPage", true);
-                    System.Diagnostics.Debug.WriteLine("=== Après GoToAsync(\"//LoginPage\") ===");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("Déjà sur LoginPage, aucune navigation nécessaire.");
-                }
             }
             catch (Exception ex)
             {
