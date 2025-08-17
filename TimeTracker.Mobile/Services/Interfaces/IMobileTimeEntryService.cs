@@ -28,11 +28,5 @@ namespace TimeTracker.Mobile.Services.Interfaces
 
         /// <summary>Récupère les pointages de l’utilisateur.</summary>
         Task<IEnumerable<TimeEntryDto>> GetTimeEntriesAsync(int userId);
-
-        /// <summary>
-        /// Crée un nouveau pointage côté API. 
-        /// Si l’API renvoie l’objet créé, l’Id est propagé dans <paramref name="entry"/>.
-        /// </summary>
-        Task CreateTimeEntryAsync(TimeEntryDto entry);
     }
 }
