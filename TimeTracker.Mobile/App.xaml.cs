@@ -1,5 +1,4 @@
-﻿// TimeTracker.Mobile/App.xaml.cs
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TimeTracker.Mobile.Services.Interfaces;
 
@@ -17,7 +16,6 @@ public partial class App : Application
             $"Unable to resolve service for type '{typeof(T)}'. " +
             "Ensure the service is registered and App initialization has completed.");
     }
-
 
     private readonly ISessionStateService _session;
     private readonly ILogger<App> _logger;

@@ -16,6 +16,7 @@ public partial class StartSessionViewModel : BaseViewModel
     private readonly IAuthService _authService;
     private readonly IMobileTimeEntryService _timeEntryService;
     private readonly IGeolocationService _geoService;
+    private readonly IClockService _clockService;
 
     public ObservableCollection<WorkSessionType> SessionTypes { get; }
         = new(Enum.GetValues<WorkSessionType>());
@@ -39,66 +40,81 @@ public partial class StartSessionViewModel : BaseViewModel
     public StartSessionViewModel(
         IAuthService authService,
         IMobileTimeEntryService timeEntryService,
-        IGeolocationService geoService)
+        IGeolocationService geoService,
+        IClockService clockService)
     {
         _authService = authService;
         _timeEntryService = timeEntryService;
         _geoService = geoService;
+        _clockService = clockService;
 
-        StartCommand = new Command(async () => await OnStartSessionAsync());
+        StartCommand = new Command(async () => await OnStartSessionAsync(),
+            () => !IsBusy);
+        PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(IsBusy))
+                ((Command)StartCommand).ChangeCanExecute();
+        };
     }
 
     private async Task OnStartSessionAsync()
     {
-        var loc = await _geoService.GetCurrentLocationAsync();
-        string address = AppResources.StartSession_LocationUnavailable;
-        double lat = 0, lon = 0;
-
-        if (loc != null)
-        {
-            lat = loc.Latitude;
-            lon = loc.Longitude;
-            address = await _geoService.GetAddressFromCoordinatesAsync(lat, lon);
-        }
-
-        var user = _authService.CurrentUser;
-        if (user == null)
-        {
-            await Shell.Current.DisplayAlert(
-                AppResources.StartSession_Error_Title,
-                AppResources.StartSession_Error_NoUser,
-                AppResources.StartSession_Error_OK);
-            return;
-        }
-
-        var dto = new TimeEntryDto
-        {
-            UserId = user.Id,
-            Username = user.UserName!,
-            SessionType = selectedSessionType,
-            StartTime = DateTime.Now,
-            IncludesTravelTime = includesTravelTime,
-            StartLatitude = lat,
-            StartLongitude = lon,
-            StartAddress = address,
-            DinnerPaid = DinnerPaidBy.None,
-            Location = address
-        };
-
+        IsBusy = true;
         try
         {
-            // Only save the session locally for now!
-            await _timeEntryService.StartSessionAsync(dto);
-        }
-        catch
-        {
-            await Shell.Current.DisplayAlert(
-                AppResources.StartSession_Error_Title,
-                AppResources.StartSession_Error_CannotStart,
-                AppResources.StartSession_Error_OK);
-            return;
-        }
+            var loc = await _geoService.GetCurrentLocationAsync();
+            string address = AppResources.StartSession_LocationUnavailable;
+            double lat = 0, lon = 0;
 
-        await Shell.Current.GoToAsync(nameof(TimeTracker.Mobile.Views.EndSessionPage));
+            if (loc != null)
+            {
+                lat = loc.Latitude;
+                lon = loc.Longitude;
+                address = await _geoService.GetAddressFromCoordinatesAsync(lat, lon);
+            }
+
+            var user = _authService.CurrentUser;
+            if (user == null)
+            {
+                await Shell.Current.DisplayAlert(
+                    AppResources.StartSession_Error_Title,
+                    AppResources.StartSession_Error_NoUser,
+                    AppResources.StartSession_Error_OK);
+                return;
+            }
+
+            var dto = new TimeEntryDto
+            {
+                UserId = user.Id,
+                Username = user.UserName!,
+                SessionType = selectedSessionType,
+                StartTime = DateTime.Now,
+                IncludesTravelTime = includesTravelTime,
+                StartLatitude = lat,
+                StartLongitude = lon,
+                StartAddress = address,
+                DinnerPaid = DinnerPaidBy.None,
+                Location = address
+            };
+
+            try
+            {
+                await _timeEntryService.StartSessionAsync(dto);
+            }
+            catch
+            {
+                await Shell.Current.DisplayAlert(
+                    AppResources.StartSession_Error_Title,
+                    AppResources.StartSession_Error_CannotStart,
+                    AppResources.StartSession_Error_OK);
+                return;
+            }
+
+            await Shell.Current.GoToAsync(nameof(TimeTracker.Mobile.Views.EndSessionPage));
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 }

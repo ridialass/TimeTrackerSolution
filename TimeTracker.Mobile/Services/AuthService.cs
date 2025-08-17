@@ -1,9 +1,4 @@
-﻿// SECURITE :
-// - Ne jamais logger ni persister le mot de passe utilisateur ici.
-// - Transmettre les identifiants via HTTPS et uniquement via POST.
-// - Seul le token JWT est stocké localement (SecureStorage). Jamais le mot de passe.
-
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -19,9 +14,8 @@ namespace TimeTracker.Mobile.Services
 {
     public class AuthService : IAuthService
     {
-        // Clés de stockage (alignées avec le handler HTTP qui ajoute "Authorization: Bearer ...")
-        private const string AccessTokenKey = TokenStorageKeys.AccessToken; // "auth_access_token"
-        private const string LegacyTokenKey = "jwt_token";                  // compat ancien code
+        private const string AccessTokenKey = TokenStorageKeys.AccessToken;
+        private const string LegacyTokenKey = "jwt_token";
         private const string SessionKey = "auth_user_session";
 
         private readonly IApiClientService _apiClient;
@@ -53,8 +47,6 @@ namespace TimeTracker.Mobile.Services
             }
 
             var login = result.Value;
-
-            // Ton DTO expose Token + ApplicationUserId + Username + Role (enum)
             var token = login.Token;
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -62,43 +54,29 @@ namespace TimeTracker.Mobile.Services
                 return Result<LoginResponseDto>.Fail("Le jeton d'accès est manquant dans la réponse du serveur.");
             }
 
-            // Stocker le token (nouvelle clé + compat)
             await _secureStorage.SetAsync(AccessTokenKey, token);
             await _secureStorage.SetAsync(LegacyTokenKey, token);
 
-            // Construire la session à partir du JWT (et compléter avec la réponse du serveur)
             var session = ParseJwtToSession(token) ?? new ApplicationUserSession();
 
-            // Compléments/Overlays depuis la réponse serveur
             if (login.ApplicationUserId > 0) session.Id = login.ApplicationUserId;
             if (!string.IsNullOrWhiteSpace(login.Username)) session.UserName = login.Username;
-            // Role est un enum côté DTO → on stocke en string dans la session si manquant
             if (string.IsNullOrWhiteSpace(session.Role)) session.Role = login.Role.ToString();
 
-            // Valeurs de repli
             session.UserName ??= username;
             session.JwtToken = token;
 
             CurrentUser = session;
-            // 🔎 LOG ICI — juste après avoir bâti la session
             _logger.LogInformation("[AuthService/Login] Session built: tokenNull={TokenNull}, id={Id}, role={Role}, user={User}",
                 string.IsNullOrWhiteSpace(session.JwtToken),
                 session.Id,
                 session.Role,
                 session.UserName);
 
-            // Persister la session sérialisée pour restauration rapide
             var json = JsonSerializer.Serialize(session, JsonOpt);
             await _secureStorage.SetAsync(SessionKey, json);
 
-
             return result;
-        }
-
-        public async Task<Result<bool>> RegisterAsync(RegisterRequestDto dto)
-        {
-            // Déléguée à l’API (qui devrait imposer que seuls les admins peuvent créer des comptes)
-            return await _apiClient.RegisterAsync(dto);
         }
 
         public async Task LogoutAsync()
@@ -111,7 +89,6 @@ namespace TimeTracker.Mobile.Services
 
         public async Task<bool> TryRestoreSessionAsync()
         {
-            // 1) Récupérer token (nouvelle clé), sinon migrer depuis l’ancienne
             var token = await _secureStorage.GetAsync(AccessTokenKey);
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -119,7 +96,6 @@ namespace TimeTracker.Mobile.Services
                 if (!string.IsNullOrWhiteSpace(legacy))
                 {
                     token = legacy;
-                    // Migration douce vers la nouvelle clé
                     await _secureStorage.SetAsync(AccessTokenKey, legacy);
                 }
             }
@@ -127,7 +103,6 @@ namespace TimeTracker.Mobile.Services
             if (string.IsNullOrWhiteSpace(token))
                 return false;
 
-            // 2) Tenter de recharger la session sérialisée
             var json = await _secureStorage.GetAsync(SessionKey);
             if (!string.IsNullOrWhiteSpace(json))
             {
@@ -136,8 +111,7 @@ namespace TimeTracker.Mobile.Services
                     var cached = JsonSerializer.Deserialize<ApplicationUserSession>(json!, JsonOpt);
                     if (cached != null && !IsJwtExpired(token))
                     {
-                        cached.JwtToken = token; // cohérence
-                        // Renseigner l'expiration si elle n'était pas stockée
+                        cached.JwtToken = token;
                         var exp = GetJwtExpiryUtc(token);
                         if (exp.HasValue) cached.ExpiresAtUtc = exp.Value;
                         CurrentUser = cached;
@@ -147,11 +121,9 @@ namespace TimeTracker.Mobile.Services
                 }
                 catch
                 {
-                    // Session corrompue → on reconstruit depuis le JWT
                 }
             }
 
-            // 3) Reconstruction depuis le JWT
             if (IsJwtExpired(token))
             {
                 await _secureStorage.RemoveAsync(AccessTokenKey);
@@ -177,15 +149,13 @@ namespace TimeTracker.Mobile.Services
             return true;
         }
 
-        // -------- Helpers --------
-
         private static bool IsJwtExpired(string token)
         {
             try
             {
                 var handler = new JwtSecurityTokenHandler();
                 var jwt = handler.ReadJwtToken(token);
-                return jwt.ValidTo <= DateTime.UtcNow; // ValidTo est UTC
+                return jwt.ValidTo <= DateTime.UtcNow;
             }
             catch
             {
@@ -216,7 +186,6 @@ namespace TimeTracker.Mobile.Services
 
                 if (jwt.ValidTo <= DateTime.UtcNow) return null;
 
-                // Id (essaie plusieurs claims courants)
                 var idClaim = jwt.Claims.FirstOrDefault(c =>
                                    c.Type == "nameid" ||
                                    c.Type == "userId" ||
@@ -226,7 +195,6 @@ namespace TimeTracker.Mobile.Services
                                    c.Type == JwtRegisteredClaimNames.Sub);
                 int.TryParse(idClaim?.Value, out var userId);
 
-                // Username
                 var userName = jwt.Claims.FirstOrDefault(c =>
                                    c.Type == "unique_name" ||
                                    c.Type == "username" ||
@@ -236,7 +204,6 @@ namespace TimeTracker.Mobile.Services
                                    c.Type == JwtRegisteredClaimNames.Sub)
                                    ?.Value;
 
-                // Role (string ou array → on concatène si besoin)
                 string? role = null;
                 var roleClaims = jwt.Claims
                     .Where(c => c.Type == ClaimTypes.Role || c.Type == "role" || c.Type == "roles")
@@ -267,7 +234,7 @@ namespace TimeTracker.Mobile.Services
         public static class TokenStorageKeys
         {
             public const string AccessToken = "auth_access_token";
-            public const string RefreshToken = "auth_refresh_token"; // si tu l’utilises
+            public const string RefreshToken = "auth_refresh_token";
         }
     }
 }

@@ -13,7 +13,6 @@ namespace TimeTracker.Mobile.Services
         // Absolute roots (Shell root navigation): use TWO slashes.
         private const string RouteLoginRoot = "//LoginPage";
         private const string RouteHomeRoot = "//HomePage";
-        private const string RouteAdminDashboardRoot = "//AdminDashboardPage";
 
         // Relative (stack) routes
         private const string RouteStartSession = "StartSessionPage";
@@ -23,7 +22,6 @@ namespace TimeTracker.Mobile.Services
         // -------- Public API (unchanged names) --------
         public Task GoToLoginPageAsync() => NavigateOnUIAsync(() => ShellGoToAsync(RouteLoginRoot));
         public Task GoToHomePageAsync() => NavigateOnUIAsync(() => ShellGoToAsync(RouteHomeRoot));
-        public Task GoToAdminDashboardPageAsync() => NavigateOnUIAsync(() => ShellGoToAsync(RouteAdminDashboardRoot));
 
         public Task GoToStartSessionPageAsync() => NavigateOnUIAsync(() => ShellGoToAsync(RouteStartSession));
         public Task GoToEndSessionPageAsync() => NavigateOnUIAsync(() => ShellGoToAsync(RouteEndSession));

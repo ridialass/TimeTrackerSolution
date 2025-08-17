@@ -36,21 +36,6 @@ public class ApiClientService : IApiClientService
         }
     }
 
-    public async Task<Result<bool>> RegisterAsync(RegisterRequestDto dto)
-    {
-        try
-        {
-            var res = await _http.PostAsJsonAsync("api/auth/register", dto);
-            if (!res.IsSuccessStatusCode)
-                return Result<bool>.Fail("Échec de l'inscription. Veuillez vérifier les champs et réessayer.");
-            return Result<bool>.Success(true);
-        }
-        catch (System.Exception)
-        {
-            return Result<bool>.Fail("Erreur réseau ou inattendue lors de l'inscription.");
-        }
-    }
-
     public async Task<Result<IEnumerable<EmployeeDto>>> GetEmployeesAsync()
     {
         try
@@ -92,24 +77,6 @@ public class ApiClientService : IApiClientService
         catch (System.Exception)
         {
             return Result<TimeEntryDto>.Fail("Erreur lors de l'enregistrement du pointage.");
-        }
-    }
-
-    public async Task<Result<TimeEntryDto>> UpdateTimeEntryAsync(TimeEntryDto entry)
-    {
-        try
-        {
-            var res = await _http.PutAsJsonAsync($"api/timeentries/{entry.Id}", entry);
-            if (!res.IsSuccessStatusCode)
-                return Result<TimeEntryDto>.Fail("Échec de la mise à jour du pointage.");
-            var updated = await res.Content.ReadFromJsonAsync<TimeEntryDto>();
-            if (updated == null)
-                return Result<TimeEntryDto>.Fail("La réponse du serveur est vide ou invalide.");
-            return Result<TimeEntryDto>.Success(updated);
-        }
-        catch (System.Exception)
-        {
-            return Result<TimeEntryDto>.Fail("Erreur lors de la mise à jour du pointage.");
         }
     }
 }

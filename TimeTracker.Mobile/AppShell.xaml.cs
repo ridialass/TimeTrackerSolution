@@ -1,5 +1,4 @@
-﻿
-using Microsoft.Maui.ApplicationModel; // MainThread
+﻿using Microsoft.Maui.ApplicationModel; // MainThread
 using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Resources.Strings;
 
@@ -13,7 +12,6 @@ namespace TimeTracker.Mobile
 
             // Routes
             Routing.RegisterRoute("HomePage", typeof(Views.HomePage));
-            Routing.RegisterRoute("AdminDashboardPage", typeof(Views.AdminDashboardPage));
             Routing.RegisterRoute("StartSessionPage", typeof(Views.StartSessionPage));
             Routing.RegisterRoute("EndSessionPage", typeof(Views.EndSessionPage));
             Routing.RegisterRoute("TimeEntriesPage", typeof(Views.TimeEntriesPage));
@@ -50,72 +48,22 @@ namespace TimeTracker.Mobile
             ResetToLoginShell();
 
             // Build role-specific flyout (defaults to Home if parse fails)
-            if (!string.IsNullOrWhiteSpace(role) && Enum.TryParse<UserRole>(role, out var userRole))
+            Items.Add(new FlyoutItem
             {
-                switch (userRole)
+                Title = AppResources.Home_Title,
+                Route = "HomePage",
+                Items =
                 {
-                    case UserRole.Admin:
-                        Items.Add(new FlyoutItem
-                        {
-                            Title = AppResources.AdminDashboard_Title,
-                            Route = "AdminDashboardPage",
-                            Items =
-                            {
-                                new ShellContent
-                                {
-                                    Title = AppResources.AdminDashboard_Tab,
-                                    Route = "AdminDashboardPage",
-                                    ContentTemplate = new DataTemplate(() => App.GetService<Views.AdminDashboardPage>())
-                                }
-                            }
-                        });
-                        CurrentItem = Items.OfType<FlyoutItem>().First(i => i.Route == "AdminDashboardPage");
-                        await GoToAsync("//AdminDashboardPage", true);
-                        break;
-
-                    default: // Employee & others => Home
-                        goto case UserRole.Employee;
-
-                    case UserRole.Employee:
-                        Items.Add(new FlyoutItem
-                        {
-                            Title = AppResources.Home_Title,
-                            Route = "HomePage",
-                            Items =
-                            {
-                                new ShellContent
-                                {
-                                    Title = AppResources.Home_Tab,
-                                    Route = "HomePage",
-                                    ContentTemplate = new DataTemplate(() => App.GetService<Views.HomePage>())
-                                }
-                            }
-                        });
-                        CurrentItem = Items.OfType<FlyoutItem>().First(i => i.Route == "HomePage");
-                        await GoToAsync("//HomePage", true);
-                        break;
-                }
-            }
-            else
-            {
-                // Default to Home
-                Items.Add(new FlyoutItem
-                {
-                    Title = AppResources.Home_Title,
-                    Route = "HomePage",
-                    Items =
+                    new ShellContent
                     {
-                        new ShellContent
-                        {
-                            Title = AppResources.Home_Tab,
-                            Route = "HomePage",
-                            ContentTemplate = new DataTemplate(() => App.GetService<Views.HomePage>())
-                        }
+                        Title = AppResources.Home_Tab,
+                        Route = "HomePage",
+                        ContentTemplate = new DataTemplate(() => App.GetService<Views.HomePage>())
                     }
-                });
-                CurrentItem = Items.OfType<FlyoutItem>().First(i => i.Route == "HomePage");
-                await GoToAsync("//HomePage", true);
-            }
+                }
+            });
+            CurrentItem = Items.OfType<FlyoutItem>().First(i => i.Route == "HomePage");
+            await GoToAsync("//HomePage", true);
 
             // Add Logout to MenuItems (NOT to Items)
             Items.Add(new MenuItem

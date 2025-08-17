@@ -58,6 +58,7 @@ public static class MauiProgram
         services.AddSingleton<IGeolocationService, GeolocationService>();
         services.AddSingleton<ISessionStateService, SessionStateService>();
         services.AddSingleton<ILocalStorageService, LocalStorageService>();
+        builder.Services.AddSingleton<IClockService, SystemClockService>();
 
         // ---- HTTP handlers (DI-friendly)
         services.AddTransient<AuthHeaderHandler>();
@@ -137,20 +138,16 @@ public static class MauiProgram
 
         // ---- ViewModels
         services.AddTransient<LoginViewModel>();
-        services.AddTransient<RegistrationViewModel>();
         services.AddTransient<HomeViewModel>();
         services.AddTransient<StartSessionViewModel>();
         services.AddTransient<EndSessionViewModel>();
-        services.AddTransient<AdminDashboardViewModel>();
         services.AddTransient<TimeEntriesViewModel>();
 
         // ---- Views
         services.AddTransient<LoginPage>();
-        services.AddTransient<RegistrationPage>();
         services.AddTransient<HomePage>();
         services.AddTransient<StartSessionPage>();
         services.AddTransient<EndSessionPage>();
-        services.AddTransient<AdminDashboardPage>();
         services.AddTransient<TimeEntriesPage>();
 
         // ---- Shell & App

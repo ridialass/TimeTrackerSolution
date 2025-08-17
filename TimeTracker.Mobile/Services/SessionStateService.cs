@@ -85,8 +85,6 @@ namespace TimeTracker.Mobile.Services
         {
             try
             {
-                // Your IAuthService.LoginAsync likely returns a result object with IsSuccess.
-                // We keep your original shape to avoid breaking changes.
                 var res = await _auth.LoginAsync(username, password).ConfigureAwait(false);
                 if (res is null)
                 {
@@ -102,7 +100,6 @@ namespace TimeTracker.Mobile.Services
                     return false;
                 }
 
-                // Ensure the in-memory auth state is fully restored (CurrentUser, Role, etc.).
                 var ok = await _auth.TryRestoreSessionAsync().ConfigureAwait(false);
                 if (!ok)
                 {
@@ -110,11 +107,9 @@ namespace TimeTracker.Mobile.Services
                     return false;
                 }
 
-                // Configure Shell according to role and navigate to absolute root page.
                 var role = _auth.CurrentUser?.Role ?? string.Empty;
                 await ConfigureShellForRoleAsync(role).ConfigureAwait(false);
 
-                // Optionally reload local in-progress session
                 await _time.LoadInProgressSessionAsync().ConfigureAwait(false);
 
                 return true;
@@ -155,13 +150,11 @@ namespace TimeTracker.Mobile.Services
 
         public async Task SetCurrentSessionAsync(TimeEntryDto session)
         {
-            // Sets in-memory + persists locally (delegated to service).
             await _time.StartSessionAsync(session).ConfigureAwait(false);
         }
 
         public async Task ClearSessionAsync()
         {
-            // Remove the stored in-progress session and refresh the service cache.
             await _storage.RemoveAsync(InProgressKey).ConfigureAwait(false);
             await _time.LoadInProgressSessionAsync().ConfigureAwait(false);
         }
@@ -186,10 +179,7 @@ namespace TimeTracker.Mobile.Services
                 else
                 {
                     // Fallback: navigate using NavigationService if Shell not yet realized.
-                    if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
-                        await _nav.GoToAdminDashboardPageAsync();
-                    else
-                        await _nav.GoToHomePageAsync();
+                    await _nav.GoToHomePageAsync();
                 }
             });
         }

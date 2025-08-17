@@ -220,117 +220,126 @@ namespace TimeTracker.Mobile.ViewModels
 
         private async Task OnEndSessionAsync()
         {
-            var session = InProgressSession ?? _timeEntryService.InProgressSession;
-            if (session == null)
-            {
-                await _dialogs.ShowAlertAsync(
-                    AppResources.EndSession_Error_Title,
-                    AppResources.EndSession_Error_NoSession,
-                    AppResources.EndSession_Error_OK);
-                return;
-            }
-
-            if (IsPaused)
-            {
-                await _dialogs.ShowAlertAsync("Pause en cours",
-                    "Termine ou annule la pause avant de clôturer la session.",
-                    "OK");
-                return;
-            }
-
-            string endAddress = AppResources.EndSession_LocationUnavailable;
-            double lat = 0, lon = 0;
-
+            if (IsBusy) return; // Ajout : empêche double clic/nouvel appui
+            IsBusy = true;
             try
             {
-                var loc = await _geoService.GetCurrentLocationAsync();
-                if (loc != null)
+                var session = InProgressSession ?? _timeEntryService.InProgressSession;
+                if (session == null)
                 {
-                    lat = loc.Latitude;
-                    lon = loc.Longitude;
-                    endAddress = await _geoService.GetAddressFromCoordinatesAsync(lat, lon);
+                    await _dialogs.ShowAlertAsync(
+                        AppResources.EndSession_Error_Title,
+                        AppResources.EndSession_Error_NoSession,
+                        AppResources.EndSession_Error_OK);
+                    return;
                 }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[EndSession] Geolocation error: {ex.Message}");
-            }
 
-            double? travelDurationHours = null;
-            if (session.IncludesTravelTime)
-            {
-                int h = 0, m = 0;
-                var okH = int.TryParse(TravelHours, out h);
-                var okM = int.TryParse(TravelMinutes, out m);
-                if (okH || okM)
+                if (IsPaused)
                 {
-                    if (h < 0) h = 0;
-                    if (m < 0) m = 0;
-                    if (m > 59) m = 59;
-                    travelDurationHours = h + (m / 60.0);
+                    await _dialogs.ShowAlertAsync("Pause en cours",
+                        "Termine ou annule la pause avant de clôturer la session.",
+                        "OK");
+                    return;
                 }
-            }
 
-            session.TravelDurationHours = travelDurationHours;
-            session.EndTime = DateTime.Now;
-            session.EndLatitude = lat;
-            session.EndLongitude = lon;
-            session.EndAddress = endAddress;
-            session.DinnerPaid = selectedDinnerPaidBy;
+                string endAddress = AppResources.EndSession_LocationUnavailable;
+                double lat = 0, lon = 0;
 
-            // Set Username if needed
-            if (string.IsNullOrWhiteSpace(session.Username) && _authService.CurrentUser != null)
-            {
-                session.Username = _authService.CurrentUser.UserName ?? string.Empty;
-            }
-
-            await _timeEntryService.StartSessionAsync(session);
-
-            // --- Correction ici : Pour la création, il faut forcer Id=0 et POST ---
-            if (session.Id > 0)
-            {
-                session.Id = 0;
-            }
-
-            var createRes = await _apiClient.CreateTimeEntryAsync(session);
-
-            if (!createRes.IsSuccess)
-            {
-                // Always log payload in case of failure
                 try
                 {
-                    var payload = JsonSerializer.Serialize(session, JsonOpts);
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[CreateEntry] FAILED\nPayload: {payload}\nError: {createRes.Error ?? "<none>"}");
+                    var loc = await _geoService.GetCurrentLocationAsync();
+                    if (loc != null)
+                    {
+                        lat = loc.Latitude;
+                        lon = loc.Longitude;
+                        endAddress = await _geoService.GetAddressFromCoordinatesAsync(lat, lon);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[CreateEntry] Payload logging error: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[EndSession] Geolocation error: {ex.Message}");
                 }
 
-                await _dialogs.ShowErrorAsync(
-                    createRes.Error +
-                    "\n\n(Détail technique envoyé dans les logs développeur, voir Debug Output.)"
-                );
-                return;
-            }
+                double? travelDurationHours = null;
+                if (session.IncludesTravelTime)
+                {
+                    int h = 0, m = 0;
+                    var okH = int.TryParse(TravelHours, out h);
+                    var okM = int.TryParse(TravelMinutes, out m);
+                    if (okH || okM)
+                    {
+                        if (h < 0) h = 0;
+                        if (m < 0) m = 0;
+                        if (m > 59) m = 59;
+                        travelDurationHours = h + (m / 60.0);
+                    }
+                }
 
-            await _timeEntryService.StartSessionAsync(session);
+                session.TravelDurationHours = travelDurationHours;
+                session.EndTime = DateTime.Now;
+                session.EndLatitude = lat;
+                session.EndLongitude = lon;
+                session.EndAddress = endAddress;
+                session.DinnerPaid = selectedDinnerPaidBy;
 
-            try
-            {
-                await _timeEntryService.EndAndSaveCurrentSessionAsync();
-                await _nav.GoToHomePageAsync();
-            }
-            catch (Exception ex)
-            {
+                // Set Username if needed
+                if (string.IsNullOrWhiteSpace(session.Username) && _authService.CurrentUser != null)
+                {
+                    session.Username = _authService.CurrentUser.UserName ?? string.Empty;
+                }
+
+                await _timeEntryService.StartSessionAsync(session);
+
+                // --- Correction ici : Pour la création, il faut forcer Id=0 et POST ---
+                if (session.Id > 0)
+                {
+                    session.Id = 0;
+                }
+
+                var createRes = await _apiClient.CreateTimeEntryAsync(session);
+
+                if (!createRes.IsSuccess)
+                {
+                    // Always log payload in case of failure
+                    try
+                    {
+                        var payload = JsonSerializer.Serialize(session, JsonOpts);
+                        System.Diagnostics.Debug.WriteLine(
+                            $"[CreateEntry] FAILED\nPayload: {payload}\nError: {createRes.Error ?? "<none>"}");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[CreateEntry] Payload logging error: {ex.Message}");
+                    }
+
+                    await _dialogs.ShowErrorAsync(
+                        createRes.Error +
+                        "\n\n(Détail technique envoyé dans les logs développeur, voir Debug Output.)"
+                    );
+                    return;
+                }
+
+                await _timeEntryService.StartSessionAsync(session);
+
                 try
                 {
-                    var payload = JsonSerializer.Serialize(session, JsonOpts);
-                    System.Diagnostics.Debug.WriteLine($"[EndSession] Save exception: {ex.Message}\nPayload: {payload}");
+                    await _timeEntryService.EndAndSaveCurrentSessionAsync();
+                    await _nav.GoToHomePageAsync();
                 }
-                catch { }
-                await _dialogs.ShowErrorAsync("Impossible d'enregistrer la session.", "Erreur");
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        var payload = JsonSerializer.Serialize(session, JsonOpts);
+                        System.Diagnostics.Debug.WriteLine($"[EndSession] Save exception: {ex.Message}\nPayload: {payload}");
+                    }
+                    catch { }
+                    await _dialogs.ShowErrorAsync("Impossible d'enregistrer la session.", "Erreur");
+                }
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
     }

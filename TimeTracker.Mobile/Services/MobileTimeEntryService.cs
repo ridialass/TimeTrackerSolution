@@ -83,12 +83,8 @@ namespace TimeTracker.Mobile.Services
             if (net < TimeSpan.Zero) net = TimeSpan.Zero;
             s.WorkDurationNet = net;
 
-            // Save via API client
-            Result<TimeEntryDto> result;
-            if (s.Id <= 0)
-                result = await _apiClient.CreateTimeEntryAsync(s);
-            else
-                result = await _apiClient.UpdateTimeEntryAsync(s);
+            // Save via API client : uniquement POST (création)
+            var result = await _apiClient.CreateTimeEntryAsync(s);
 
             if (!result.IsSuccess)
                 throw new Exception(result.Error);

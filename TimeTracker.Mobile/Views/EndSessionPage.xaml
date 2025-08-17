@@ -73,7 +73,18 @@
                 Text="{x:Static resx:AppResources.EndSession_EndSessionBtn}" 
                 Command="{Binding EndCommand}" 
                 HorizontalOptions="Center"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
                 AutomationProperties.Name="{x:Static resx:AppResources.EndSession_EndSessionBtn}" />
+
+            <ActivityIndicator
+                IsVisible="{Binding IsBusy}"
+                IsRunning="{Binding IsBusy}" 
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Color="DarkBlue"
+                WidthRequest="40"
+                HeightRequest="40"
+                AutomationProperties.Name="Chargement" />
 
         </VerticalStackLayout>
     </ScrollView>

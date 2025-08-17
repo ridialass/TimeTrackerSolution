@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Threading.Tasks;
-using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Services.Interfaces;
 using TimeTracker.Mobile.Resources.Strings;
 
@@ -64,35 +63,9 @@ public partial class HomeViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private async Task GoToAdminDashboardAsync()
-    {
-        var currentUser = _authService.CurrentUser;
-        if (currentUser == null ||
-            !System.Enum.TryParse<UserRole>(currentUser.Role, out var roleEnum) ||
-            roleEnum != UserRole.Admin)
-        {
-            await _dialogService.ShowAlertAsync(
-                AppResources.Home_AdminDashboard_Alert_Title,
-                AppResources.Home_AdminDashboard_Alert_AccessDenied,
-                AppResources.Home_OK);
-            return;
-        }
-        await _navigationService.GoToAdminDashboardPageAsync();
-    }
-
-    [RelayCommand]
     private async Task LogoutAsync()
     {
         if (Application.Current is App app)
             await app.LogoutAsync();
-    }
-
-    public bool IsCurrentUserAdmin
-    {
-        get
-        {
-            var role = _authService.CurrentUser?.Role;
-            return System.Enum.TryParse<UserRole>(role, out var roleEnum) && roleEnum == UserRole.Admin;
-        }
     }
 }

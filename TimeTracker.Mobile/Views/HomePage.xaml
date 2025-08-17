@@ -35,13 +35,5 @@
           Command="{Binding GoToHistoryCommand}"
           AutomationProperties.Name="{x:Static resx:AppResources.Home_History}" />
 
-        <Button
-          Text="{x:Static resx:AppResources.Home_AdminDashboard}"
-          Command="{Binding GoToAdminDashboardCommand}"
-          BackgroundColor="#333"
-          TextColor="White"
-          IsVisible="{Binding IsCurrentUserAdmin}"
-          AutomationProperties.Name="{x:Static resx:AppResources.Home_AdminDashboard}" />
-
     </VerticalStackLayout>
 </ContentPage>

@@ -19,7 +19,7 @@ namespace TimeTracker.Mobile.Services.Interfaces
         Task StartSessionAsync(TimeEntryDto dto);
 
         /// <summary>
-        /// Termine et persiste la session en cours (envoie la mise à jour au serveur, puis vide l'état local).
+        /// Termine et persiste la session en cours (envoie la création au serveur, puis vide l'état local).
         /// </summary>
         Task EndAndSaveCurrentSessionAsync();
 

@@ -16,9 +16,6 @@ namespace TimeTracker.Mobile.Services.Interfaces
         /// <summary>Va à la page d’accueil (“Home”).</summary>
         Task GoToHomePageAsync();
 
-        /// <summary>Va au tableau de bord administrateur.</summary>
-        Task GoToAdminDashboardPageAsync();
-
         /// <summary>Va à la page de démarrage de session.</summary>
         Task GoToStartSessionPageAsync();
 
