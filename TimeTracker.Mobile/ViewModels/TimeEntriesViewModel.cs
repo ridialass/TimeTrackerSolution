@@ -49,8 +49,7 @@ public partial class TimeEntriesViewModel : BaseViewModel
         set => SetProperty(ref canLoadMore, value);
     }
 
-    // Utilisation de la propriété ErrorMessage du parent (BaseViewModel)
-    // On ne redéfinit PAS ErrorMessage ici
+    // On utilise la propriété ErrorMessage de BaseViewModel
 
     public TimeEntriesViewModel(
         IMobileTimeEntryService timeEntryService,
@@ -155,9 +154,9 @@ public partial class TimeEntriesViewModel : BaseViewModel
         IsEmpty = (TimeEntries.Count == 0 && !IsLoading && string.IsNullOrEmpty(ErrorMessage));
     }
 
-    public async Task LoadMoreAsync()
+    public Task LoadMoreAsync()
     {
-        if (!CanLoadMore || IsLoading) return;
+        if (!CanLoadMore || IsLoading) return Task.CompletedTask;
         IsLoading = true;
         try
         {
@@ -167,5 +166,6 @@ public partial class TimeEntriesViewModel : BaseViewModel
         {
             IsLoading = false;
         }
+        return Task.CompletedTask;
     }
 }
