@@ -7,7 +7,7 @@ using System.Windows.Input;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Services.Interfaces;
-using TimeTracker.Mobile.Resources.Strings; // Ajout pour i18n
+using TimeTracker.Mobile.Resources.Strings;
 
 namespace TimeTracker.Mobile.ViewModels;
 
@@ -87,7 +87,7 @@ public partial class StartSessionViewModel : BaseViewModel
 
         try
         {
-            // Just save the session locally for now (no API call yet!)
+            // Only save the session locally for now!
             await _timeEntryService.StartSessionAsync(dto);
         }
         catch
@@ -99,7 +99,6 @@ public partial class StartSessionViewModel : BaseViewModel
             return;
         }
 
-        // Navigation
         await Shell.Current.GoToAsync(nameof(TimeTracker.Mobile.Views.EndSessionPage));
     }
 }

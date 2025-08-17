@@ -8,7 +8,7 @@ using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Enums;
 using TimeTracker.Mobile.Services.Interfaces;
 using TimeTracker.Mobile.Views;
-using TimeTracker.Mobile.Resources.Strings; // Ajout pour i18n
+using TimeTracker.Mobile.Resources.Strings;
 
 namespace TimeTracker.Mobile.ViewModels;
 
@@ -70,7 +70,6 @@ public partial class EndSessionViewModel : BaseViewModel
 
     public async Task ReloadSessionAsync()
     {
-        // Recharge la session depuis le stockage persistant
         await _timeEntryService.LoadInProgressSessionAsync();
         InProgressSession = _timeEntryService.InProgressSession;
         OnPropertyChanged(nameof(InProgressSessionInfo));
@@ -100,7 +99,6 @@ public partial class EndSessionViewModel : BaseViewModel
             endAddress = await _geoService.GetAddressFromCoordinatesAsync(lat, lon);
         }
 
-        // --- Correction ici ---
         double? travelDurationHours = null;
         if (session.IncludesTravelTime
             && int.TryParse(travelHours, out var h)
@@ -109,7 +107,6 @@ public partial class EndSessionViewModel : BaseViewModel
             travelDurationHours = h + m / 60.0;
         }
         session.TravelDurationHours = travelDurationHours;
-        // --- Fin correction ---
 
         session.EndTime = DateTime.Now;
         session.EndLatitude = lat;
@@ -119,7 +116,6 @@ public partial class EndSessionViewModel : BaseViewModel
 
         try
         {
-            // This will call the API (POST or PUT) and clear the session locally
             await _timeEntryService.EndAndSaveCurrentSessionAsync();
 
             await Application.Current.MainPage.DisplayAlert(
@@ -127,7 +123,6 @@ public partial class EndSessionViewModel : BaseViewModel
                 AppResources.EndSession_Success_Message,
                 AppResources.EndSession_Error_OK);
 
-            // Navigation: Go to Home or History as desired
             await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)

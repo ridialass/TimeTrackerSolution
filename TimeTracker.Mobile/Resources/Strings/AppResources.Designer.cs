@@ -142,6 +142,15 @@ namespace TimeTracker.Mobile.Resources.Strings {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à Impossible de terminer la session.
+        /// </summary>
+        internal static string EndSession_Error_CannotEnd {
+            get {
+                return ResourceManager.GetString("EndSession_Error_CannotEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à Aucune session à terminer..
         /// </summary>
         internal static string EndSession_Error_NoSession {
@@ -210,6 +219,24 @@ namespace TimeTracker.Mobile.Resources.Strings {
         internal static string EndSession_StartedAt {
             get {
                 return ResourceManager.GetString("EndSession_StartedAt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à La session est terminée..
+        /// </summary>
+        internal static string EndSession_Success_Message {
+            get {
+                return ResourceManager.GetString("EndSession_Success_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Succès.
+        /// </summary>
+        internal static string EndSession_Success_Title {
+            get {
+                return ResourceManager.GetString("EndSession_Success_Title", resourceCulture);
             }
         }
         
@@ -403,7 +430,7 @@ namespace TimeTracker.Mobile.Resources.Strings {
         }
         
         /// <summary>
-        ///   Recherche une chaîne localisée semblable à .
+        ///   Recherche une chaîne localisée semblable à Ecche de la connexion: Verouillé.
         /// </summary>
         internal static string Login_Error_Locked {
             get {

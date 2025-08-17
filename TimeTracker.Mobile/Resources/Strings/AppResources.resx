@@ -352,9 +352,18 @@
     <value>Échec du chargement des pointages.</value>
   </data>
   <data name="Login_Error_Locked" xml:space="preserve">
-    <value />
+    <value>Ecche de la connexion: Verouillé</value>
   </data>
   <data name="TimeEntries_TotalPause" xml:space="preserve">
     <value>Temps de pause : {0}</value>
+  </data>
+  <data name="EndSession_Success_Title" xml:space="preserve">
+    <value>Succès</value>
+  </data>
+  <data name="EndSession_Success_Message" xml:space="preserve">
+    <value>La session est terminée.</value>
+  </data>
+  <data name="EndSession_Error_CannotEnd" xml:space="preserve">
+    <value>Impossible de terminer la session</value>
   </data>
 </root>

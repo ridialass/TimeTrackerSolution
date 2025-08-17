@@ -3,122 +3,99 @@
 // Toujours transmettre les identifiants via HTTPS et uniquement via POST (jamais URL).
 // Seul le token JWT peut être stocké localement, pas le mot de passe.
 
-#nullable enable
-using System;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using TimeTracker.Mobile.Resources.Strings;
 using CommunityToolkit.Mvvm.Input;
-using TimeTracker.Mobile.Resources.Strings; // Ajuste selon ton namespace
+using System.Threading.Tasks;
 using TimeTracker.Mobile.Services.Interfaces;
 
-namespace TimeTracker.Mobile.ViewModels
+namespace TimeTracker.Mobile.ViewModels;
+
+public partial class LoginViewModel : BaseViewModel
 {
-    public partial class LoginViewModel : BaseViewModel
+    private readonly ISessionStateService _sessionService;
+    private readonly INavigationService _navigationService;
+
+    private string username = string.Empty;
+    public string Username
     {
-        private readonly ISessionStateService _sessionService;
-        private readonly INavigationService _navigationService;
-
-        private string username = string.Empty;
-        public string Username
+        get => username;
+        set
         {
-            get => username;
-            set
+            if (SetProperty(ref username, value))
             {
-                if (SetProperty(ref username, value))
-                {
-                    OnPropertyChanged(nameof(CanLogin));
-                    if (!string.IsNullOrEmpty(ErrorMessage)) ErrorMessage = string.Empty;
-                    LoginCommand.NotifyCanExecuteChanged();
-                }
+                OnPropertyChanged(nameof(CanLogin));
+                if (!string.IsNullOrEmpty(ErrorMessage))
+                    ErrorMessage = string.Empty;
             }
         }
+    }
 
-        private string password = string.Empty;
-        public string Password
+    private string password = string.Empty;
+    public string Password
+    {
+        get => password;
+        set
         {
-            get => password;
-            set
+            if (SetProperty(ref password, value))
             {
-                if (SetProperty(ref password, value))
-                {
-                    OnPropertyChanged(nameof(CanLogin));
-                    if (!string.IsNullOrEmpty(ErrorMessage)) ErrorMessage = string.Empty;
-                    LoginCommand.NotifyCanExecuteChanged();
-                }
+                OnPropertyChanged(nameof(CanLogin));
+                if (!string.IsNullOrEmpty(ErrorMessage))
+                    ErrorMessage = string.Empty;
             }
         }
+    }
 
-        public bool CanLogin =>
-            !string.IsNullOrWhiteSpace(Username) &&
-            !string.IsNullOrWhiteSpace(Password) &&
-            !IsBusy;
-
-        public LoginViewModel(ISessionStateService sessionService, INavigationService navigationService)
+    public new bool IsBusy
+    {
+        get => base.IsBusy;
+        set
         {
-            _sessionService = sessionService;
-            _navigationService = navigationService;
+            if (base.IsBusy != value)
+            {
+                base.IsBusy = value;
+                OnPropertyChanged(nameof(CanLogin));
+            }
         }
+    }
 
-        [RelayCommand(CanExecute = nameof(CanLogin))]
-        public async Task LoginAsync()
+    public bool CanLogin =>
+        !string.IsNullOrWhiteSpace(Username)
+        && !string.IsNullOrWhiteSpace(Password)
+        && !IsBusy;
+
+    public LoginViewModel(ISessionStateService sessionService, INavigationService navigationService)
+    {
+        _sessionService = sessionService;
+        _navigationService = navigationService;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanLogin))]
+    public async Task LoginAsync()
+    {
+        IsBusy = true;
+        ErrorMessage = string.Empty;
+
+        try
         {
-            // Prépare l’UI
-            ErrorMessage = string.Empty;
-            IsBusy = true;
-            LoginCommand.NotifyCanExecuteChanged();
+            var success = await _sessionService.LoginAsync(username, password);
+            Password = string.Empty;
 
-            try
+            if (!success)
             {
-                var user = (Username ?? string.Empty).Trim();
-                var pass = Password ?? string.Empty;
-
-                var success = await _sessionService.LoginAsync(user, pass);
-
-                // Toujours nettoyer le champ mot de passe après tentative
-                Password = string.Empty;
-
-                if (!success)
-                {
-                    ErrorMessage = AppResources.Login_Error_Invalid;
-                    return;
-                }
-                // ✅ succès : on efface l’erreur et on configure le Shell
-                ErrorMessage = null;
-
-                if (Shell.Current is AppShell shell)
-                {
-                    shell.ConfigureFlyoutForRole(_sessionService.CurrentUserRole ?? string.Empty);
-                    Shell.Current.FlyoutBehavior = FlyoutBehavior.Flyout; // réactive le menu
-                }
-
-                // Puis on navigue selon le rôle
-                if (string.Equals(_sessionService.CurrentUserRole, "Admin", StringComparison.OrdinalIgnoreCase))
-                    await _navigationService.GoToAdminDashboardPageAsync();
-                else
-                    await _navigationService.GoToHomePageAsync();
-
-                // Navigation selon le rôle (Admin -> Dashboard, sinon Home)
-                var role = _sessionService.CurrentUserRole;
-                if (!string.IsNullOrWhiteSpace(role) &&
-                    role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-                {
-                    await _navigationService.GoToAdminDashboardPageAsync();
-                }
-                else
-                {
-                    await _navigationService.GoToHomePageAsync();
-                }
+                ErrorMessage = AppResources.Login_Error_Invalid;
+                return;
             }
-            catch
-            {
-                ErrorMessage = AppResources.Login_Error_Exception;
-                Password = string.Empty;
-            }
-            finally
-            {
-                IsBusy = false;
-                LoginCommand.NotifyCanExecuteChanged();
-            }
+
+        }
+        catch
+        {
+            ErrorMessage = AppResources.Login_Error_Exception;
+            Password = string.Empty;
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 }

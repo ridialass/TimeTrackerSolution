@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Mobile.Services.Interfaces;
-using TimeTracker.Mobile.Resources.Strings; // Ajout pour i18n
+using TimeTracker.Mobile.Resources.Strings;
 
 namespace TimeTracker.Mobile.ViewModels;
 

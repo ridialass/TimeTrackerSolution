@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Mobile.Utils;
 
-namespace TimeTracker.Mobile.Services;
+namespace TimeTracker.Mobile.Services.Interfaces;
 
 public interface IApiClientService
 {
