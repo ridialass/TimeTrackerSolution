@@ -146,4 +146,10 @@
 	  </None>
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
+	  <PackageReference Include="Xamarin.AndroidX.Startup.StartupRuntime">
+	    <Version>1.2.0.5</Version>
+	  </PackageReference>
+	</ItemGroup>
+
 </Project>
