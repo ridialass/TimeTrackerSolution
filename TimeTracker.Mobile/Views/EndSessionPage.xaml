@@ -8,25 +8,30 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
-            <!-- BOUTON “Retour à l’Accueil” -->
             <Button 
                 Text="{x:Static resx:AppResources.EndSession_BackToHome}"  
                 Clicked="OnBackToHomeClicked" 
                 HorizontalOptions="Start"
                 AutomationProperties.Name="{x:Static resx:AppResources.EndSession_BackToHome}" />
 
-            <!-- Afficher le type de session en cours, pour info -->
             <Label 
                 Text="{x:Static resx:AppResources.EndSession_SessionInProgress}" 
                 FontAttributes="Bold"
                 AutomationProperties.Name="{x:Static resx:AppResources.EndSession_SessionInProgress}" />
+            <!-- Affiche le type et l'heure locale de début -->
             <Label 
                 Text="{Binding InProgressSessionInfo}" 
                 FontSize="16" 
                 TextColor="DimGray"
                 AutomationProperties.Name="{x:Static resx:AppResources.EndSession_SessionInfo}" />
+            <!-- Si tu veux afficher aussi EndTimeLocal, dé-commente :
+            <Label 
+                Text="{Binding EndTimeLocal}" 
+                FontSize="16" 
+                TextColor="DimGray"
+                IsVisible="{Binding EndTimeLocal, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+            -->
 
-            <!-- Si IncludesTravelTime == true, on affiche deux champs Heures/Minutes -->
             <HorizontalStackLayout Spacing="15" IsVisible="{Binding InProgressSessionIncludesTravel}">
                 <VerticalStackLayout>
                     <Label 
@@ -60,7 +65,6 @@
                 IsVisible="{Binding IsPaused}"
                 HorizontalOptions="Center" />
 
-            <!-- Choix de qui paye le dîner -->
             <Label 
                 Text="{x:Static resx:AppResources.EndSession_DinnerPaidBy}" 
                 FontAttributes="Bold"

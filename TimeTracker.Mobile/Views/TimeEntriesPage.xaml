@@ -26,8 +26,8 @@
                             <Frame Padding="10" Margin="5" HasShadow="True" CornerRadius="12" BackgroundColor="#f8f8f8">
                                 <VerticalStackLayout Spacing="4">
                                     <Label Text="{Binding SessionType}" FontAttributes="Bold" FontSize="18" TextColor="DarkBlue" />
-                                    <Label Text="{Binding StartTime, StringFormat='🕒 {0}'}" TextColor="DarkBlue" />
-                                    <Label Text="{Binding EndTime, StringFormat='🏁 {0}'}" TextColor="DarkBlue" />
+                                    <Label Text="{Binding StartTime, Converter={StaticResource UtcToLocalConverter}, StringFormat='🕒 {0:dd/MM/yyyy HH:mm}'}" TextColor="DarkBlue" />
+                                    <Label Text="{Binding EndTime, Converter={StaticResource UtcToLocalConverter}, StringFormat='🏁 {0:dd/MM/yyyy HH:mm}'}" TextColor="DarkBlue" />
                                     <!-- Durée totale -->
                                     <Label
                                       Text="{Binding WorkDuration, StringFormat={x:Static resx:AppResources.TimeEntries_TotalDuration}}"

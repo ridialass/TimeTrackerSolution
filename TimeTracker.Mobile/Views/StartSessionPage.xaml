@@ -29,6 +29,13 @@
                 HorizontalOptions="Center"
                 IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
 
+            <!-- Affichage de l'heure locale de démarrage -->
+            <Label 
+                Text="{Binding StartTimeLocal}" 
+                FontSize="16" 
+                TextColor="DimGray"
+                AutomationProperties.Name="Heure de début locale" />
+
             <ActivityIndicator
                 IsVisible="{Binding IsBusy}"
                 IsRunning="{Binding IsBusy}" 

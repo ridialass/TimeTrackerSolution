@@ -73,13 +73,38 @@ namespace TimeTracker.Mobile.ViewModels
                 SetProperty(ref _inProgressSession, value);
                 OnPropertyChanged(nameof(InProgressSessionInfo));
                 OnPropertyChanged(nameof(InProgressSessionIncludesTravel));
+                OnPropertyChanged(nameof(StartTimeLocal));
+                OnPropertyChanged(nameof(EndTimeLocal));
             }
         }
 
+        // Affichage horodaté en local
         public string InProgressSessionInfo =>
             InProgressSession != null
-                ? $"{InProgressSession.SessionType} – {AppResources.EndSession_StartedAt} {InProgressSession.StartTime:g}"
+                ? $"{InProgressSession.SessionType} – {AppResources.EndSession_StartedAt} {StartTimeLocal}"
                 : AppResources.EndSession_NoSessionInProgress;
+
+        public string StartTimeLocal
+        {
+            get
+            {
+                var dt = InProgressSession?.StartTime;
+                if (dt is DateTime d)
+                    return d.ToLocalTime().ToString("g");
+                return string.Empty;
+            }
+        }
+
+        public string EndTimeLocal
+        {
+            get
+            {
+                var dt = InProgressSession?.EndTime;
+                if (dt is DateTime d)
+                    return d.ToLocalTime().ToString("g");
+                return string.Empty;
+            }
+        }
 
         public bool InProgressSessionIncludesTravel =>
             InProgressSession?.IncludesTravelTime == true;

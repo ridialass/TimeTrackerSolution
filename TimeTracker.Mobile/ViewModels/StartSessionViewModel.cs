@@ -35,6 +35,23 @@ public partial class StartSessionViewModel : BaseViewModel
         set => SetProperty(ref includesTravelTime, value);
     }
 
+    private DateTime? startTimeUtc;
+    public DateTime? StartTimeUtc
+    {
+        get => startTimeUtc;
+        set
+        {
+            SetProperty(ref startTimeUtc, value);
+            OnPropertyChanged(nameof(StartTimeLocal));
+        }
+    }
+
+    // Propriété d'affichage pour l'heure locale
+    public string StartTimeLocal =>
+        StartTimeUtc.HasValue
+            ? StartTimeUtc.Value.ToLocalTime().ToString("g") // format court local
+            : string.Empty;
+
     public ICommand StartCommand { get; }
 
     public StartSessionViewModel(
@@ -83,12 +100,15 @@ public partial class StartSessionViewModel : BaseViewModel
                 return;
             }
 
+            var utcNow = _clockService.UtcNow; // Utilise l'heure UTC sécurisée
+            StartTimeUtc = utcNow;
+
             var dto = new TimeEntryDto
             {
                 UserId = user.Id,
                 Username = user.UserName!,
                 SessionType = selectedSessionType,
-                StartTime = DateTime.Now,
+                StartTime = utcNow,
                 IncludesTravelTime = includesTravelTime,
                 StartLatitude = lat,
                 StartLongitude = lon,
