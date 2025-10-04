@@ -181,7 +181,7 @@
     <value>Development mode should not be enabled in production.</value>
   </data>
   <data name="DinnerPaid" xml:space="preserve">
-    <value>Dinner paid</value>
+    <value>Dinner paid by: </value>
   </data>
   <data name="DinnerPaidBy_Client" xml:space="preserve">
     <value>Company</value>
@@ -839,5 +839,35 @@
   </data>
   <data name="Support_Send_Button" xml:space="preserve">
     <value>Send to support</value>
+  </data>
+  <data name="WelcomeTo" xml:space="preserve">
+    <value>&#x8;Welcome in</value>
+  </data>
+  <data name="WorkNetLabel" xml:space="preserve">
+    <value>EWT</value>
+  </data>
+  <data name="DuréeDesPausesRapide" xml:space="preserve">
+    <value>Total duration of breaks taken</value>
+  </data>
+  <data name="ListeDesPauses" xml:space="preserve">
+    <value>List of breaks</value>
+  </data>
+  <data name="AjouterUnePause" xml:space="preserve">
+    <value>Add a break</value>
+  </data>
+  <data name="PausesDéduitesTempsTravail" xml:space="preserve">
+    <value>Breaks will be deducted from the time worked.</value>
+  </data>
+  <data name="PauseDurationLabel" xml:space="preserve">
+    <value>Duration of the break</value>
+  </data>
+  <data name="PauseDurationHint" xml:space="preserve">
+    <value>Pause duration index</value>
+  </data>
+  <data name="IDWorker" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="DetailTitle" xml:space="preserve">
+    <value>Details of the scoring session</value>
   </data>
 </root>

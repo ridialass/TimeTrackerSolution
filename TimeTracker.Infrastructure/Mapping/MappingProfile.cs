@@ -1,5 +1,4 @@
 ﻿// TimeTracker.Infrastructure/Mapping/MappingProfile.cs
-using System;
 using AutoMapper;
 using TimeTracker.Core.DTOs;
 using TimeTracker.Core.Entities;

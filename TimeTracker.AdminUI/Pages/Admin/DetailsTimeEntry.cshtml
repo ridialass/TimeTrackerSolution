@@ -4,7 +4,7 @@
 @using TimeTracker.Core.Enums
 
 @{
-    ViewData["Title"] = "Détail du pointage";
+    ViewData["Title"] = SharedLocalizer["DetailTitle"];
     var entry = Model.TimeEntry;
 }
 
@@ -16,21 +16,21 @@
         <div class="card-body">
             <dl class="row">
                 <!-- UserId (hidden in CreatePage, shown for info here) -->
-                <dt class="col-sm-3">ID Employé</dt>
+                <dt class="col-sm-3">@SharedLocalizer["IDWorker"]</dt>
                 <dd class="col-sm-9">@entry.UserId</dd>
 
                 <!-- Username -->
-                <dt class="col-sm-3">Employé</dt>
+                <dt class="col-sm-3">@SharedLocalizer["RoleEmployee"]</dt>
                 <dd class="col-sm-9">@entry.Username</dd>
 
                 <!-- Start Time -->
-                <dt class="col-sm-3">Début</dt>
+                <dt class="col-sm-3">@SharedLocalizer["StartTimeLabel"]</dt>
                 <dd class="col-sm-9">
                     <span class="dt-local" data-dt="@entry.StartTime.ToString("o")"></span>
                 </dd>
 
                 <!-- End Time -->
-                <dt class="col-sm-3">Fin</dt>
+                <dt class="col-sm-3">@SharedLocalizer["EndTimeLabel"]</dt>
                 <dd class="col-sm-9">
                     @if (entry.EndTime != null)
                     {
@@ -39,29 +39,31 @@
                 </dd>
 
                 <!-- Session Type -->
-                <dt class="col-sm-3">Type de session</dt>
+                <dt class="col-sm-3">@SharedLocalizer["CsvSessionType"]</dt>
                 <dd class="col-sm-9">@SharedLocalizer[$"SessionType_{entry.SessionType}"]</dd>
 
                 <!-- Start Address -->
-                <dt class="col-sm-3">Adresse début</dt>
+                <dt class="col-sm-3">@SharedLocalizer["CsvStartAddress"]</dt>
                 <dd class="col-sm-9">@entry.StartAddress</dd>
 
                 <!-- End Address -->
-                <dt class="col-sm-3">Adresse fin</dt>
+                <dt class="col-sm-3">@SharedLocalizer["CsvEndAddress"]</dt>
                 <dd class="col-sm-9">@entry.EndAddress</dd>
 
                 <!-- Includes Travel Time -->
-                <dt class="col-sm-3">Inclut le temps de déplacement</dt>
+                <dt class="col-sm-3">@SharedLocalizer["IncludesTravelTimeLabel"]</dt>
                 <dd class="col-sm-9">
                     @(entry.IncludesTravelTime? SharedLocalizer["YesLabel"] : SharedLocalizer["NoLabel"])
                 </dd>
 
-                <!-- Travel Duration Hours -->
-                <dt class="col-sm-3">Durée déplacement (heures)</dt>
-                <dd class="col-sm-9">@entry.TravelDurationHours</dd>
+                <!-- Travel Duration -->
+                <dt class="col-sm-3">@SharedLocalizer["CsvTravelTime"]</dt>
+                <dd class="col-sm-9">
+                    @(Model.TravelDurationDisplay)
+                </dd>
 
                 <!-- Dinner Paid By -->
-                <dt class="col-sm-3">Repas payé par</dt>
+                <dt class="col-sm-3">@SharedLocalizer["DinnerPaid"]</dt>
                 <dd class="col-sm-9">@SharedLocalizer[$"DinnerPaidBy_{entry.DinnerPaid}"]</dd>
             </dl>
             <a asp-page="/Admin/EditTimeEntry"
@@ -71,20 +73,20 @@
                asp-route-customStartDate="@Model.CustomStartDate"
                asp-route-customEndDate="@Model.CustomEndDate"
                asp-route-weekOffset="@Model.WeekOffset"
-               class="btn btn-warning">Modifier</a>
+               class="btn btn-warning">@SharedLocalizer["EditButton"]</a>
             <a asp-page="/Admin/AdminDashboard"
                asp-route-SelectedEmployeeId="@Model.EmployeeId"
                asp-route-SelectedPeriod="@Model.Period"
                asp-route-CustomStartDate="@Model.CustomStartDate"
                asp-route-CustomEndDate="@Model.CustomEndDate"
                asp-route-WeekOffset="@Model.WeekOffset"
-               class="btn btn-secondary">Retour</a>
+               class="btn btn-secondary">@SharedLocalizer["BackButton"]</a>
         </div>
     </div>
 }
 else
 {
-    <div class="alert alert-danger">Aucune donnée trouvée pour ce pointage.</div>
+    <div class="alert alert-danger">@SharedLocalizer["IDWorker"]Aucune donnée trouvée pour ce pointage.</div>
 }
 
 @section Scripts {

@@ -181,7 +181,7 @@
     <value>Le mode développement ne doit pas être activé en production.</value>
   </data>
   <data name="DinnerPaid" xml:space="preserve">
-    <value>Repas Payé</value>
+    <value>Repas Payé par: </value>
   </data>
   <data name="DinnerPaidBy_Client" xml:space="preserve">
     <value>Entreprise</value>
@@ -433,7 +433,7 @@
     <value>Ville</value>
   </data>
   <data name="TravelTimeEstimateLabel" xml:space="preserve">
-    <value>Voyage</value>
+    <value>Temps du trajet</value>
   </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Accès non autorisé</value>
@@ -839,5 +839,35 @@
   </data>
   <data name="Support_Send_Button" xml:space="preserve">
     <value>Envoyer au support</value>
+  </data>
+  <data name="WelcomeTo" xml:space="preserve">
+    <value>Bienvenue sur</value>
+  </data>
+  <data name="WorkNetLabel" xml:space="preserve">
+    <value>TTE</value>
+  </data>
+  <data name="DuréeDesPausesRapide" xml:space="preserve">
+    <value>Durée totale des pauses prises</value>
+  </data>
+  <data name="ListeDesPauses" xml:space="preserve">
+    <value>Liste des pauses</value>
+  </data>
+  <data name="AjouterUnePause" xml:space="preserve">
+    <value>Ajouter une pause</value>
+  </data>
+  <data name="PausesDéduitesTempsTravail" xml:space="preserve">
+    <value>Les pauses seront déduites du temps travaillé</value>
+  </data>
+  <data name="PauseDurationLabel" xml:space="preserve">
+    <value>Durée de la pause</value>
+  </data>
+  <data name="PauseDurationHint" xml:space="preserve">
+    <value>Indice de durée de pause</value>
+  </data>
+  <data name="IDWorker" xml:space="preserve">
+    <value>Identifiant</value>
+  </data>
+  <data name="DetailTitle" xml:space="preserve">
+    <value>Détails de la session de pointage</value>
   </data>
 </root>

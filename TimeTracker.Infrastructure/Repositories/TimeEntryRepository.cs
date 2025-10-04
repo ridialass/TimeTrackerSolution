@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TimeTracker.Core.Entities;
 
 namespace TimeTracker.Infrastructure.Repositories
@@ -30,7 +27,7 @@ namespace TimeTracker.Infrastructure.Repositories
         public async Task<IEnumerable<TimeEntry>> GetAllAsync() =>
             await _db.TimeEntries
                 .Include(te => te.User)
-                .Include(te => te.Pauses)                 // ✅
+                .Include(te => te.Pauses)                 
                 .Where(te => te.EndTime != null)
                 .OrderByDescending(te => te.StartTime)
                 .AsNoTracking()
@@ -40,7 +37,7 @@ namespace TimeTracker.Infrastructure.Repositories
             await _db.TimeEntries
                 .Where(te => te.UserId == employeeId && te.EndTime != null)
                 .Include(te => te.User)
-                .Include(te => te.Pauses)                 // ✅
+                .Include(te => te.Pauses)                 
                 .OrderByDescending(te => te.StartTime)
                 .AsNoTracking()
                 .ToListAsync();
@@ -48,13 +45,13 @@ namespace TimeTracker.Infrastructure.Repositories
         public async Task<TimeEntry?> GetByIdAsync(int id) =>
             await _db.TimeEntries
                 .Include(te => te.User)
-                .Include(te => te.Pauses)                 // ✅
+                .Include(te => te.Pauses)                 
                 .AsNoTracking()
                 .FirstOrDefaultAsync(te => te.Id == id);
 
         public async Task<bool> UpdateAsync(TimeEntry detached)
         {
-            // ⚠️ Ne pas faire Attach+Modified directement : la collection serait perdue
+            // Ne pas faire Attach + Modified directement : la collection serait perdue
             var tracked = await _db.TimeEntries
                                    .Include(t => t.Pauses)
                                    .FirstOrDefaultAsync(t => t.Id == detached.Id);

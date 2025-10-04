@@ -181,7 +181,7 @@
     <value>La modalità di sviluppo non dovrebbe essere abilitata in produzione.</value>
   </data>
   <data name="DinnerPaid" xml:space="preserve">
-    <value>Pasto pagato</value>
+    <value>Pasto pagato da:</value>
   </data>
   <data name="DinnerPaidBy_Client" xml:space="preserve">
     <value>Ditta</value>
@@ -265,7 +265,7 @@
     <value>Incoerenza tra l'identificatore della risorsa e quello fornito</value>
   </data>
   <data name="IncludesTravelTimeLabel" xml:space="preserve">
-    <value>Transferta</value>
+    <value>Viaggio</value>
   </data>
   <data name="Invalid2FACode" xml:space="preserve">
     <value>Codice 2FA non valido o scaduto.</value>
@@ -433,7 +433,7 @@
     <value>Città</value>
   </data>
   <data name="TravelTimeEstimateLabel" xml:space="preserve">
-    <value>Viaggio</value>
+    <value>Durata viaggio</value>
   </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Accesso non autorizzato</value>
@@ -839,5 +839,35 @@
   </data>
   <data name="Support_Send_Button" xml:space="preserve">
     <value>Invia al supporto</value>
+  </data>
+  <data name="WelcomeTo" xml:space="preserve">
+    <value>Benvenuti su</value>
+  </data>
+  <data name="WorkNetLabel" xml:space="preserve">
+    <value>TLE</value>
+  </data>
+  <data name="DuréeDesPausesRapide" xml:space="preserve">
+    <value>Durata totale delle pause effettuate</value>
+  </data>
+  <data name="ListeDesPauses" xml:space="preserve">
+    <value>Elenco delle pause</value>
+  </data>
+  <data name="AjouterUnePause" xml:space="preserve">
+    <value>Aggiungi una pausa</value>
+  </data>
+  <data name="PausesDéduitesTempsTravail" xml:space="preserve">
+    <value>Le pause saranno dedotte dal tempo lavorato.</value>
+  </data>
+  <data name="PauseDurationLabel" xml:space="preserve">
+    <value>Durata della pausa</value>
+  </data>
+  <data name="PauseDurationHint" xml:space="preserve">
+    <value>Indice di durata della pausa</value>
+  </data>
+  <data name="IDWorker" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="DetailTitle" xml:space="preserve">
+    <value>Dettagli della sessione di punteggio</value>
   </data>
 </root>
